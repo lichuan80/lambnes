@@ -4,7 +4,15 @@
 <log4j:configuration>
 
     <appender name="log" class="org.apache.log4j.DailyRollingFileAppender">
-        <param name="File" value="./jnes"/>
+        <param name="File" value="lambnes.log"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} [%-5p] %c {%F:%L} - %m%n"/>
+        </layout>
+    </appender>
+    
+    <appender name="cpulog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="lambnes.cpu.log"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} [%-5p] %c {%F:%L} - %m%n"/>
@@ -19,8 +27,23 @@
     </appender>
 
     <logger name="com.lambelly">
-      <level value="debug"/>
-      <appender-ref ref="console"/>
+        <level value="debug"/>
+        <appender-ref ref="log"/>
     </logger>
+
+    <logger name="org.apache">
+        <level value="debug"/>
+        <appender-ref ref="log"/>
+    </logger>    
+
+    <logger name="com.lambelly.lambnes.test">
+        <level value="debug"/>
+        <appender-ref ref="console"/>
+    </logger>    
+
+    <logger name="com.lambelly.lambnes.platform.cpu.NesCpu">
+        <level value="debug"/>
+        <appender-ref ref="cpulog"/>
+    </logger>    
 
 </log4j:configuration> 
