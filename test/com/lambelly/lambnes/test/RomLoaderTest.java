@@ -27,7 +27,7 @@ public class RomLoaderTest
     @Test
     public void loadRom() throws FileNotFoundException
     {
-            RomLoader rl = new RomLoader("./super_mario_bros.zip");
+            RomLoader rl = new RomLoader("./roms/super_mario_bros.zip");
     }
 
 }

@@ -113,10 +113,10 @@ public class NesCpuINCTest
 		// test 1
 		int instruction = 0xEE;
 		Platform.getCpu().setX(0xC0);
-		TestUtils.setMemory(0x0201,0xCC);
+		TestUtils.setMemory(0x8001,0xCC);
 		TestUtils.performInstruction(instruction);	
 		
-		assertEquals(0xCD, Platform.getCpuMemory().getMemoryFromHexAddress(0x0201));
+		assertEquals(0xCD, Platform.getCpuMemory().getMemoryFromHexAddress(0x02CC));
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		

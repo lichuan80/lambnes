@@ -36,12 +36,13 @@ public class NesCpu implements CentralProcessingUnit
         Instruction i = Instruction.get(instruction);
         if (i != null)
         {
-        	logger.debug("next instruction: 0x" + Integer.toHexString(instruction) + " : " + i.name());
+        	logger.debug("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction) + " : " + i.name());
         }
         else
         {
-        	logger.debug("next instruction: 0x" + Integer.toHexString(instruction) + " : NO MAPPED NAME");
+        	logger.debug("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction) + " : NO MAPPED NAME");
         }
+        
         int value = 0;
     	int address = 0;
     	int x = 0;
@@ -180,7 +181,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0x90:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress(); 
-            	if (this.getFlags().isCarry() == false)
+            	if (!this.getFlags().isCarry())
             	{
             		this.doBranch(address);
             	}
@@ -192,7 +193,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0xB0:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isCarry() == true)
+            	if (this.getFlags().isCarry())
             	{
             		this.doBranch(address);
             	}
@@ -204,7 +205,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0xF0:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isZero() == true)
+            	if (this.getFlags().isZero())
             	{
             		this.doBranch(address);
             	}
@@ -231,7 +232,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0x30:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isNegative() == true)
+            	if (this.getFlags().isNegative())
             	{
             		this.doBranch(address);
             	}
@@ -243,7 +244,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0xD0:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isZero() == false)
+            	if (!this.getFlags().isZero())
             	{
             		this.doBranch(address);
             	}
@@ -255,7 +256,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0x10:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isNegative() == false)
+            	if (!this.getFlags().isNegative())
             	{
             		this.doBranch(address);
             	}
@@ -273,7 +274,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0x50:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isOverflow() == false)
+            	if (!this.getFlags().isOverflow())
             	{
             		this.doBranch(address);
             	}
@@ -285,7 +286,7 @@ public class NesCpu implements CentralProcessingUnit
             case 0x70:
                 // aa
             	address = Platform.getCpuMemory().getRelativeAddress();
-            	if (this.getFlags().isOverflow() == true)
+            	if (this.getFlags().isOverflow())
             	{
             		this.doBranch(address);
             	}
@@ -324,7 +325,10 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xC9:
                 // #aa
-            	logger.debug("0xc9");
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("0xc9");
+            	}
             	value = Platform.getCpuMemory().getImmediateValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
@@ -428,7 +432,7 @@ public class NesCpu implements CentralProcessingUnit
             	break;
             case 0xDE:
                 // aaaa,X
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
+            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
             	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doDEC(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
@@ -442,7 +446,10 @@ public class NesCpu implements CentralProcessingUnit
             	x = Platform.EIGHT_BIT_MASK & --x;
             	
             	this.setX(x);
-            	logger.debug("x: " + Integer.toHexString(x));
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("x: " + Integer.toHexString(x));
+            	}
             	this.checkNegativeBit(x);
             	this.checkZero(x);
                 break;
@@ -508,28 +515,32 @@ public class NesCpu implements CentralProcessingUnit
             case 0xE6:
                 // $aa
             	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doINC(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
             	break;
             case 0xF6:
                 //  $aa,X
             	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doINC(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
             	break;
             case 0xEE:
                 // $aaaa
             	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("got address: " + address);
+            	}
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doINC(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);                
             	break;
             case 0xFE:
                 // $aaaa,X
             	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doINC(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
                 break;
@@ -541,7 +552,10 @@ public class NesCpu implements CentralProcessingUnit
             	x = this.getX();
             	x = (++x) & Platform.EIGHT_BIT_MASK;
             	this.setX(x);
-            	logger.debug("x: " + Integer.toHexString(x));
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("x: " + Integer.toHexString(x));
+            	}
             	this.checkNegativeBit(x);
             	this.checkZero(x);
                 break;
@@ -553,7 +567,10 @@ public class NesCpu implements CentralProcessingUnit
             	y = this.getY();
             	y = (++y) & Platform.EIGHT_BIT_MASK;
             	this.setY(y);
-            	logger.debug("y: " + Integer.toHexString(x));
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("y: " + Integer.toHexString(x));
+            	}
             	this.checkNegativeBit(y);
             	this.checkZero(y);
             	break;
@@ -564,6 +581,10 @@ public class NesCpu implements CentralProcessingUnit
             case 0x4C:
                 // $aaaa
             	address = Platform.getCpuMemory().getAbsoluteAddress();
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("jumping to address: " + address);
+            	}
             	Platform.getCpuMemory().setProgramCounter(address);
                 break;
             case 0x6C:
@@ -577,11 +598,15 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x20:
                 // $aaaa
+            	// get address to jump to
+            	address = Platform.getCpuMemory().getAbsoluteAddress();
+            	
             	// push current prgRomCounter
-            	Platform.getCpuMemory().pushStack(Platform.getCpuMemory().getProgramCounter());
+            	int a[] = BitUtils.splitAddress(Platform.getCpuMemory().getProgramCounter() - 1);
+            	Platform.getCpuMemory().pushStack(a[1]);
+            	Platform.getCpuMemory().pushStack(a[0]);
             	
             	//transfer control
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
             	Platform.getCpuMemory().setProgramCounter(address);
                 break;
                 
@@ -717,25 +742,29 @@ public class NesCpu implements CentralProcessingUnit
                 break;
             case 0x46:
                 // $aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	address = Platform.getCpuMemory().getZeroPageAddress();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
                 break;
             case 0x56:
                 // $aa,X    
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doLSR(value);    	
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
                 break;
             case 0x4E:
                 // $aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	address = Platform.getCpuMemory().getAbsoluteAddress();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
                 break;
             case 0x5E:
                 // $aaaa,X  
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
+            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
                 break;
@@ -801,7 +830,7 @@ public class NesCpu implements CentralProcessingUnit
                 PHP  -  Push Processor Status on Stack
              */
             case 0x08:
-            	Platform.getCpuMemory().pushStack(this.doPHP());
+            	this.pushStatus();
                 break;
 
             /**
@@ -815,7 +844,7 @@ public class NesCpu implements CentralProcessingUnit
                 PLP  -  Pull Processor Status from Stack
              */
             case 0x28:
-            	this.parseProcessorStatusWord();
+            	this.pullStatus();
                 break;
 
             /**
@@ -898,10 +927,18 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x40:
             	// retrieve processor status word
-            	this.parseProcessorStatusWord();
+            	this.pullStatus();
             	
             	// program counter
-            	address = Platform.getCpuMemory().popStack();
+            	int lowByte = Platform.getCpuMemory().popStack();
+            	int highByte = Platform.getCpuMemory().popStack();	
+            	address = BitUtils.unsplitAddress(highByte, lowByte);
+            	
+            	// transfer control to address
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("RTI -- transfering control to " + Integer.toHexString(address));
+            	}
             	Platform.getCpuMemory().setProgramCounter(address);
                 break;
 
@@ -909,7 +946,12 @@ public class NesCpu implements CentralProcessingUnit
                 RTS  -  Return from Subroutine
              */
             case 0x60:
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
+            	// get address to transfer control to
+            	lowByte = Platform.getCpuMemory().popStack();
+            	highByte = Platform.getCpuMemory().popStack();
+            	address = BitUtils.unsplitAddress(highByte, lowByte);
+            	
+            	// transfer control to address
             	Platform.getCpuMemory().setProgramCounter(address + 1);
                 break;
 
@@ -1000,7 +1042,10 @@ public class NesCpu implements CentralProcessingUnit
             case 0x9D:
                 // $aaaa,X 
             	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	logger.debug("given address: " + Integer.toHexString(address));
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("given address: " + Integer.toHexString(address));
+            	}
             	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x99:
@@ -1102,7 +1147,7 @@ public class NesCpu implements CentralProcessingUnit
                 break;
 
             /**
-                TXS  -  Transfer X to Stack
+                TXS  -  Transfer X to Stack pointer
              */
             case 0x9A:
             	Platform.getCpuMemory().setStackPointer(this.getX());
@@ -1128,15 +1173,18 @@ public class NesCpu implements CentralProcessingUnit
              */
             default:
             	logger.error("ENCOUNTERED UNEMULATED INSTRUCTION: " + Integer.toHexString(instruction));
+            	break;
             
         }
     }
     
     private void doADC(int value)
     {
-    	logger.debug("value: 0x" + Integer.toHexString(value));
-    	logger.debug("acc: 0x" + Integer.toHexString(this.getAccumulator()));
-    	
+    	if(logger.isDebugEnabled())
+    	{
+	    	logger.debug("value: 0x" + Integer.toHexString(value));
+	    	logger.debug("acc: 0x" + Integer.toHexString(this.getAccumulator()));
+    	}
     	// A,Z,C,N = A+M+C
     	value = this.getAccumulator() + value + (this.getFlags().isCarry()?1:0);
     	
@@ -1168,7 +1216,10 @@ public class NesCpu implements CentralProcessingUnit
     
     private void doAND(int value)
     {
-    	logger.debug(Integer.toHexString(value) + " AND " + Integer.toHexString(this.getAccumulator()));
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug(Integer.toHexString(value) + " AND " + Integer.toHexString(this.getAccumulator()));
+    	}
         this.setAccumulator(this.getAccumulator() & value);
 
         // check flags
@@ -1178,12 +1229,20 @@ public class NesCpu implements CentralProcessingUnit
     
     private int doASL(int value)
     {
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("value: " + value);
+    	}
     	// set Carry
     	this.getFlags().setCarry(BitUtils.isBitSet(value, 7));
     	
     	// do shift
     	value = value << 1;
     	value = value & Platform.EIGHT_BIT_MASK;
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("shifted value: " + value);
+    	}
     	
     	// check flags
     	this.checkNegativeBit(value);
@@ -1210,7 +1269,10 @@ public class NesCpu implements CentralProcessingUnit
     
     private void doCompare(int value, int register)
     {
-    	logger.debug("value: " + Integer.toHexString(value));
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("value: " + Integer.toHexString(value));
+    	}
     	// set C -- set if acc is greater than value
     	if (register >= value)
     	{
@@ -1223,15 +1285,22 @@ public class NesCpu implements CentralProcessingUnit
     	
     	// set N -- most significant bit of unsigned subtraction result
     	int sub = ((register - value) & Platform.EIGHT_BIT_MASK);
-    	logger.debug("subtraction result: " + sub);
-    	
-    	this.getFlags().setNegative(BitUtils.isBitSet(value, 7));
+    	if(logger.isDebugEnabled())
+    	{
+	    	logger.debug("subtraction binary: " + Integer.toBinaryString(sub));
+	    	logger.debug("subtraction value: " + sub);
+	    	logger.debug("most significant bit: " + BitUtils.isBitSet(value, 7));
+    	}
+    	this.getFlags().setNegative(BitUtils.isBitSet(sub, 7));
     	
     	// set Z -- comparison result
     	if (register == value)
     	{
-    		logger.debug("setting Z to true");
-    		logger.debug("register: " + Integer.toHexString(this.getAccumulator()));
+    		if(logger.isDebugEnabled())
+    		{
+	    		logger.debug("setting Z to true");
+	    		logger.debug("register: " + Integer.toHexString(this.getAccumulator()));
+    		}
     		this.getFlags().setZero(true);
     	}
     	else
@@ -1258,7 +1327,10 @@ public class NesCpu implements CentralProcessingUnit
     
     private void doEOR(int value)
     {
-    	logger.debug(Integer.toHexString(value) + " XOR " + Integer.toHexString(this.getAccumulator()));
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug(Integer.toHexString(value) + " XOR " + Integer.toHexString(this.getAccumulator()));
+    	}
         this.setAccumulator(this.getAccumulator() ^ value);
 
         // check flags
@@ -1291,15 +1363,18 @@ public class NesCpu implements CentralProcessingUnit
     	value = value >> 1;
     	
     	// check flags
-    	this.checkNegativeBit(this.getAccumulator());
-    	this.checkZero(this.getAccumulator());
+    	this.checkNegativeBit(value);
+    	this.checkZero(value);
     	
     	return value;
     }
     
     private void doORA(int value)
     {
-    	logger.debug(Integer.toHexString(value) + " OR " + Integer.toHexString(this.getAccumulator()));
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug(Integer.toHexString(value) + " OR " + Integer.toHexString(this.getAccumulator()));
+    	}
         this.setAccumulator(this.getAccumulator() | value);
 
         // check flags
@@ -1307,35 +1382,38 @@ public class NesCpu implements CentralProcessingUnit
         this.checkZero(this.getAccumulator()); 
     }
     
-    private int doPHP()
-    {
-    	String statusBits = this.createProcessorStatusWord();
-    	
-    	logger.debug("bit string = " + statusBits);
-    	
-    	return Integer.parseInt(statusBits,2);
-    }
-    
     private int doROL(int value)
     {
     	//Move each of the bits in either A or M one place to the left. Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
     	// get new carry -- bit 7 of 
     	boolean newCarry = BitUtils.isBitSet(value,7);
-    	logger.debug("new carry: " + newCarry);
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("new carry: " + newCarry);
+    	}
     	
     	// do shift
-    	value = (value << 1) & Platform.EIGHT_BIT_MASK;    	
-    	logger.debug("value: " + value);
+    	value = (value << 1) & Platform.EIGHT_BIT_MASK;
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("value: " + value);
+    	}
     	
     	// swap carry with bit 0
-    	logger.debug("carry: " + this.getFlags().isCarry());
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("carry: " + this.getFlags().isCarry());
+    	}
     	if (this.getFlags().isCarry())
     	{
     		value = BitUtils.setBit(value, 0);
     	}
     	else
     	{
-    		logger.debug("running unset bit");
+    		if(logger.isDebugEnabled())
+    		{
+    			logger.debug("running unset bit");
+    		}
     		value = BitUtils.unsetBit(value, 0);
     	}
     	this.getFlags().setCarry(newCarry);
@@ -1404,7 +1482,10 @@ public class NesCpu implements CentralProcessingUnit
      */
     private void checkNegativeBit(int value)
     {
-    	logger.debug("checking value : " + Integer.toHexString(value));
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("checking value : " + Integer.toHexString(value));
+    	}
     	if (BitUtils.isBitSet(value, 7))
         {
             this.getFlags().setNegative(true);
@@ -1427,6 +1508,35 @@ public class NesCpu implements CentralProcessingUnit
     	this.setY(0);
     }
     
+    public void pushStatus()
+    {
+    	String statusBits = this.createProcessorStatusWord();
+    	
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("bit string = " + statusBits);
+    	}
+    	
+    	Platform.getCpuMemory().pushStack(Integer.parseInt(statusBits,2));
+    }
+    
+    public void pullStatus()
+    {
+        //- | N | O | B | D | I | Z | C 
+    	int word = Platform.getCpuMemory().popStack();
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("status: " + Integer.toBinaryString(word));
+    	}
+    	this.getFlags().setNegative(BitUtils.isBitSet(word, 6));
+    	this.getFlags().setOverflow(BitUtils.isBitSet(word, 5));
+    	this.getFlags().setBrkCommand(BitUtils.isBitSet(word, 4));
+    	this.getFlags().setDecimalMode(BitUtils.isBitSet(word, 3));
+    	this.getFlags().setIrqDisable(BitUtils.isBitSet(word, 2));
+    	this.getFlags().setZero(BitUtils.isBitSet(word, 1));
+    	this.getFlags().setCarry(BitUtils.isBitSet(word, 0));
+    }
+    
     public String createProcessorStatusWord()
     {
         //- | N | O | B | D | I | Z | C 
@@ -1440,20 +1550,6 @@ public class NesCpu implements CentralProcessingUnit
     	statusWord += this.getFlags().isCarry()?1:0;
     	
     	return statusWord;
-    }
-    
-    public void parseProcessorStatusWord()
-    {
-        //- | N | O | B | D | I | Z | C 
-    	int word = Platform.getCpuMemory().popStack();
-    	logger.debug("status: " + Integer.toBinaryString(word));
-    	this.getFlags().setNegative(BitUtils.isBitSet(word, 6));
-    	this.getFlags().setOverflow(BitUtils.isBitSet(word, 5));
-    	this.getFlags().setBrkCommand(BitUtils.isBitSet(word, 4));
-    	this.getFlags().setDecimalMode(BitUtils.isBitSet(word, 3));
-    	this.getFlags().setIrqDisable(BitUtils.isBitSet(word, 2));
-    	this.getFlags().setZero(BitUtils.isBitSet(word, 1));
-    	this.getFlags().setCarry(BitUtils.isBitSet(word, 0));
     }
     
     public String toString()

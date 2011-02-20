@@ -4,8 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.apache.log4j.*;
-
 import com.lambelly.lambnes.platform.*;
 import com.lambelly.lambnes.platform.cpu.NesCpu;
 import com.lambelly.lambnes.test.utils.TestUtils;

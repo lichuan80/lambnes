@@ -5,7 +5,6 @@
 
 package com.lambelly.lambnes.test;
 
-import static org.junit.Assert.*;
 import org.junit.*;
 import com.lambelly.lambnes.util.*;
 import com.lambelly.lambnes.cartridge.*;
@@ -32,10 +31,12 @@ public class ChrRomTest
     	Platform p = Platform.getInstance();
     	
     	logger.debug("loading file");
-        this.setRl(new RomLoader("rom.zip"));
+        this.setRl(new RomLoader("./roms/rom.zip"));
         logger.debug("creating ines");
         this.setCart(new Ines(getRl().getRomData()));
         logger.debug("attempting to set pattern tiles");
+        System.out.println(getCart().getPatternTiles());
+        System.out.println(Platform.getPpuMemory());
         Platform.getPpuMemory().setPatternTiles(getCart().getPatternTiles());
     }
     
@@ -67,25 +68,25 @@ public class ChrRomTest
     	
     	// print a
     	logger.debug("a");
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line1a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line2a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line3a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line4a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line5a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line6a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line7a,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line8a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line1a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line2a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line3a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line4a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line5a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line6a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line7a,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line8a,8));
     	
     	// print b
     	logger.debug("b");
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line1b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line2b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line3b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line4b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line5b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line6b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line7b,8));
-    	logger.debug(BitUtils.generateBinaryStringWithleadingZeros(line8b,8));    	
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line1b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line2b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line3b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line4b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line5b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line6b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line7b,8));
+    	logger.debug(NumberConversionUtils.generateBinaryStringWithleadingZeros(line8b,8));    	
     }
 
     /**

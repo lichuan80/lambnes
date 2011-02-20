@@ -44,7 +44,7 @@ public class PaletteConfigTest
 	}
 	
 	@Test
-	public void palette()
+	public void palette()throws Exception
 	{
 		TestUtils.createTestPlatform();
 		logger.debug(Platform.getMasterPalette());

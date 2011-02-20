@@ -5,10 +5,13 @@
 
 package com.lambelly.lambnes.platform;
 
-import java.util.Scanner;
-
 import com.lambelly.lambnes.platform.cpu.*;
+import com.lambelly.lambnes.cartridge.*;
+import com.lambelly.lambnes.platform.interrupts.InterruptRequest;
+import com.lambelly.lambnes.platform.interrupts.NesInterrupts;
 import com.lambelly.lambnes.platform.ppu.*;
+import com.lambelly.lambnes.platform.controllers.*;
+import com.lambelly.lambnes.util.ArrayUtils;
 
 import org.apache.log4j.*;
 
@@ -18,20 +21,19 @@ import org.apache.log4j.*;
  */
 public class Platform
 {
+	private static Cartridge cartridge = null;
     private static NesCpuMemory cpuMemory = null;
     private static NesPpuMemory ppuMemory = null;
     private static CentralProcessingUnit cpu = null;
     private static PictureProcessingUnit ppu = null;
+    private static NesInterrupts nesInterrupts = null;
+    private static NesControllerPorts controllerPorts = null;
     private static Platform instance = null;
     private static Palette MasterPalette = null;
     private static boolean run = true;
     private static Logger logger = Logger.getLogger(Platform.class);
-	private static final int CPU_FREQUENCY = ((Double)(1.789 * 1000000)).intValue();
-	private static final int REFRESH_RATE = 60;
-	private static final int NUM_SCANLINES_PER_FRAME = 262;
-	private static final double NUM_CYCLES_PER_SCANLINE = (Platform.CPU_FREQUENCY / Platform.REFRESH_RATE) / Platform.NUM_SCANLINES_PER_FRAME;
+	public static final int CPU_FREQUENCY = ((Double)(1.789 * 1000000)).intValue();
     public static final int EIGHT_BIT_MASK = 0xFF;
-    public static final String DEFAULT_ROM = "rom.zip";
 
     protected Platform()
     {
@@ -40,74 +42,74 @@ public class Platform
 	    	Platform.setCpuMemory(new NesCpuMemory());
 	        Platform.setCpu(new NesCpu());
 	        Platform.setPpu(new NesPpu());
+	        Platform.setControllerPorts(new NesControllerPorts());
 	        Platform.setPpuMemory(new NesPpuMemory());
 	        Platform.setMasterPalette(new Palette());
     	}
     	catch(Exception e)
     	{
-    		logger.fatal("boot exception: " + e.getMessage(),e);
+    		if(logger.isDebugEnabled())
+    		{
+    			logger.fatal("boot exception: " + e.getMessage(),e);
+    		}
     	}
     }
     
     public static void power()
     {
+    	// power up initialization
+    	if(logger.isDebugEnabled())
+    	{
+	    	logger.debug("power up initialization");
+	    	logger.debug("loading cartridge");
+    	}
+    	
+    	if (Platform.getCartridge() != null)
+    	{
+    		Platform.getPpuMemory().establishMirroring();
+    		Platform.getCpuMemory().setProgramInstructions(Platform.getCartridge().getProgramInstructions());
+    		if(logger.isDebugEnabled())
+    		{
+    			logger.debug("pattern tiles head:");
+    		}
+    		ArrayUtils.head(Platform.getCartridge().getPatternTiles(), 16);
+    		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
+    	}
+    	else
+    	{
+    		// no cartridge inserted
+    		throw new IllegalStateException("no cartridge inserted");
+    	}
+    	
     	int cycleCount = 0;
-    	int scanlineCount = 0;
+    	Platform.setNesInterrupts(new NesInterrupts());
+    	Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeReset));
+    	Platform.getNesInterrupts().cycle();
     	
         while (isRun())
         {
-        	while (cycleCount < Platform.CPU_FREQUENCY)
+        	while (cycleCount < Platform.CPU_FREQUENCY && isRun())
         	{
-        		logger.debug("\nCycle Count: " + cycleCount);
-        		logger.debug("\nScanline Count: " + scanlineCount);
-	        	logger.debug("\n" + Platform.getCpu().getFlags());
-	        	logger.debug("\n" + Platform.getCpu());
+        		if(logger.isDebugEnabled())
+        		{
+	        		logger.debug("\nCycle Count: " + cycleCount);
+		        	logger.debug("\n" + Platform.getCpu().getFlags());
+		        	logger.debug("\n" + Platform.getCpu());
+        		}
 	        	
-	        	// 1. Fetch the opcode from the ROM.
-	        	// 2. Execute the opcode.
-	
+	        	// 1. cpu cycle
 	        	Platform.getCpu().processNextInstruction();
 	        	
-	        	//3. Execute Interrupts.
-	        	//FFFAh = NMI (VBlank)
-	        	//FFFCh = RESET
-	        	//FFFEh = IRQ/BRK (software)
-	
+	        	// 2. Execute Interrupts.
+	        	Platform.getNesInterrupts().cycle();
 	        	
-	        	//4. Read/Write to memory.
-	        	Platform.getPpu().doRegisterReadsWrites();
-	        	
-	        	//5. Do the cyclic tasks
-	        	logger.debug("scanlineTest: " + cycleCount % Platform.NUM_CYCLES_PER_SCANLINE);
-	        	if (cycleCount % Platform.NUM_CYCLES_PER_SCANLINE == 0)
-	        	{
-	        		scanlineCount++;
-	        		logger.debug("scanline");
-	        		
-	        		if (scanlineCount > 240 && scanlineCount <= 262)
-	        		{
-	        			// vblank
-	        			Platform.getPpu().getPpuStatusRegister().setVblank(true);
-	        		}
-	        		else if (scanlineCount > 262)
-	        		{
-	        			// reset scanlineCount (new frame)
-	        			Platform.getPpu().getPpuStatusRegister().setVblank(false);
-	        			scanlineCount = 1; 
-	        		}
-	        		else
-	        		{
-	        			// draw scanline
-	        		}
-	        	}
+	        	// 3. ppu cycle
+	        	Platform.getPpu().cycle(cycleCount); 
+
+	        	// 4. controller cycle 
+	        	Platform.getControllerPorts().cycle();
 	        	
 	        	cycleCount++;
-	        	
-	        	if (false) // manual cpu step
-	        	{
-	        		Scanner scanner = new Scanner(System.in);
-	        		String s = scanner.nextLine();
-	        	}
         	}
         }
         
@@ -205,5 +207,35 @@ public class Platform
 	public static void setRun(boolean run)
 	{
 		Platform.run = run;
+	}
+
+	public static NesInterrupts getNesInterrupts()
+	{
+		return nesInterrupts;
+	}
+
+	public static void setNesInterrupts(NesInterrupts nesInterrupts)
+	{
+		Platform.nesInterrupts = nesInterrupts;
+	}
+
+	public static Cartridge getCartridge()
+	{
+		return cartridge;
+	}
+
+	public static void setCartridge(Cartridge cartridge)
+	{
+		Platform.cartridge = cartridge;
+	}
+
+	public static NesControllerPorts getControllerPorts()
+	{
+		return controllerPorts;
+	}
+
+	public static void setControllerPorts(NesControllerPorts controllerPorts)
+	{
+		Platform.controllerPorts = controllerPorts;
 	}
 }

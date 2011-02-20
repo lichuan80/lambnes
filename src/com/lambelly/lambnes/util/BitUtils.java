@@ -1,30 +1,13 @@
 package com.lambelly.lambnes.util;
+import org.apache.log4j.*;
 
 public class BitUtils
 {
-	public static String generateBinaryStringWithleadingZeros(int number, int minimumLength)
-	{
-		// generate mask
-		String mask = "";
-		for (int i=0;i<minimumLength;i++)
-		{
-			mask += "0";
-		}
-
-		String nString = Integer.toBinaryString(number);
-		return mask.substring(0 , mask.length() - nString.length()) + nString;
-	}
+	private static Logger logger = Logger.getLogger(BitUtils.class);
 	
 	public static boolean isBitSet(int value, int bitIndex)
 	{
-		if ((value & (1 << bitIndex)) != 0) 
-		{ 
-			return true; 
-		} 
-		else
-		{
-			return false;
-		}		
+		return ((value & (1 << bitIndex)) != 0); 
 	}
 	
 	public static int setBit(int value, int bitIndex)
@@ -47,5 +30,30 @@ public class BitUtils
 		{
 			return setBit(value,bitIndex);
 		}
+	}
+	
+	public static int[] splitAddress(int address)
+	{
+		int[] a = new int[2];
+		String hexString = NumberConversionUtils.generateHexStringWithleadingZeros(address, 4);
+		int higherBit = Integer.parseInt(hexString.substring(0,2),16); 
+		int lowerBit = Integer.parseInt(hexString.substring(2, 4),16);
+		a[0] = lowerBit;
+		a[1] = higherBit;
+		return a;
+	}
+	
+	/**
+	 * 
+	 * @param highbyte
+	 * @param lowbyte
+	 * @return
+	 */
+	public static int unsplitAddress(int highbyte, int lowbyte)
+	{
+		highbyte = highbyte << 8;
+		logger.debug("high byte: " + Integer.toHexString(highbyte));
+		logger.debug("low byte: " + Integer.toHexString(lowbyte));
+		return highbyte + lowbyte;
 	}
 }

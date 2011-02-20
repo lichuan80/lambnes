@@ -61,7 +61,7 @@ public class NesCpuLSRTest
 		// test 1
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(0, Platform.getCpu().getAccumulator());
+		assertEquals(0, Platform.getCpuMemory().getMemoryFromHexAddress(0x01));
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
@@ -69,7 +69,7 @@ public class NesCpuLSRTest
 	    // test 2
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(1, Platform.getCpu().getAccumulator());
+		assertEquals(1, Platform.getCpuMemory().getMemoryFromHexAddress(0x03));
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());		
@@ -84,7 +84,7 @@ public class NesCpuLSRTest
 		Platform.getCpu().setX(0xF);
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(8, Platform.getCpu().getAccumulator());
+		assertEquals(8, Platform.getCpuMemory().getMemoryFromHexAddress(0x10));
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
@@ -92,7 +92,7 @@ public class NesCpuLSRTest
 	    // test 2
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(9, Platform.getCpu().getAccumulator());
+		assertEquals(9, Platform.getCpuMemory().getMemoryFromHexAddress(0x12));
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());		
@@ -106,7 +106,7 @@ public class NesCpuLSRTest
 		// test 1
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(0, Platform.getCpu().getAccumulator());
+		assertEquals(0, Platform.getCpuMemory().getMemoryFromHexAddress(0x0201));
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
@@ -114,7 +114,7 @@ public class NesCpuLSRTest
 	    // test 2
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(2, Platform.getCpu().getAccumulator());
+		assertEquals(2, Platform.getCpuMemory().getMemoryFromHexAddress(0x0504));
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());		
@@ -123,22 +123,22 @@ public class NesCpuLSRTest
 	@Test
 	public void testAbsoluteX()
 	{
-		int instruction = 0x4E;
+		int instruction = 0x5E;
 		
 		// test 1
 		Platform.getCpu().setX(0xA1);
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(0, Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(81, Platform.getCpuMemory().getMemoryFromHexAddress(0x02A2));
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 
 	    // test 2
 		TestUtils.performInstruction(instruction);
 		
-		assertEquals(2, Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertEquals(82, Platform.getCpuMemory().getMemoryFromHexAddress(0x05A5));
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());		
 	}		

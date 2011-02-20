@@ -6,8 +6,9 @@
 package com.lambelly.lambnes.test;
 
 import com.lambelly.lambnes.test.utils.TestUtils;
-import com.lambelly.lambnes.util.ArrayUtils;
+import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.platform.*;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,14 +47,14 @@ public class NesMemoryTest
     	Platform p = Platform.getInstance();
     	
     	// establish memories
-    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestArray(256));
-    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestArray(256));
-    	Platform.getCpuMemory().setRam(TestUtils.createTestArray(1536));
-    	Platform.getCpuMemory().setInputOutput1(TestUtils.createTestArray(8));
-    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestArray(32));
-    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestArray(8160));
-    	Platform.getCpuMemory().setSram(TestUtils.createTestArray(8192));
-    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestArray(32768));
+    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestIntArray(256));
+    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestIntArray(256));
+    	Platform.getCpuMemory().setRam(TestUtils.createTestIntArray(1536));
+    	//Platform.getCpuMemory().setInputOutput1(TestUtils.createTestIntegerArray(8));
+    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestIntegerArray(32));
+    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestIntArray(8160));
+    	Platform.getCpuMemory().setSram(TestUtils.createTestIntArray(8192));
+    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestIntArray(32768));
     	Platform.getCpuMemory().resetCounters();
     }
 
@@ -179,10 +180,19 @@ public class NesMemoryTest
     public void pushStack()
     {
     	Platform.getCpuMemory().pushStack(0x89);
-    	assertEquals(0x100, Platform.getCpuMemory().getStackPointer());
+    	assertEquals(0xFF, Platform.getCpuMemory().getStackPointer());
     	int value = Platform.getCpuMemory().popStack();
-    	assertEquals(0x100, Platform.getCpuMemory().getStackPointer());
+    	assertEquals(0, Platform.getCpuMemory().getStackPointer());
     	assertEquals(0x89, value);
+    	
+    	// try pushing address.
+    	int address = 0xabcd;
+    	int a[] = BitUtils.splitAddress(address);
+    	Platform.getCpuMemory().pushStack(a[1]);
+    	Platform.getCpuMemory().pushStack(a[0]);
+    	
+    	assertEquals(0xcd, Platform.getCpuMemory().popStack());
+    	assertEquals(0xab, Platform.getCpuMemory().popStack());
     }
     
     @Test

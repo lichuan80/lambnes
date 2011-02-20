@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.apache.log4j.*;
-import java.util.BitSet;
 import com.lambelly.lambnes.util.*;
 
 public class BitUtilsTest
@@ -23,6 +22,7 @@ public class BitUtilsTest
 		assertEquals(3,value);
 	}
 	
+	@Test
 	public void assureBitTest()
 	{
 		int value = 2;
@@ -51,8 +51,22 @@ public class BitUtilsTest
 	}
 	
 	@Test
-	public void bitStringTest()
+	public void splitAddress()
 	{
-		logger.debug(BitUtils.generateBinaryStringWithleadingZeros(3, 8));
+		int[] a = BitUtils.splitAddress(0xabcd);
+		assertEquals(0xcd,a[0]);
+		assertEquals(0xab,a[1]);
 	}
+	
+	@Test
+	public void isBitSet()
+	{
+		assertFalse(BitUtils.isBitSet(2,7));
+	}
+	
+	@Test
+	public void isBitSet2()
+	{
+		assertTrue(BitUtils.isBitSet(24,4));
+	}	
 }

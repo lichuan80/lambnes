@@ -6,12 +6,9 @@
 package com.lambelly.lambnes.test;
 
 import static org.junit.Assert.*;
-import org.junit.*;
 import com.lambelly.lambnes.util.ArrayUtils;
 import com.lambelly.lambnes.test.utils.TestUtils;
 import org.junit.Test;
-import org.apache.log4j.*;
-import java.io.FileNotFoundException;
 
 
 /**
@@ -23,7 +20,7 @@ public class ArrayUtilTest
     @Test
     public void subarray()
     {
-        int[] programInstructions = TestUtils.createTestArray(32768);
+        int[] programInstructions = TestUtils.createTestIntArray(32768);
 
         int[] lower = org.apache.commons.lang.ArrayUtils.subarray(programInstructions, 0, 16384);
         int[] upper = org.apache.commons.lang.ArrayUtils.subarray(programInstructions, 16384, 32769);
