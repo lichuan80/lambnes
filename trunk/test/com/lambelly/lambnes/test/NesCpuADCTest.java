@@ -1,13 +1,9 @@
 package com.lambelly.lambnes.test;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.apache.log4j.*;
-import com.lambelly.lambnes.platform.*;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.cpu.NesCpu;
@@ -18,7 +14,7 @@ public class NesCpuADCTest
 	private Logger logger = Logger.getLogger(NesCpuADCTest.class);
 	
 	@Before
-	public void setUp()
+	public void setUp()throws Exception
 	{
 		TestUtils.createTestPlatform();
 	}

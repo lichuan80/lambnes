@@ -2,11 +2,7 @@ package com.lambelly.lambnes.test;
 
 import org.junit.Test;
 
-import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.platform.ppu.PPUStatusRegister;
 import org.apache.log4j.*;
-
-import static org.junit.Assert.*;
 
 public class PPUStatusRegisterTest
 {

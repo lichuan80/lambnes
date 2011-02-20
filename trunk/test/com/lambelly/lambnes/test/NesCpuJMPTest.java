@@ -39,8 +39,7 @@ public class NesCpuJMPTest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test case 1
-		Platform.getCpu().setX(0x0C);
 		TestUtils.performInstruction(instruction);		
-		assertEquals(0x0201,Platform.getCpuMemory().getProgramCounter());
+		assertEquals(0x0102,Platform.getCpuMemory().getProgramCounter());
 	}	
 }

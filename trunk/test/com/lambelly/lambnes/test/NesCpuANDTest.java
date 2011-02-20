@@ -38,7 +38,7 @@ public class NesCpuANDTest
 	}
 
 	@Before
-	public void setUp()
+	public void setUp()throws Exception
 	{
 		TestUtils.createTestPlatform();
 	}

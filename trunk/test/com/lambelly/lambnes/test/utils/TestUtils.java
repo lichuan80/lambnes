@@ -1,11 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
+  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
 package com.lambelly.lambnes.test.utils;
 
+import com.lambelly.lambnes.cartridge.Ines;
+import com.lambelly.lambnes.cartridge.RomLoader;
 import com.lambelly.lambnes.platform.*;
+import com.lambelly.lambnes.util.ArrayUtils;
 
 /**
  *
@@ -18,7 +21,7 @@ public class TestUtils
      *
      * @return
      */
-    public static int[] createTestArray(int size)
+    public static int[] createTestIntArray(int size)
     {
         int[] testArray = new int[size];
 
@@ -36,21 +39,47 @@ public class TestUtils
 
         return testArray;
     }
+
+    public static Integer[] createTestIntegerArray(int size)
+    {
+        Integer[] testArray = new Integer[size];
+
+        int hexIndex = 0;
+        for (int i=0; i<size; i++)
+        {
+            testArray[i] = (hexIndex);
+
+            hexIndex++;
+            if (hexIndex > 255)
+            {
+                hexIndex = 0;
+            }
+        }
+
+        return testArray;
+    }
     
-    public static void createTestPlatform()
+    
+    public static void createTestPlatform() throws Exception
     {
     	// make sure platform has been instantiated
     	Platform p = Platform.getInstance();
     	
     	// establish memories
-    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestArray(256));
-    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestArray(256));
-    	Platform.getCpuMemory().setRam(TestUtils.createTestArray(1536));
-    	Platform.getCpuMemory().setInputOutput1(TestUtils.createTestArray(8));
-    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestArray(32));
-    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestArray(8160));
-    	Platform.getCpuMemory().setSram(TestUtils.createTestArray(8192));
-    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestArray(32768));
+    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestIntArray(256));
+    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestIntArray(256));
+    	Platform.getCpuMemory().setRam(TestUtils.createTestIntArray(1536));
+    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestIntegerArray(32));
+    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestIntArray(8160));
+    	Platform.getCpuMemory().setSram(TestUtils.createTestIntArray(8192));
+    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestIntArray(32768));
+    	
+        RomLoader rl = new RomLoader("./roms/NEStress.zip");
+        Ines i = new Ines(rl.getRomData());
+        ArrayUtils.head(i.getPatternTiles(), 16);
+    	Platform.getPpuMemory().setPatternTable0(i.getPatternTiles());
+    	
+    	//reset some stuff
     	Platform.getCpuMemory().resetCounters();  
     	Platform.getCpu().getFlags().resetFlags();
     	Platform.getCpu().resetRegisters();

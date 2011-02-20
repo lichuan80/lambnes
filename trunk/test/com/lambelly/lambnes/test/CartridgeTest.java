@@ -8,6 +8,8 @@ package com.lambelly.lambnes.test;
 import static org.junit.Assert.*;
 import org.junit.*;
 import com.lambelly.lambnes.cartridge.*;
+import com.lambelly.lambnes.util.ArrayUtils;
+
 import org.junit.Test;
 import org.apache.log4j.*;
 import java.io.FileNotFoundException;
@@ -18,7 +20,7 @@ import java.io.FileNotFoundException;
  */
 public class CartridgeTest
 {
-    private Logger logger = Logger.getLogger("CartridgeTest.class");
+    private Logger logger = Logger.getLogger(CartridgeTest.class);
     private RomLoader rl = null;
     private Ines cart = null;
 
@@ -26,7 +28,7 @@ public class CartridgeTest
     public void initialize() throws FileNotFoundException
     {
     	logger.debug("loading file");
-        this.setRl(new RomLoader("rom.zip"));
+        this.setRl(new RomLoader("./roms/rom.zip"));
         logger.debug("creating ines");
         this.setCart(new Ines(getRl().getRomData()));
     }
@@ -48,6 +50,13 @@ public class CartridgeTest
     {
         assertEquals(8192,getCart().getPatternTiles().length);
     }
+    
+    @Test
+    public void patternDebug() throws FileNotFoundException
+    {
+    	logger.debug("pattern tile head: ");
+        ArrayUtils.head(getCart().getPatternTiles(), 16);
+    }    
 
     /**
      * @return the rl

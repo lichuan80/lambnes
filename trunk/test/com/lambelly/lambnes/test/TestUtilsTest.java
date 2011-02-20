@@ -19,7 +19,7 @@ public class TestUtilsTest
     @Test
     public void createTestArray()
     {
-        int[] b = TestUtils.createTestArray(501);
+        int[] b = TestUtils.createTestIntArray(501);
         
         ArrayUtils.head(b, 10);
         ArrayUtils.foot(b, 10);

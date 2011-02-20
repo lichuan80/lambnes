@@ -7,8 +7,8 @@ package com.lambelly.lambnes.cartridge;
 import java.util.zip.ZipEntry;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
-import java.util.Formatter;
 import java.net.URLDecoder;
+import java.io.File;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
 import org.apache.log4j.*;
@@ -19,23 +19,23 @@ import org.apache.log4j.*;
  */
 public class RomLoader
 {
-    private String fileName = null;
     private String filePath = null;
     private int[] romData = null;
     private Logger logger = Logger.getLogger(RomLoader.class);
 
-    public RomLoader(String fileName) throws FileNotFoundException
+    public RomLoader(String filePath) throws FileNotFoundException
     {
-        this.setFileName(fileName);
-        if (Thread.currentThread().getContextClassLoader().getResource(fileName) != null)
-        {
-            this.setFilePath(Thread.currentThread().getContextClassLoader().getResource(fileName).getFile());
-        }
-        else
-        {
-            throw new FileNotFoundException("rom not found.");
-        }
-        this.loadRom();
+    	this.setFilePath(filePath);
+    	if (new File(filePath) != null)
+    	{
+    		logger.debug("loading rom");
+    		this.loadRom();
+    	}
+    	else
+    	{
+    		logger.error("unable to find rom");
+    		throw new FileNotFoundException("unable to locate specified rom: " + filePath);
+    	}
     }
 
     private void loadRom()
@@ -56,7 +56,7 @@ public class RomLoader
             {
                 ZipEntry ze = (ZipEntry)e.nextElement();
 
-                if (ze.getName().endsWith(".nes"))
+                if (ze.getName().toLowerCase().endsWith(".nes"))
                 {
                     // increment nesCount -- just to stop if there happens to be more than one ines file.
                     nesCount++;
@@ -115,22 +115,6 @@ public class RomLoader
     public void setFilePath(String filePath)
     {
         this.filePath = filePath;
-    }
-
-    /**
-     * @return the fileName
-     */
-    public String getFileName()
-    {
-        return fileName;
-    }
-
-    /**
-     * @param fileName the fileName to set
-     */
-    public void setFileName(String fileName)
-    {
-        this.fileName = fileName;
     }
 
     /**
