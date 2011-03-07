@@ -13,12 +13,18 @@ public class BackgroundTile
 	private int[] patternA = null;
 	private int[] patternB = null;
 	
-	private BackgroundAttribute backgroundAttribute = null;
+	private BackgroundAttribute backgroundAttribute = new BackgroundAttribute();
 	private Logger logger = Logger.getLogger(BackgroundTile.class);
 	
 	public BackgroundTile()
 	{
 		
+	}
+	
+	public BackgroundTile(int backgroundNumber)
+	{
+		this.setBackgroundNumber(backgroundNumber);
+		this.instantiateBackground();
 	}
 	
 	public BackgroundTile(int backgroundNumber, int colorHighBit)

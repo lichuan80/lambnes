@@ -3,6 +3,7 @@ package com.lambelly.lambnes.platform.controllers;
 public class ControlRegister2
 {
 	private Integer rawControlByte = null;
+	private int strobeValue = 0;
 	public static final int REGISTER_ADDRESS = 0x4017;
 	private static ControlRegister2 register = new ControlRegister2();
 	
@@ -28,6 +29,12 @@ public class ControlRegister2
 	{
 		this.setRawControlByte(value);
 	}
+	
+	public int getRegisterValue()
+	{
+		return this.getStrobeValue();
+	}
+
 
 	public static ControlRegister2 getRegister()
 	{
@@ -47,6 +54,16 @@ public class ControlRegister2
 	private void setRawControlByte(Integer rawControlByte)
 	{
 		this.rawControlByte = rawControlByte;
+	}
+
+	public int getStrobeValue()
+	{
+		return strobeValue;
+	}
+
+	public void setStrobeValue(int strobeValue)
+	{
+		this.strobeValue = strobeValue;
 	}
 	
 }

@@ -28,17 +28,19 @@ public class LambNes
 	/**
      * @param args the command line arguments
      */
-    public static void main(String[] args)
+    public static void main(String[] args) 
     {
-    	String cartridge = null;
+    	String cartridgeLoadPath = null;
         if (args.length > 0)
         {
         	logger.debug(args[0]);
-        	cartridge = args[0];
+        	cartridgeLoadPath = args[0];
         }
         
         // instantiate platform
-    	// start gui
+
+        
+        // start gui
     	LambNesGui gui = new LambNesGui();
         Thread mainwindow = new Thread(gui);
         
@@ -52,15 +54,25 @@ public class LambNes
     	{
     		// get cartridge
     		CartridgeLocator c = new CartridgeLocator();
-    		cartridge = c.locateCartridge();
-	        RomLoader rl = new RomLoader(cartridge);
-	        Cartridge cart = new Ines(rl.getRomData());
-	        
-	        Platform.setCartridge(cart);
-	        
-	        // start
-	        mainwindow.start();
-	        Platform.power();    
+    		cartridgeLoadPath = c.locateCartridge();
+    		
+    		if (cartridgeLoadPath != null)
+    		{
+		        RomLoader rl = new RomLoader(cartridgeLoadPath);
+		        Cartridge cart = new Ines(rl.getRomData());
+		        
+		        Platform.setCartridge(cart);
+		        
+		        // start
+		        gui.setVisible(true);
+		        mainwindow.start();
+		        Platform.power();
+		        
+    		}
+    		else
+    		{
+    			System.err.println("no rom was found");
+    		}
     	}
     	catch(IllegalStateException ex)
     	{
@@ -70,7 +82,7 @@ public class LambNes
     	catch(FileNotFoundException ex)
     	{
     		mainwindow.interrupt();
-    		logger.error("unable to load default cartridge: " + cartridge,ex);
+    		logger.error("unable to load default cartridge: " + cartridgeLoadPath,ex);
     	}
     	catch(NullPointerException ex)
     	{

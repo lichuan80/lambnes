@@ -296,7 +296,7 @@ public class NesPpu implements PictureProcessingUnit
         int spriteCount = 0;
         for (int spriteNumber = 0; spriteNumber < SPRITE_COUNT; spriteNumber++)
         {
-        	SpriteTile sprite = new SpriteTile(spriteNumber);
+        	SpriteTile sprite = NesTileCache.getSpriteTile(spriteNumber);
         	
         	logger.debug("scanline: " + scanline + " spriteNumber: " + sprite.getSpriteNumber() + " spriteYcoordinate: " + sprite.getSpriteAttributes().getyCoordinate());
             //   determine if Y coord is being drawn (for line + 1) 

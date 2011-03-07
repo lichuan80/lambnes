@@ -20,26 +20,13 @@ public class PPUVramIORegister
 	}
 	public void cycle()
 	{
-		logger.debug("raw control byte: " + this.getRawControlByte());
-		logger.debug("ioAddress: " + this.getIoAddress());
+		if (logger.isDebugEnabled())
+		{	
+			logger.debug("raw control byte: " + this.getRawControlByte());
+			logger.debug("ioAddress: " + this.getIoAddress());
+		}
 		
 		// wait until address is set as well as have something to write.
-		/*
-		if (this.getIoAddress() != null && this.getRawControlByte() != null)
-		{
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("raw control byte: " + this.getRawControlByte());
-				logger.debug("ioAddress: 0x" + Integer.toHexString(this.getIoAddress()));
-				logger.debug("writing 0x" + Integer.toHexString(this.getRawControlByte()) + " to 0x" + Integer.toHexString(this.getIoAddress()));
-			}
-			
-			// write control byte to ioAddress
-			Platform.getPpuMemory().setMemoryFromHexAddress(this.getIoAddress(), this.getRawControlByte());
-			
-		}
-		*/
-		
 		if (this.isReadAccess())
 		{
 			this.setReadAccess(false);

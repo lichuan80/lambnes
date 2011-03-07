@@ -19,6 +19,7 @@ public class PPUControlRegister2
 
 	private static PPUControlRegister2 register = new PPUControlRegister2();
 	private Integer rawControlByte = null;
+	private Integer controlByte = null;
 	private int fullBackgroundColor = 0;
 	private int colorIntensity = 0;
 	private boolean spriteVisibility = false;
@@ -36,50 +37,54 @@ public class PPUControlRegister2
 	{
 		if (this.getRawControlByte() != null)
 		{
-			this.setSpriteVisibility(BitUtils.isBitSet(this.getRawControlByte(), 4));
-			this.setBackgroundVisibility(BitUtils.isBitSet(this.getRawControlByte(), 3));
-			this.setSpriteClipping(BitUtils.isBitSet(this.getRawControlByte(), 2));
-			this.setBackGroundClipping(BitUtils.isBitSet(this.getRawControlByte(), 1));
-			this.setDisplayType(BitUtils.isBitSet(this.getRawControlByte(), 0)?DISPLAY_TYPE_MONOCHROME:DISPLAY_TYPE_COLOR);
-			
-			if (this.getDisplayType() == DISPLAY_TYPE_MONOCHROME)
+			if (this.getControlByte() != this.getRawControlByte())
 			{
-				// set full background color
-				if (BitUtils.isBitSet(this.getRawControlByte(), 7))
+				this.setControlByte(this.getRawControlByte());
+				this.setSpriteVisibility(BitUtils.isBitSet(this.getRawControlByte(), 4));
+				this.setBackgroundVisibility(BitUtils.isBitSet(this.getRawControlByte(), 3));
+				this.setSpriteClipping(BitUtils.isBitSet(this.getRawControlByte(), 2));
+				this.setBackGroundClipping(BitUtils.isBitSet(this.getRawControlByte(), 1));
+				this.setDisplayType(BitUtils.isBitSet(this.getRawControlByte(), 0)?DISPLAY_TYPE_MONOCHROME:DISPLAY_TYPE_COLOR);
+				
+				if (this.getDisplayType() == DISPLAY_TYPE_MONOCHROME)
 				{
-					this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_RED);
-				}
-				else if (BitUtils.isBitSet(this.getRawControlByte(), 6))
-				{
-					this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_BLUE);
-				}
-				else if (BitUtils.isBitSet(this.getRawControlByte(), 5))
-				{
-					this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_GREEN);
+					// set full background color
+					if (BitUtils.isBitSet(this.getRawControlByte(), 7))
+					{
+						this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_RED);
+					}
+					else if (BitUtils.isBitSet(this.getRawControlByte(), 6))
+					{
+						this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_BLUE);
+					}
+					else if (BitUtils.isBitSet(this.getRawControlByte(), 5))
+					{
+						this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_GREEN);
+					}
+					else
+					{
+						this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_NONE);
+					}
 				}
 				else
 				{
-					this.setFullBackgroundColor(FULL_BACKGROUND_COLOR_NONE);
-				}
-			}
-			else
-			{
-				// color intensity
-				if (BitUtils.isBitSet(this.getRawControlByte(), 7))
-				{
-					this.setColorIntensity(COLOR_INTENSITY_RED);
-				}
-				else if (BitUtils.isBitSet(this.getRawControlByte(), 6))
-				{
-					this.setColorIntensity(COLOR_INTENSITY_BLUE);
-				}
-				else if (BitUtils.isBitSet(this.getRawControlByte(), 5))
-				{
-					this.setColorIntensity(COLOR_INTENSITY_GREEN);
-				}
-				else
-				{
-					this.setColorIntensity(COLOR_INTENSITY_NONE);
+					// color intensity
+					if (BitUtils.isBitSet(this.getRawControlByte(), 7))
+					{
+						this.setColorIntensity(COLOR_INTENSITY_RED);
+					}
+					else if (BitUtils.isBitSet(this.getRawControlByte(), 6))
+					{
+						this.setColorIntensity(COLOR_INTENSITY_BLUE);
+					}
+					else if (BitUtils.isBitSet(this.getRawControlByte(), 5))
+					{
+						this.setColorIntensity(COLOR_INTENSITY_GREEN);
+					}
+					else
+					{
+						this.setColorIntensity(COLOR_INTENSITY_NONE);
+					}
 				}
 			}
 		}
@@ -173,5 +178,15 @@ public class PPUControlRegister2
 	public static PPUControlRegister2 getRegister()
 	{
 		return register;
+	}
+
+	public Integer getControlByte()
+	{
+		return controlByte;
+	}
+
+	public void setControlByte(Integer controlByte)
+	{
+		this.controlByte = controlByte;
 	}
 }

@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.lambelly.lambnes.platform;
 
 import com.lambelly.lambnes.platform.cpu.*;
@@ -34,6 +29,7 @@ public class Platform
     private static Logger logger = Logger.getLogger(Platform.class);
 	public static final int CPU_FREQUENCY = ((Double)(1.789 * 1000000)).intValue();
     public static final int EIGHT_BIT_MASK = 0xFF;
+    public static final int SIXTEEN_BIT_MASK = 0xFFFF;
 
     protected Platform()
     {
@@ -114,6 +110,7 @@ public class Platform
         }
         
         // shutdown
+        logger.info("platform stopped");
     }
 
     public static Platform getInstance()

@@ -8,9 +8,11 @@ import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
 
-public class LambNesGui extends JFrame implements Runnable
+public class LambNesGui extends JFrame implements Runnable 
 {
 	private static Screen screen = new Screen();
+	private static Container content = null;
+	private static boolean run = true;
 	private Logger logger = Logger.getLogger(LambNesGui.class);
 	public static final String SCREEN_TITLE = "LambNes"; 
 	private static final boolean SPRITE_PATTERN_TABLE_VISUALIZATION = true;
@@ -19,8 +21,9 @@ public class LambNesGui extends JFrame implements Runnable
 	private static final boolean BACKGROUND_PALETTE_VISUALIZATION = true;
 	private static final boolean MASTER_PALETTE_VISUALIZATION = true;
 	
-	public void run() 
+	public LambNesGui() 
 	{
+	    super();
         this.setTitle(LambNesGui.SCREEN_TITLE);
         this.setResizable(false);
         
@@ -34,6 +37,7 @@ public class LambNesGui extends JFrame implements Runnable
             	}
             	setVisible(false);
             	Platform.setRun(false);
+            	setRun(false);
             	dispose();    					
             }
         });
@@ -42,25 +46,47 @@ public class LambNesGui extends JFrame implements Runnable
         {
 			public void keyPressed(KeyEvent e)
 			{
+				logger.debug("received KeyEvent " + e.getKeyCode());
+				
 				if (e.getKeyCode() == KeyEvent.VK_W)
 				{
-					logger.info("key: W pressed");
+					logger.debug("key: W pressed");
 					Platform.getControllerPorts().getPortA().setUp(true);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_A)
+				else if (e.getKeyCode() == KeyEvent.VK_A)
 				{
-					logger.info("key: A pressed");
+					logger.debug("key: A pressed");
 					Platform.getControllerPorts().getPortA().setLeft(true);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_D)
+				else if (e.getKeyCode() == KeyEvent.VK_D)
 				{
-					logger.info("key: D pressed");
+					logger.debug("key: D pressed");
 					Platform.getControllerPorts().getPortA().setRight(true);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_X)
+				else if (e.getKeyCode() == KeyEvent.VK_X)
 				{
-					logger.info("key: X pressed");
+					logger.debug("key: X pressed");
 					Platform.getControllerPorts().getPortA().setDown(true);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_J)
+				{
+					logger.debug("key: J pressed");
+					Platform.getControllerPorts().getPortA().setA(true);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_K)
+				{
+					logger.debug("key: K pressed");
+					Platform.getControllerPorts().getPortA().setB(true);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+				{
+					logger.debug("key: esc pressed");
+					Platform.getControllerPorts().getPortA().setSelect(true);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					logger.debug("key: enter pressed");
+					Platform.getControllerPorts().getPortA().setStart(true);					
 				}
 			}
 
@@ -94,28 +120,39 @@ public class LambNesGui extends JFrame implements Runnable
 			}
         });
         
-        Container content = getContentPane();
-        content.setLayout(new GridLayout(2,3));
-        SpritePaletteVisualization spv = new SpritePaletteVisualization();
-        content.add(spv);
-        MasterPaletteVisualization mpv = new MasterPaletteVisualization();
-        content.add(mpv);
-        BackgroundPaletteVisualization bpv = new BackgroundPaletteVisualization();
-        content.add(bpv);
-        SpritePatternTableVisualization sptv = new SpritePatternTableVisualization();
-        content.add(sptv);
-        content.add(LambNesGui.getScreen());
-        BackgroundPatternTableVisualization bptv = new BackgroundPatternTableVisualization();
-        content.add(bptv);
+        setContent(getContentPane());
+        getContent().setLayout(new GridLayout(1,1));
+        //SpritePaletteVisualization spv = new SpritePaletteVisualization();
+        //content.add(spv);
+        //MasterPaletteVisualization mpv = new MasterPaletteVisualization();
+        //content.add(mpv);
+        //BackgroundPaletteVisualization bpv = new BackgroundPaletteVisualization();
+        //content.add(bpv);
+        //SpritePatternTableVisualization sptv = new SpritePatternTableVisualization();
+        //content.add(sptv);
+        getContent().add(LambNesGui.getScreen());
+        //BackgroundPatternTableVisualization bptv = new BackgroundPatternTableVisualization();
+        //content.add(bptv);
         
-        this.pack();
-        this.setVisible(true);        
-        
-        while (Platform.isRun())
+        this.pack();    
+	}
+
+	
+	public void run()
+	{
+        while (isRun())
         {
-        	content.repaint();
-        }
-        
+        	getContent().repaint();
+        	
+        	try
+        	{
+        		Thread.sleep(42);
+        	}
+        	catch (Exception e)
+        	{
+        		logger.error(e);
+        	}
+        }   
 	}  
 
 	public static Screen getScreen()
@@ -126,5 +163,52 @@ public class LambNesGui extends JFrame implements Runnable
 	public static void setScreen(Screen s)
 	{
 		screen = s;
+	}
+
+	public static boolean isRun()
+	{
+		return run;
+	}
+
+	public static void setRun(boolean run)
+	{
+		LambNesGui.run = run;
+	}
+
+	public static boolean isSpritePatternTableVisualization()
+	{
+		return SPRITE_PATTERN_TABLE_VISUALIZATION;
+	}
+
+	public static boolean isBackgroundPatternTableVisualization()
+	{
+		return BACKGROUND_PATTERN_TABLE_VISUALIZATION;
+	}
+
+	public static boolean isSpritePaletteVisualization()
+	{
+		return SPRITE_PALETTE_VISUALIZATION;
+	}
+
+	public static boolean isBackgroundPaletteVisualization()
+	{
+		return BACKGROUND_PALETTE_VISUALIZATION;
+	}
+
+	public static boolean isMasterPaletteVisualization()
+	{
+		return MASTER_PALETTE_VISUALIZATION;
+	}
+
+
+	public static Container getContent()
+	{
+		return content;
+	}
+
+
+	public static void setContent(Container content)
+	{
+		LambNesGui.content = content;
 	}   
 }

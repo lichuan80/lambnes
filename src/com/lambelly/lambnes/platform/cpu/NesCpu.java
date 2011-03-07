@@ -32,22 +32,13 @@ public class NesCpu implements CentralProcessingUnit
 
     public void processNextInstruction()
     {
-        int instruction = Platform.getCpuMemory().getNextPrgRomByte();
-        Instruction i = Instruction.get(instruction);
-        if (i != null)
-        {
-        	logger.debug("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction) + " : " + i.name());
-        }
-        else
-        {
-        	logger.debug("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction) + " : NO MAPPED NAME");
-        }
+        Instruction instruction = Instruction.get(Platform.getCpuMemory().getNextPrgRomByte());
         
         int value = 0;
     	int address = 0;
     	int x = 0;
     	int y = 0;
-        switch (instruction)
+        switch (instruction.getOpCode())
         {
             /**
                 ADC  -  Add to Accumulator with Carry
@@ -1172,9 +1163,14 @@ public class NesCpu implements CentralProcessingUnit
              * default -- only encountered for unemulated instructions.
              */
             default:
-            	logger.error("ENCOUNTERED UNEMULATED INSTRUCTION: " + Integer.toHexString(instruction));
+            	logger.error("ENCOUNTERED UNEMULATED INSTRUCTION: " + Integer.toHexString(instruction.getOpCode()));
             	break;
             
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction.getOpCode()) + " | " + instruction.name() + " | address: " + Integer.toHexString(address) + " | value: " + value + " | y: " + this.getY() + " | x: " + this.getX() + " | a: " + this.getAccumulator() + " | p: " + this.createProcessorStatusWord());
         }
     }
     
@@ -1510,46 +1506,50 @@ public class NesCpu implements CentralProcessingUnit
     
     public void pushStatus()
     {
-    	String statusBits = this.createProcessorStatusWord();
+    	int status = this.createProcessorStatusWord();
     	
     	if(logger.isDebugEnabled())
     	{
-    		logger.debug("bit string = " + statusBits);
+    		logger.debug("status = " + status);
     	}
     	
-    	Platform.getCpuMemory().pushStack(Integer.parseInt(statusBits,2));
+    	Platform.getCpuMemory().pushStack(status);
     }
     
     public void pullStatus()
     {
-        //- | N | O | B | D | I | Z | C 
-    	int word = Platform.getCpuMemory().popStack();
+    	int status = Platform.getCpuMemory().popStack();
     	if(logger.isDebugEnabled())
     	{
-    		logger.debug("status: " + Integer.toBinaryString(word));
+    		logger.debug("status: " + Integer.toBinaryString(status));
     	}
-    	this.getFlags().setNegative(BitUtils.isBitSet(word, 6));
-    	this.getFlags().setOverflow(BitUtils.isBitSet(word, 5));
-    	this.getFlags().setBrkCommand(BitUtils.isBitSet(word, 4));
-    	this.getFlags().setDecimalMode(BitUtils.isBitSet(word, 3));
-    	this.getFlags().setIrqDisable(BitUtils.isBitSet(word, 2));
-    	this.getFlags().setZero(BitUtils.isBitSet(word, 1));
-    	this.getFlags().setCarry(BitUtils.isBitSet(word, 0));
+    	this.getFlags().setNegative(BitUtils.isBitSet(status, 7));
+    	this.getFlags().setOverflow(BitUtils.isBitSet(status, 6));
+    	this.getFlags().setDecimalMode(BitUtils.isBitSet(status, 3));
+    	this.getFlags().setIrqDisable(BitUtils.isBitSet(status, 2));
+    	this.getFlags().setZero(BitUtils.isBitSet(status, 1));
+    	this.getFlags().setCarry(BitUtils.isBitSet(status, 0));
     }
     
-    public String createProcessorStatusWord()
+    public int createProcessorStatusWord()
     {
-        //- | N | O | B | D | I | Z | C 
-    	String statusWord = "0";
-    	statusWord += this.getFlags().isNegative()?1:0;
-    	statusWord += this.getFlags().isOverflow()?1:0;
-    	statusWord += this.getFlags().isBrkCommand()?1:0;
-    	statusWord += this.getFlags().isDecimalMode()?1:0;
-    	statusWord += this.getFlags().isIrqDisable()?1:0;
-    	statusWord += this.getFlags().isZero()?1:0;
-    	statusWord += this.getFlags().isCarry()?1:0;
+    	// http://wiki.nesdev.com/w/index.php/CPU_status_flag_behavior 
+    	int status = ((this.getFlags().isNegative()?1:0) << 7) |
+    		((this.getFlags().isOverflow()?1:0) << 6) |
+    		(1 << 5) |
+    		((this.getFlags().isBrkCommand()?1:0) << 4) |
+    		((this.getFlags().isDecimalMode()?1:0) << 3) | 
+    		((this.getFlags().isIrqDisable()?1:0) << 2) |
+    		((this.getFlags().isZero()?1:0) << 1) | 
+    		(this.getFlags().isCarry()?1:0);
+    	 
+    	if (logger.isDebugEnabled())
+    	{
+	    	logger.debug("is carry: " + this.getFlags().isCarry());
+	    	logger.debug("status: " + status);
+    	}
     	
-    	return statusWord;
+    	return status;
     }
     
     public String toString()

@@ -159,7 +159,8 @@ public enum Instruction
 	TYA(0x98);	
 
 	private static final Map<Integer,Instruction> lookup = new HashMap<Integer,Instruction>();
-
+	private int opCode = 0;
+	
     static 
     {
         for(Instruction i : EnumSet.allOf(Instruction.class))
@@ -170,7 +171,7 @@ public enum Instruction
 	
 	private Instruction(int opCode)
 	{
-		this.opCode = opCode;
+		this.setOpCode(opCode);
 	}    
     
     public static Instruction get(int opCode) { 
@@ -186,5 +187,4 @@ public enum Instruction
 	{
 		this.opCode = opCode;
 	}
-	private int opCode = 0;
 }

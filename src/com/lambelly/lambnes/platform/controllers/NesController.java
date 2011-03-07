@@ -18,4 +18,5 @@ public interface NesController
 	public void setSelect(boolean select);
 	public boolean isStart();
 	public void setStart(boolean start);
+	public int read(int bit);
 }

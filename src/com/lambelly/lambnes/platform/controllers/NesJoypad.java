@@ -25,7 +25,7 @@ public class NesJoypad implements NesController
 		this.setControllerNumber(controllerNumber);
 	}
 	
-	public int read()
+	public int read(int bit)
 	{
 		/*
 		 *  1 = A          9 = Ignored   17 = +--+
@@ -37,14 +37,84 @@ public class NesJoypad implements NesController
          *  7 = LEFT      15 = Ignored   23 = 0
          *  8 = RIGHT     16 = Ignored   24 = 0
 		 */
-		int buttons  =  0;
-		
-		if (this.isA())
+
+		if (logger.isDebugEnabled())
 		{
-			buttons = BitUtils.setBit(0,7);
+			logger.debug("read " + bit);
+			logger.debug("controller number: " + this.getControllerNumber());
 		}
 		
-		return buttons;
+		if (bit == 0)
+		{
+			return this.isA()?1:0;
+		}
+		else if (bit == 1)
+		{
+			return this.isB()?1:0;
+		}
+		else if (bit == 2)
+		{
+			return this.isSelect()?1:0;
+		}
+		else if (bit == 3)
+		{
+			return this.isStart()?1:0;
+		}
+		else if (bit == 4)
+		{
+			return this.isUp()?1:0;
+		}
+		else if (bit == 5)
+		{
+			return this.isDown()?1:0;
+		}
+		else if (bit == 6)
+		{
+			return this.isLeft()?1:0;
+		}
+		else if (bit == 7)
+		{
+			return this.isRight()?1:0;
+		}
+		else if (bit >= 8 && bit <= 15)
+		{
+			return 0;
+		}
+		else if (bit >= 16 && bit <= 17)
+		{
+			return 0;
+		}
+		else if (bit == 18)
+		{
+			if (this.getControllerNumber() == 2)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else if (bit == 19)
+		{
+			if (this.getControllerNumber() == 1)
+			{
+				return 1;
+			}
+			else 
+			{
+				return 0;
+			}
+		}
+		else if (bit >= 20 && bit <= 23)
+		{
+			return 0;
+		}
+		else
+		{
+			throw new IllegalStateException("tried to read bit " + bit + " from controller");
+		}
+		
 	}
 
 	public boolean isA()

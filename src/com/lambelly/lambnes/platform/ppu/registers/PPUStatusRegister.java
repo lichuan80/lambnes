@@ -21,21 +21,27 @@ public class PPUStatusRegister
 	
 	public void cycle()
 	{
-		String bitString = (this.isVblank()?"1":"0") +
-					(this.isSprite0Occurance()?"1":"0") +
- 					(this.isScanlineSpriteCount()?"1":"0") +
-					(this.isVramWriteFlag()?"1":"0") +
-					"1111"; // so far as I know, d3-d0 are not used.
-		this.setRawControlByte(Integer.parseInt(bitString,2));
-		if(logger.isDebugEnabled())
+		this.setRawControlByte(((this.isVblank()?1:0) << 7) |
+			((this.isSprite0Occurance()?1:0) << 6) |
+			((this.isScanlineSpriteCount()?1:0) << 5) |
+			((this.isVramWriteFlag()?1:0) << 4) |
+			0xFF); // so far as I know, d3-d0 are not used.
+		
+		if (logger.isDebugEnabled())
 		{
-			logger.debug("ppu status byte: " + Integer.toBinaryString(this.getRawControlByte()));
+			logger.debug("0x2002: \n" + this.getRawControlByte() +
+					"isVblank(): " + this.isVblank() + "\n" +
+					"isSprite0Occurance(): " + this.isSprite0Occurance() + "\n" +
+					"isScanlineSpriteCount(): " + this.isScanlineSpriteCount() + "\n" +
+					"isVramWriteFlag(): " + this.isVramWriteFlag() + "\n");
 		}
 	}
 	
 	public int getRegisterValue()
 	{
-		return this.getRawControlByte();
+		int rValue = this.getRawControlByte();
+		this.setVblank(false);
+		return rValue;
 	}
 	
 	public void setRegisterValue(int value)

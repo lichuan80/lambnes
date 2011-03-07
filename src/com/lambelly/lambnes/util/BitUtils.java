@@ -51,9 +51,6 @@ public class BitUtils
 	 */
 	public static int unsplitAddress(int highbyte, int lowbyte)
 	{
-		highbyte = highbyte << 8;
-		logger.debug("high byte: " + Integer.toHexString(highbyte));
-		logger.debug("low byte: " + Integer.toHexString(lowbyte));
-		return highbyte + lowbyte;
+		return (highbyte << 8) + lowbyte;
 	}
 }

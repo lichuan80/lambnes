@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.lambelly.lambnes.test;
 
 import com.lambelly.lambnes.test.utils.TestUtils;
@@ -17,7 +12,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.apache.log4j.*;
 
-
 /**
  *
  * @author thomasmccarthy
@@ -30,37 +24,14 @@ public class NesMemoryTest
     {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception
-    {
-    }
-
     @Before
-    public void setUp()
+    public void setUp() throws Exception
     {
     	// make sure platform has been instantiated
     	Platform p = Platform.getInstance();
     	
     	// establish memories
-    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestIntArray(256));
-    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestIntArray(256));
-    	Platform.getCpuMemory().setRam(TestUtils.createTestIntArray(1536));
-    	//Platform.getCpuMemory().setInputOutput1(TestUtils.createTestIntegerArray(8));
-    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestIntegerArray(32));
-    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestIntArray(8160));
-    	Platform.getCpuMemory().setSram(TestUtils.createTestIntArray(8192));
-    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestIntArray(32768));
-    	Platform.getCpuMemory().resetCounters();
-    }
-
-    @After
-    public void tearDown()
-    {
+    	TestUtils.createTestPlatform();
     }
 
     @Test
@@ -85,8 +56,8 @@ public class NesMemoryTest
         
         int test2 = Platform.getCpuMemory().getAbsoluteValue();
         assertEquals(2,test2);
-        Platform.getCpuMemory().getPrgRomLowerBank()[4] = 0xFE;
-        Platform.getCpuMemory().getPrgRomLowerBank()[5] = 0x02;
+        Platform.getCpuMemory().getMemory()[0x8004] = 0xFE;
+        Platform.getCpuMemory().getMemory()[0x8005] = 0x02;
      
         int test3 = Platform.getCpuMemory().getAbsoluteValue();
         assertEquals(254, test3);
@@ -118,7 +89,7 @@ public class NesMemoryTest
     	int test2 = Platform.getCpuMemory().getZeroPageValue();
     	assertEquals(1,test2);
     	
-    	Platform.getCpuMemory().getZeroPage()[2] = 0xF;
+    	Platform.getCpuMemory().getMemory()[0x0002] = 0xF;
     	int test3 = Platform.getCpuMemory().getZeroPageValue();
     	assertEquals(0xF,test3);
     }
@@ -171,8 +142,9 @@ public class NesMemoryTest
     	Platform.getCpuMemory().setProgramCounter(0x800E);
     	Platform.getCpuMemory().setMemoryFromHexAddress(0x800E, 0xFB);
     	int address = Platform.getCpuMemory().getRelativeAddress();
-    	logger.debug((byte)0xFb);
     	assertEquals(32778, address);
+    	// fb == -5
+    	// 800F - 5 = 800A
     	logger.debug("address is now: " + Integer.toHexString(address));
     }
     
