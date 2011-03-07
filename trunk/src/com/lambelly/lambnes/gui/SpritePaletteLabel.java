@@ -16,7 +16,7 @@ public class SpritePaletteLabel extends JLabel
 		this.setSpritePaletteColorNumber(spritePaletteColorNumber);
 		this.setHorizontalTextPosition(JLabel.CENTER);
 		this.setVerticalTextPosition(JLabel.BOTTOM);
-		this.setText(Integer.toString(spritePaletteColorNumber));
+		this.setText(Integer.toString(spritePaletteColorNumber)); 
 		this.setOpaque(true);
 		this.setBorder(LineBorder.createGrayLineBorder());
 	}

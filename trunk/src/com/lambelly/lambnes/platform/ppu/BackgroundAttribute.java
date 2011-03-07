@@ -7,6 +7,11 @@ public class BackgroundAttribute
 	private int colorHighBit = 0;
 	private Logger logger = Logger.getLogger(BackgroundAttribute.class);
 	
+	public BackgroundAttribute()
+	{
+		
+	}
+	
 	public BackgroundAttribute(int colorHighBit)
 	{
 		this.setColorHighBit(colorHighBit);

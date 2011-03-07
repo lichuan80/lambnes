@@ -29,7 +29,7 @@ public class SpriteIcon implements Icon
     			{
     				logger.debug("drawing icon");
     			}
-    			g.drawImage(new SpriteTile(this.getSpriteNumber()).getBufferedImage(),0,0,null);
+    			g.drawImage(NesTileCache.getSpriteTile(this.getSpriteNumber()).getBufferedImage(),0,0,null);
     		}
     	}
     }

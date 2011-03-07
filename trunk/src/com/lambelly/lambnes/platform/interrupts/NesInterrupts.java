@@ -70,9 +70,10 @@ public class NesInterrupts
 			{
 				if(logger.isDebugEnabled())
 				{
-					logger.debug("RESET Interrupt: " + Integer.toHexString(this.getResetInterruptJumpAddress()));
+					logger.debug("RESET Interrupt: " + Integer.toHexString(getResetInterruptJumpAddress()));
 				}
 				// execute the interrupt handling routine
+				//Platform.getCpuMemory().setProgramCounter(0xC000);
 				Platform.getCpuMemory().setProgramCounter(getResetInterruptJumpAddress());
 			}
 		}

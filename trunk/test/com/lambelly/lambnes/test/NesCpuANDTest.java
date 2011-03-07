@@ -189,8 +189,8 @@ public class NesCpuANDTest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test general AND
-		Platform.getCpuMemory().getPrgRomLowerBank()[1] = 0xFE;
-		Platform.getCpuMemory().getPrgRomLowerBank()[2] = 0x02;
+		Platform.getCpuMemory().getMemory()[0x8001] = 0xFE;
+		Platform.getCpuMemory().getMemory()[0x8002] = 0x02;
 		TestUtils.performInstruction(instruction, 0xFF);
 		assertEquals(254,Platform.getCpu().getAccumulator());
 		
@@ -201,8 +201,8 @@ public class NesCpuANDTest
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		
 		// test negative flag
-		Platform.getCpuMemory().getPrgRomLowerBank()[7] = 0xCD;		
-		Platform.getCpuMemory().getPrgRomLowerBank()[8] = 0xCD;
+		Platform.getCpuMemory().getMemory()[0x8007] = 0xCD;		
+		Platform.getCpuMemory().getMemory()[0x8008] = 0xCD;
 		TestUtils.performInstruction(instruction,0x8F); // 07 & 8E
 		logger.debug(Integer.toHexString(Platform.getCpu().getAccumulator()));
 		assertEquals(141,Platform.getCpu().getAccumulator());
@@ -219,8 +219,8 @@ public class NesCpuANDTest
 
 		// test general AND
 		Platform.getCpu().setX(0x0A);
-		Platform.getCpuMemory().getPrgRomLowerBank()[1] = 0xFE;
-		Platform.getCpuMemory().getPrgRomLowerBank()[2] = 0x02;
+		Platform.getCpuMemory().getMemory()[0x8001] = 0xFE;
+		Platform.getCpuMemory().getMemory()[0x8002] = 0x02;
 		TestUtils.performInstruction(instruction, 0xFF);
 		assertEquals(8,Platform.getCpu().getAccumulator());
 		
@@ -231,8 +231,8 @@ public class NesCpuANDTest
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		
 		// test negative flag
-		Platform.getCpuMemory().getPrgRomLowerBank()[7] = 0xCD;		
-		Platform.getCpuMemory().getPrgRomLowerBank()[8] = 0xCD;
+		Platform.getCpuMemory().getMemory()[0x8007] = 0xCD;		
+		Platform.getCpuMemory().getMemory()[0x8008] = 0xCD;
 		Platform.getCpu().setX(0xC);
 		TestUtils.performInstruction(instruction,0x8F);
 		logger.debug(Integer.toHexString(Platform.getCpu().getAccumulator()));
@@ -250,8 +250,8 @@ public class NesCpuANDTest
 
 		// test general AND
 		Platform.getCpu().setY(0x0A);
-		Platform.getCpuMemory().getPrgRomLowerBank()[1] = 0xFE;
-		Platform.getCpuMemory().getPrgRomLowerBank()[2] = 0x02;
+		Platform.getCpuMemory().getMemory()[0x8001] = 0xFE;
+		Platform.getCpuMemory().getMemory()[0x8002] = 0x02;
 		TestUtils.performInstruction(instruction, 0xFF);
 		assertEquals(8,Platform.getCpu().getAccumulator());
 		
@@ -262,8 +262,8 @@ public class NesCpuANDTest
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		
 		// test negative flag
-		Platform.getCpuMemory().getPrgRomLowerBank()[7] = 0xCD;		
-		Platform.getCpuMemory().getPrgRomLowerBank()[8] = 0xCD;
+		Platform.getCpuMemory().getMemory()[0x8007] = 0xCD;		
+		Platform.getCpuMemory().getMemory()[0x8008] = 0xCD;
 		Platform.getCpu().setY(0xC);
 		TestUtils.performInstruction(instruction,0x8F);
 		logger.debug(Integer.toHexString(Platform.getCpu().getAccumulator()));

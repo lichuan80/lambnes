@@ -5,7 +5,6 @@
 
 package com.lambelly.lambnes.platform.cpu;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
@@ -32,32 +31,36 @@ public class NesCpuMemory
 {
 	/*
 	 * cpu memory map 
-	 * $0000–$00FF 256 bytes Zero Page — Special Zero Page addressing modes give faster memory read/write access $0100–$01FF 256
-	 * bytes Stack memory $0200–$07FF 1536 bytes RAM $0800–$0FFF 2048 bytes
-	 * Mirror of $0000–$07FF $0800–$08FF Zero Page $0900–$09FF Stack
-	 * $0A00–$0FFF RAM $1000–$17FF 2048 bytes Mirror of $0000–$07FF
-	 * $1000–$10FF Zero Page $1100–$11FF Stack $1200–$17FF RAM
-	 * $1800–$1FFF 2048 bytes Mirror of $0000–$07FF $1800–$18FF Zero Page
-	 * $1900–$19FF Stack $1A00–$1FFF RAM $2000–$2007 8 bytes Input/Output
-	 * registers 
-	 * $2008–$3FFF 8184 bytes Mirror of $2000–$2007 (multiple
-	 * times) $4000–$401F 32 bytes Input/Output registers $4020–$5FFF 8160
-	 * bytes Expansion ROM — Used with Nintendo's MMC5 to expand the
-	 * capabilities of VRAM. $6000–$7FFF 8192 bytes SRAM — Save Ram used to
-	 * save data between game plays. $8000 –$BFFF 16384 bytes PRG-ROM lower
-	 * bank — executable code $C000–$FFFF 16384 bytes PRG-ROM upper bank —
-	 * executable code $FFFA–$FFFB 2 bytes Address of Non Maskable Interrupt
-	 * (NMI) handler routine $FFFC–$FFFD 2 bytes Address of Power on reset
-	 * handler routine $FFFE–$FFFF 2 bytes Address of Break (BRK instruction)
-	 * handler routine
+	 * $0000 - $00FF 256 bytes Zero Page - Special Zero Page addressing modes give faster memory read/write access 
+	 * $0100 - $01FF 256 bytes Stack memory 
+	 * $0200 - $07FF 1536 bytes RAM 
+	 * $0800 - $0FFF 2048 bytes Mirror of $0000 - $07FF 
+	 * 	$0800 - $08FF Zero Page 
+	 * 	$0900 - $09FF Stack
+	 * 	$0A00 - $0FFF RAM $1000–$17FF 2048 bytes Mirror of $0000–$07FF
+	 * $1000 - $10FF Zero Page 
+	 * $1100 - $11FF Stack 
+	 * $1200 - $17FF RAM
+	 * $1800 - $1FFF 2048 bytes Mirror of $0000 - $07FF 
+	 * 	$1800 - $18FF Zero Page
+	 * 	$1900 - $19FF Stack 
+	 * 	$1A00 - $1FFF RAM 
+	 * $2000 - $2007 8 bytes Input/Output registers 
+	 * $2008 - $3FFF 8184 bytes Mirror of $2000 - $2007 (multiple times) 
+	 * $4000 - $401F 32 bytes Input/Output registers 
+	 * $4020 - $5FFF 8160 bytes Expansion ROM - Used with Nintendo's MMC5 to expand the capabilities of VRAM. 
+	 * $6000 - $7FFF 8192 bytes SRAM - Save Ram used to save data between game plays. 
+	 * $8000  - $BFFF 16384 bytes PRG-ROM lower bank - executable code 
+	 * $C000 - $FFFF 16384 bytes PRG-ROM upper bank - executable code 
+	 * $FFFA - $FFFB 2 bytes Address of Non Maskable Interrupt (NMI) handler routine 
+	 * $FFFC - $FFFD 2 bytes Address of Power on reset handler routine 
+	 * $FFFE - $FFFF 2 bytes Address of Break (BRK instruction)handler routine
 	 */
 
 	private int stackPointer = 0;
 	private int programCounter = 0x8000; // starts at start of lower bank
 
-	private int[] zeroPage = new int[256]; // $0000-$00FF
-	private int[] stackMemory = new int[256]; // $0100-$01FF
-	private int[] ram = new int[1536]; // $0200-$07FF
+	private int[] memory = new int[65536];
 	private PPUControlRegister1 ppuControlRegister1 = PPUControlRegister1.getRegister(); // 2000
 	private PPUControlRegister2 ppuControlRegister2 = PPUControlRegister2.getRegister(); // 2001
 	private PPUStatusRegister ppuStatusRegister = PPUStatusRegister.getRegister(); //2002
@@ -69,18 +72,13 @@ public class NesCpuMemory
 	private PPUSpriteDMARegister ppuDMARegister = PPUSpriteDMARegister.getRegister(); // $4014
 	private ControlRegister1 joypadControlRegister1 = ControlRegister1.getRegister(); // $4016
 	private ControlRegister2 joypadControlRegister2 = ControlRegister2.getRegister(); // $4017
-	private Integer[] inputOutput2 = new Integer[32]; // $4000-$401F
-	private int[] expansionRam = new int[8160]; // $4020-$5FFF
-	private int[] sram = new int[8192]; // $6000-$7FFF
-	private int[] prgRomLowerBank = new int[16384]; // $8000-$BFFF
-	private int[] prgRomUpperBank = new int[16384]; // $C000-$FFFF
 
     public static final int STACK_BASE = 0x0100;
     public static final int STACK_MAX = 0x01FF;
-    public static final int PRG_ROM_BASE = 0x8000;
+    public static final int PRG_ROM_BASE = 0x8000; // lower bank
     public static final int NMI_VECTOR = 0xFFFA;
     public static final int RESET_VECTOR = 0xFFFC;
-    public static final int IRQBRK_Vector = 0xFFFE;
+    public static final int IRQBRK_VECTOR = 0xFFFE;
 	
 	private Logger logger = Logger.getLogger(NesCpuMemory.class);
 
@@ -96,46 +94,26 @@ public class NesCpuMemory
 
 	public int getPrgRomByte(int address)
 	{
-		if (address > 16384)
-		{
-			// upper
-			return this.getPrgRomUpperBank()[address];
-		}
-		else
-		{
-			// lower
-			return this.getPrgRomLowerBank()[address];
-		}
+		return this.getMemory()[address];
 	}
 
 	public int getNextPrgRomByte()
 	{
-		int b = this.getNextPrgRom();
-
-		return b;
+		return this.getNextPrgRom();
 	}
 
 	public int getNextPrgRomShort()
 	{
 		int lowerBit = this.getNextPrgRom();
-		int higherBit = this.getNextPrgRom();
-		return BitUtils.unsplitAddress(higherBit, lowerBit);
+		return BitUtils.unsplitAddress(this.getNextPrgRom(), lowerBit);
 	}
 
 	private int getNextPrgRom()
 	{
 		int b = 0;
 
-		if (this.getProgramCounter() > 16384)
-		{
-			// upper bank
-			b = this.getMemoryFromHexAddress(this.getProgramCounter());
-		}
-		else
-		{
-			// lower bank
-			b = this.getMemoryFromHexAddress(this.getProgramCounter());
-		}
+		// upper bank
+		b = this.getMemoryFromHexAddress(this.getProgramCounter());
 
 		// increment counter
 		this.incrementProgramCounter();
@@ -284,7 +262,7 @@ public class NesCpuMemory
 			logger.debug("X: " + Platform.getCpu().getX());
 		}
 		address += Platform.getCpu().getX();
-		return address;
+		return address & Platform.SIXTEEN_BIT_MASK;
 	}
 	
 	public int getAbsoluteIndexedYAddress()
@@ -297,7 +275,7 @@ public class NesCpuMemory
 		}
 		address += Platform.getCpu().getY();
 
-		return address;
+		return address & Platform.SIXTEEN_BIT_MASK;
 	}
 	
 	public int getZeroPageAddress()
@@ -362,9 +340,8 @@ public class NesCpuMemory
 		lowByteAddress = lowByteAddress & Platform.EIGHT_BIT_MASK;
 		
 		int highByteAddress =  lowByteAddress + 1;
-		
-		
-		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
+
+		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress)) & Platform.SIXTEEN_BIT_MASK;
 	}
 	
 	public int getIndirectIndexedYAddress()
@@ -373,20 +350,17 @@ public class NesCpuMemory
 		int highByteAddress =  lowByteAddress + 1;
 		int finalAddress = BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
 		finalAddress += Platform.getCpu().getY();
-		return finalAddress;
+		return finalAddress & Platform.SIXTEEN_BIT_MASK;
 	}
 	
 	public int getRelativeAddress()
-	{
-		// treat offset as 8-bit signed
-		byte offset = (byte)this.getNextPrgRomByte();
-		
-		if(logger.isDebugEnabled())
+	{	
+		int offset = this.getNextPrgRomByte();
+		if (offset > 0x7F)
 		{
-			logger.debug("prog counter: 0x" + Integer.toHexString(this.getProgramCounter()));
-			logger.debug("offset: " + offset);
+			offset = offset - 0x100;
 		}
-		return this.getProgramCounter() + offset;
+		return (offset + this.getProgramCounter());
 	}
 	
 	public int getMemoryFromHexAddress(int address) throws IllegalStateException
@@ -395,80 +369,25 @@ public class NesCpuMemory
 		{
 			logger.debug("getting memory from address: 0x" + Integer.toHexString(address));
 		}
+
 		int value = 0;
-		if (address >= 0x0000 && address <= 0x00FF)
+		
+		value = this.getMemory()[address];
+		
+		// determine if register holds memory
+		if (address >= 0x2000 && address <= 0x3FFF)
 		{
-			// Zero Page
-			value = this.getZeroPage()[address];
-		}
-		else if (address >= 0x0100 && address <= 0x01FF)
-		{
-			// Stack memory
-			int arrayIndex = address - 0x0100;
-			value = this.getStackMemory()[arrayIndex];
-		}
-		else if (address >= 0x0200 && address <= 0x07FF)
-		{
-			// RAM
-			int arrayIndex = address - 0x0200;
-			value = this.getRam()[arrayIndex];
-		}
-		else if (address >= 0x0800 && address <= 0x08FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x0800;
-			value = this.getZeroPage()[arrayIndex];
-		}
-		else if (address >= 0x0900 && address <= 0x09FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x0900;
-			value = this.getStackMemory()[arrayIndex];
-		}
-		else if (address >= 0x0A00 && address <= 0x0FFF)
-		{
-			// RAM
-			int arrayIndex = address - 0x0A00;
-			value = this.getRam()[arrayIndex];
-		}
-		else if (address >= 0x1000 && address <= 0x10FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x1000;
-			value = this.getZeroPage()[arrayIndex];
-		}
-		else if (address >= 0x1100 && address <= 0x11FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x1100;
-			value = this.getStackMemory()[arrayIndex];
-		}
-		else if (address >= 0x1200 && address <= 0x17FF)
-		{
-			// RAM
-			int arrayIndex = address - 0x1200;
-			value = this.getRam()[arrayIndex];
-		}
-		else if (address >= 0x1800 && address <= 0x18FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x1800;
-			value = this.getZeroPage()[arrayIndex];
-		}
-		else if (address >= 0x1900 && address <= 0x19FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x1900;
-			value = this.getStackMemory()[arrayIndex];
-		}
-		else if (address >= 0x1A00 && address <= 0x1FFF)
-		{
-			// RAM
-			int arrayIndex = address - 0x1A00;
-			value = this.getRam()[arrayIndex];
-		}
-		else if (address >= 0x2000 && address <= 0x2007)
-		{
+			// determine if mirrored
+			if (address > 0x2007)
+			{
+				// I only really care about the LSB
+				address = address & 0xFF; // throw out MSB
+				
+				// of the LSB I only really care which register it's referring to
+				address = address % 8;
+				address += 0x2000; 
+			}
+			
 			// Input/Output registers
 			if (address == PPUControlRegister1.REGISTER_ADDRESS)
 			{
@@ -501,54 +420,22 @@ public class NesCpuMemory
 			
 			logger.debug("getting memory from control register 0x" + Integer.toHexString(address) + ": " + Integer.toHexString(value));
 		}
-		else if (address >= 0x2008 && address <= 0x3FFF)
-		{
-			// (mirror of $2000 - $2007 multiple times)
-			int index = address % 8;
-			this.getMemoryFromHexAddress(0x2000 + index);
-		}
 		else if (address >= 0x4000 && address <= 0x401F)
 		{
 			// Input/Output registers
-			int arrayIndex = address - 0x4000;
-			Integer i = this.getInputOutput2()[arrayIndex];
-			
-			if (i == null)
+			if (address == PPUSpriteDMARegister.REGISTER_ADDRESS)
 			{
-				value = 0;
+				throw new IllegalStateException("reading from write only register");
 			}
-			else
+			else if (address == ControlRegister1.REGISTER_ADDRESS)
 			{
-				value = i;
+				value = this.getJoypadControlRegister1().getRegisterValue();
 			}
-		}
-		else if (address >= 0x4020 && address <= 0x5FFF)
-		{
-			// Expansion ROM
-			int arrayIndex = address - 0x4020;
-			value = this.getExpansionRam()[arrayIndex];
-		}
-		else if (address >= 0x6000 && address <= 0x7FFF)
-		{
-			// SRAM
-			int arrayIndex = address - 0x6000;
-			value = this.getSram()[arrayIndex];
-		}
-		else if (address >= 0x8000 && address <= 0xBFFF)
-		{
-			// PRG-ROM lower bank
-			int arrayIndex = address - 0x8000;
-			value = this.getPrgRomLowerBank()[arrayIndex];
-		}
-		else if (address >= 0xC000 && address <= 0xFFFF)
-		{
-			// PRG-ROM upper bank
-			int arrayIndex = address - 0xC000;
-			value = this.getPrgRomUpperBank()[arrayIndex];
-		}
-		else
-		{
-			throw new IllegalStateException("tried to access memory address 0x" + Integer.toHexString(address) + " which is not mapped to any data structure");
+			else if (address == ControlRegister2.REGISTER_ADDRESS)
+			{
+				value = this.getJoypadControlRegister2().getRegisterValue();
+			}
+
 		}
 		
 		return value;
@@ -560,80 +447,24 @@ public class NesCpuMemory
 		{
 			logger.debug("setting memory to address: 0x" + Integer.toHexString(address) + ": 0x" + Integer.toHexString(value));
 		}
-		if (address >= 0x0000 && address <= 0x00FF)
+		
+		// set memory
+		this.getMemory()[address] = value;
+		
+		// check registers for set
+		if (address >= 0x2000 && address <= 0x3FFF)
 		{
-			// Zero Page
-		    this.getZeroPage()[address] = value;
-		}
-		else if (address >= 0x0100 && address <= 0x01FF)
-		{
-			// Stack memory
-			int arrayIndex = address - 0x0100;
-			this.getStackMemory()[arrayIndex] = value;
-		}
-		else if (address >= 0x0200 && address <= 0x07FF)
-		{
-			// RAM
-			int arrayIndex = address - 0x0200;
-			this.getRam()[arrayIndex] = value;
-		}
-		else if (address >= 0x0800 && address <= 0x08FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x0800;
-			this.getZeroPage()[arrayIndex] = value;
-		}
-		else if (address >= 0x0900 && address <= 0x09FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x0900;
-			this.getStackMemory()[arrayIndex] = value;
-		}
-		else if (address >= 0x0A00 && address <= 0x0FFF)
-		{
-			// RAM
-			int arrayIndex = address - 0x0A00;
-			this.getRam()[arrayIndex] = value;
-		}
-		else if (address >= 0x1000 && address <= 0x10FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x1000;
-			this.getZeroPage()[arrayIndex] = value;
-		}
-		else if (address >= 0x1100 && address <= 0x11FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x1100;
-			this.getStackMemory()[arrayIndex] = value;
-		}
-		else if (address >= 0x1200 && address <= 0x17FF)
-		{
-			// RAM
-			int arrayIndex = address - 0x1200;
-			this.getRam()[arrayIndex] = value;
-		}
-		else if (address >= 0x1800 && address <= 0x18FF)
-		{
-			// Zero Page
-			int arrayIndex = address - 0x1800;
-			this.getZeroPage()[arrayIndex] = value;
-		}
-		else if (address >= 0x1900 && address <= 0x19FF)
-		{
-			// Stack
-			int arrayIndex = address - 0x1900;
-			this.getStackMemory()[arrayIndex] = value;
-		}
-		else if (address >= 0x1A00 && address <= 0x1FFF)
-		{
-			// RAM
-			int arrayIndex = address - 0x1A00;
-			this.getRam()[arrayIndex] = value;
-		}
-		else if (address >= 0x2000 && address <= 0x2007)
-		{
-			// Input/Output registers
+			// determine if mirrored
+			if (address > 0x2007)
+			{
+				// I only really care about the LSB
+				address = address & 0xFF; // throw out MSB
+				
+				// of the LSB I only really care which register it's referring to
+				address = address % 8;
+				address += 0x2000; 
+			}
+			
 			// Input/Output registers
 			if (address == PPUControlRegister1.REGISTER_ADDRESS)
 			{
@@ -670,12 +501,6 @@ public class NesCpuMemory
 			
 			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));			
 		}
-		else if (address >= 0x2008 && address <= 0x3FFF)
-		{
-			// (mirror of $2000 - $2007 multiple times)
-			int index = address % 8;
-			this.setMemoryFromHexAddress(0x2000 + index,value);
-		}
 		else if (address >= 0x4000 && address <= 0x401F)
 		{
 			// Input/Output registers
@@ -691,37 +516,7 @@ public class NesCpuMemory
 			{
 				this.getJoypadControlRegister2().setRegisterValue(value);
 			}
-			int arrayIndex = address - 0x4000;
-			this.getInputOutput2()[arrayIndex] = value;
 			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));
-		}
-		else if (address >= 0x4020 && address <= 0x5FFF)
-		{
-			// Expansion ROM
-			int arrayIndex = address - 0x4020;
-			this.getExpansionRam()[arrayIndex] = value;
-		}
-		else if (address >= 0x6000 && address <= 0x7FFF)
-		{
-			// SRAM
-			int arrayIndex = address - 0x6000;
-			this.getSram()[arrayIndex] = value;
-		}
-		else if (address >= this.PRG_ROM_BASE && address <= 0xBFFF)
-		{
-			// PRG-ROM lower bank
-			int arrayIndex = address - this.PRG_ROM_BASE;
-			this.getPrgRomLowerBank()[arrayIndex] = value;
-		}
-		else if (address >= 0xC000 && address <= 0xFFFF)
-		{
-			// PRG-ROM upper bank
-			int arrayIndex = address - 0xC000;
-			this.getPrgRomUpperBank()[arrayIndex] = value;
-		}
-		else
-		{
-			throw new IllegalStateException("tried to access memory address 0x" + Integer.toHexString(address) + " which is not mapped to any data structure");
 		}
 	}	
 	
@@ -729,28 +524,25 @@ public class NesCpuMemory
 	{
 		if (programInstructions.length > 16384)
 		{
-			if(logger.isDebugEnabled())
+			//if(logger.isDebugEnabled())
 			{
-				logger.debug("program instructions length: " + programInstructions.length);
+				logger.info("program instructions length: " + programInstructions.length);
 			}
-			
-			// split in half
-			int[] lower = ArrayUtils.subarray(programInstructions, 0, 16384);
-			int[] upper = ArrayUtils
-					.subarray(programInstructions, 16384, 32769);
 
-			 this.setPrgRomLowerBank(lower);
-			 this.setPrgRomUpperBank(upper);
+			System.arraycopy(programInstructions, 0, this.getMemory(), NesCpuMemory.PRG_ROM_BASE, programInstructions.length);
 		}
-		else if (programInstructions.length == 16384)
+		else if (programInstructions.length <= 16384)
 		{
 			if(logger.isDebugEnabled())
 			{
 				logger.debug("mirroring prg rom");
 			}
 			// instructions are mirrored to fill the progrom
-			this.setPrgRomLowerBank(programInstructions);
-			this.setPrgRomUpperBank(programInstructions);
+			for (int i = 0; i< (32768 / programInstructions.length); i++)
+			{
+				logger.debug("at " + i);
+				System.arraycopy(programInstructions, 0, this.getMemory(), NesCpuMemory.PRG_ROM_BASE + (programInstructions.length * i), programInstructions.length);
+			}
 		}
 	}
 
@@ -815,32 +607,6 @@ public class NesCpuMemory
 		
 		return value;
 	}
-	
-	/**
-	 * @return the prgRomLowerBank
-	 */
-	public int[] getPrgRomLowerBank()
-	{
-		return prgRomLowerBank;
-	}
-
-	/**
-	 * @return the prgRomUpperBank
-	 */
-	public int[] getPrgRomUpperBank()
-	{
-		return prgRomUpperBank;
-	}
-
-	public void setPrgRomLowerBank(int[] prgRomLowerBank)
-	{
-		this.prgRomLowerBank = prgRomLowerBank;
-	}
-
-	public void setPrgRomUpperBank(int[] prgRomUpperBank)
-	{
-		this.prgRomUpperBank = prgRomUpperBank;
-	}
 
 	/**
 	 * @return the stackPointer
@@ -882,108 +648,6 @@ public class NesCpuMemory
 	public void incrementProgramCounter()
 	{
 		this.setProgramCounter(++programCounter);
-	}
-
-	/**
-	 * @return the zeroPage
-	 */
-	public int[] getZeroPage()
-	{
-		return zeroPage;
-	}
-
-	/**
-	 * @param zeroPage
-	 *            the zeroPage to set
-	 */
-	public void setZeroPage(int[] zeroPage)
-	{
-		this.zeroPage = zeroPage;
-	}
-
-	/**
-	 * @return the stackMemory
-	 */
-	public int[] getStackMemory()
-	{
-		return stackMemory;
-	}
-
-	/**
-	 * @param stackMemory
-	 *            the stackMemory to set
-	 */
-	public void setStackMemory(int[] stackMemory)
-	{
-		this.stackMemory = stackMemory;
-	}
-
-	/**
-	 * @return the ram
-	 */
-	public int[] getRam()
-	{
-		return ram;
-	}
-
-	/**
-	 * @param ram
-	 *   w         the ram to set
-	 */
-	public void setRam(int[] ram)
-	{
-		this.ram = ram;
-	}
-
-	/**
-	 * @return the intputOutput2
-	 */
-	public Integer[] getInputOutput2()
-	{
-		return inputOutput2;
-	}
-
-	/**
-	 * @param intputOutput2
-	 *            the intputOutput2 to set
-	 */
-	public void setInputOutput2(Integer[] inputOutput2)
-	{
-		this.inputOutput2 = inputOutput2;
-	}
-
-	/**
-	 * @return the expansionRam
-	 */
-	public int[] getExpansionRam()
-	{
-		return expansionRam;
-	}
-
-	/**
-	 * @param expansionRam
-	 *            the expansionRam to set
-	 */
-	public void setExpansionRam(int[] expansionRam)
-	{
-		this.expansionRam = expansionRam;
-	}
-
-	/**
-	 * @return the sram
-	 */
-	public int[] getSram()
-	{
-		return sram;
-	}
-
-	/**
-	 * @param sram
-	 *            the sram to set
-	 */
-	public void setSram(int[] sram)
-	{
-		this.sram = sram;
 	}
 
 	public PPUVramIORegister getPpuVramIORegister()
@@ -1097,5 +761,15 @@ public class NesCpuMemory
 	public void setJoypadControlRegister2(ControlRegister2 joypadControlRegister2)
 	{
 		this.joypadControlRegister2 = joypadControlRegister2;
+	}
+
+	public int[] getMemory()
+	{
+		return memory;
+	}
+
+	public void setMemory(int[] memory)
+	{
+		this.memory = memory;
 	}
 }

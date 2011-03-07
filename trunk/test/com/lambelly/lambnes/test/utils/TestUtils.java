@@ -66,12 +66,7 @@ public class TestUtils
     	Platform p = Platform.getInstance();
     	
     	// establish memories
-    	Platform.getCpuMemory().setZeroPage(TestUtils.createTestIntArray(256));
-    	Platform.getCpuMemory().setStackMemory(TestUtils.createTestIntArray(256));
-    	Platform.getCpuMemory().setRam(TestUtils.createTestIntArray(1536));
-    	Platform.getCpuMemory().setInputOutput2(TestUtils.createTestIntegerArray(32));
-    	Platform.getCpuMemory().setExpansionRam(TestUtils.createTestIntArray(8160));
-    	Platform.getCpuMemory().setSram(TestUtils.createTestIntArray(8192));
+    	Platform.getCpuMemory().setMemory(TestUtils.createTestIntArray(65536));
     	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestIntArray(32768));
     	
         RomLoader rl = new RomLoader("./roms/NEStress.zip");

@@ -281,5 +281,76 @@ public class NesCpuADCTest
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
-	}			
+	}	
+	
+	/* Test Cases: 
+	 * 00 + 00 and C=0 gives 00 and N=0 V=0 Z=1 C=0 (simulate) 
+	 * 79 + 00 and C=1 gives 80 and N=1 V=1 Z=0 C=0 (simulate) 
+	 * 24 + 56 and C=0 gives 80 and N=1 V=1 Z=0 C=0 (simulate) 
+	 * 93 + 82 and C=0 gives 75 and N=0 V=1 Z=0 C=1 (simulate) 
+	 * 89 + 76 and C=0 gives 55 and N=0 V=0 Z=0 C=1 (simulate) 
+	 * 89 + 76 and C=1 gives 56 and N=0 V=0 Z=1 C=1 (simulate) 
+	 * 80 + f0 and C=0 gives d0 and N=0 V=1 Z=0 C=1 (simulate) 
+	 * 80 + fa and C=0 gives e0 and N=1 V=0 Z=0 C=1 (simulate) 
+	 * 2f + 4f and C=0 gives 74 and N=0 V=0 Z=0 C=0 (simulate) 
+	 * 6f + 00 and C=1 gives 76 and N=0 V=0 Z=0 C=0 (simulate) 
+	 * 
+	 * */
+	
+	
+	@Test
+	public void test1()
+	{
+		int instruction = 0x69;
+		
+		// test case 1
+		Platform.getCpu().getFlags().resetFlags();
+		Platform.getCpuMemory().setMemoryFromHexAddress(0x8001, 0);
+		TestUtils.performInstruction(instruction, 0x0);
+		logger.debug("accumulator: " + Integer.toHexString(Platform.getCpu().getAccumulator()));		
+		assertEquals(0,Platform.getCpu().getAccumulator());
+
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
+	}
+	
+	@Test
+	public void test2()
+	{
+		int instruction = 0x69;
+		
+		// test case 1
+		Platform.getCpu().getFlags().resetFlags();
+		Platform.getCpu().getFlags().setCarry(true);
+		Platform.getCpuMemory().setMemoryFromHexAddress(0x8001, 0x7F);
+		TestUtils.performInstruction(instruction, 0x0);
+		logger.debug("accumulator: " + Integer.toHexString(Platform.getCpu().getAccumulator()));		
+		assertEquals(0x80,Platform.getCpu().getAccumulator());
+
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
+	}	
+	
+	@Test
+	public void test3()
+	{
+		int instruction = 0x69;
+		
+		// test case 1
+		Platform.getCpu().getFlags().resetFlags();
+		Platform.getCpu().getFlags().setCarry(true);
+		Platform.getCpuMemory().setMemoryFromHexAddress(0x8001, 0xFF);
+		TestUtils.performInstruction(instruction, 0xFF);
+		logger.debug("accumulator: " + Integer.toHexString(Platform.getCpu().getAccumulator()));		
+		assertEquals(0xFF,Platform.getCpu().getAccumulator());
+
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
+	}	
 }

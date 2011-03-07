@@ -72,9 +72,9 @@ public class PaletteTest
 	@Test
 	public void testSubArray2()
 	{
-		Platform.getCpuMemory().getRam()[0x550] = 24;
-		logger.debug(Integer.toHexString(Platform.getCpuMemory().getRam().length));
-		int[] b = org.apache.commons.lang.ArrayUtils.subarray(Platform.getCpuMemory().getRam(), 0x540, 0x540 + 0x20);
+		Platform.getCpuMemory().getMemory()[0x550] = 24;
+		logger.debug(Integer.toHexString(Platform.getCpuMemory().getMemory().length));
+		int[] b = org.apache.commons.lang.ArrayUtils.subarray(Platform.getCpuMemory().getMemory(), 0x540, 0x540 + 0x20);
 		ArrayUtils.head(b, 0x20);
 	}
 }

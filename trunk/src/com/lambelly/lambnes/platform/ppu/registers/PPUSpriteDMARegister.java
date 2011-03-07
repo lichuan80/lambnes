@@ -20,28 +20,19 @@ public class PPUSpriteDMARegister
 	{
 		if (this.getRawControlByte() != null)
 		{
+			int start = (this.getRawControlByte() * 0x100);
+			
 			if(logger.isDebugEnabled())
 			{
 				logger.debug("reading from memory: " + Integer.toHexString(this.getRawControlByte()));
-			}
-			
-			int start = (this.getRawControlByte() * 0x100);
-			if(logger.isDebugEnabled())
-			{
 				logger.debug("start: " + start);
-			}
-			
-			int[] a = ArrayUtils.subarray(Platform.getCpuMemory().getRam(),start - 0x200,(start  - 0x200) + 256);
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("pulling dma from: " + Integer.toHexString((start - 0x200)));
-				logger.debug("pulling dma to: " + Integer.toHexString(((start- 0x200) + 0xFF)));
-				logger.debug("a size: " + a.length);
+				logger.debug("pulling dma from: " + Integer.toHexString(start));
+				logger.debug("pulling dma to: " + Integer.toHexString(start + 0xFF));
 				logger.debug("memory at start: " + Platform.getCpuMemory().getMemoryFromHexAddress(start));
-				logger.debug("a[0]: " + a[0]);
 			}
-			Platform.getPpuMemory().setSprRam(a);
 
+			System.arraycopy(Platform.getCpuMemory().getMemory(), start, Platform.getPpuMemory().getSprRam(), 0, 256);
+			
 			if(logger.isDebugEnabled())
 			{
 				logger.debug("SPR: " + Platform.getPpuMemory().getSprRam()[0]);

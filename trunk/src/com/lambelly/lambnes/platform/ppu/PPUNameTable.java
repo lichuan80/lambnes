@@ -48,7 +48,7 @@ public class PPUNameTable
 			
 			colorMSB = this.getColorMSB(nameTableRow, nameTableCol);
 			logger.debug("upperBits: " + colorMSB);
-			return new BackgroundTile(this.getMemoryFromHexAddress(address),colorMSB);
+			return (NesTileCache.getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB));
 		}
 		else
 		{
