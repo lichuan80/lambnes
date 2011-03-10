@@ -67,27 +67,11 @@ public class NesPpuMemory
 	
 	public void setPatternTiles(int[] chrRom)
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("setting pattern tiles");
-		}
 		if (chrRom.length > 4096)
 		{
 			// split in half
 			int[] table0 = ArrayUtils.subarray(chrRom, 0, 4096);
 			int[] table1 = ArrayUtils.subarray(chrRom, 4096, 8193);
-
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("table 0 length: " + table0.length);
-				logger.debug("table 1 length: " + table1.length);
-			}
-			
-			for (int i = 0; i< 16; i++)
-			{
-				logger.debug("pattern table 0 data: " + table0[i]);
-				logger.debug("pattern table 1 data: " + table1[i]);
-			}
 			
 			this.setPatternTable0(table0);
 			this.setPatternTable1(table1);
@@ -374,8 +358,6 @@ public class NesPpuMemory
 			int palette = (lowbyte & 0xF0) / 0xF;
 			int index = lowbyte & 0x0F;
 			
-			logger.debug("setting value " + value + " to address: 0x" + Integer.toHexString(address) + " with palette " + palette + " and index " + index);
-			
 			if (palette % 2 == 0)
 			{
 				// even, so image palette
@@ -428,7 +410,6 @@ public class NesPpuMemory
 	
 	public int getSprRamFromHexAddress(int address)
 	{
-		logger.debug("accessing SPR-RAM address: " + address);
 		return this.sprRam[address];
 	}	
 

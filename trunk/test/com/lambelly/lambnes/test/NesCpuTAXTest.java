@@ -72,9 +72,11 @@ public class NesCpuTAXTest
 	{
 		int instruction = 0x9A;
 		Platform.getCpu().setX(0xAE);
+		Platform.getCpu().getFlags().setOverflow(true);
 		TestUtils.performInstruction(instruction);
 		
 		assertEquals(0xAE, Platform.getCpuMemory().getStackPointer());
+		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
 		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
 	}		

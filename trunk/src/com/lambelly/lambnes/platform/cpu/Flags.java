@@ -6,4 +6,5 @@ public interface Flags
 	public boolean isIrqDisable();
 	public void setIrqDisable(boolean irqDisable);
 	public void setCarry(boolean carry);
+	public void setOverflow(boolean overflow);
 }

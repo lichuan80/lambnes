@@ -47,30 +47,12 @@ public class NesPpu implements PictureProcessingUnit
 	public void cycle(int cycleCount)
 	{	
 		Platform.getPpu().doRegisterReadsWrites();
-		if (logger.isDebugEnabled())
-		{
-			for (int i = 0; i < Platform.getPpuMemory().getImagePalette().length; i++)
-			{
-				logger.debug("image palette " + i + ": " + Platform.getPpuMemory().getImagePalette()[i]);
-				logger.debug("sprite palette " + i + ": " + Platform.getPpuMemory().getSpritePalette()[i]);
-			}
-		}
-		
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("cycles per scanline: " + NUM_CYCLES_PER_SCANLINE);
-			logger.debug("scanlineTest: " + cycleCount % NesPpu.NUM_CYCLES_PER_SCANLINE);
-		}
 		
     	if (cycleCount % NesPpu.NUM_CYCLES_PER_SCANLINE == 0)
     	{	
     		if (getScanlineCount() >= NesPpu.VBLANK_SCANLINE_START && getScanlineCount() <= NesPpu.VBLANK_SCANLINE_END)
     		{
     			// vblank
-    			if (logger.isDebugEnabled())
-    			{
-    				logger.debug("vblank");
-    			}
     			Platform.getPpu().getPpuStatusRegister().setVblank(true);
     			
     			// request interrupt (assumed it happens once per vBlank.
@@ -87,10 +69,6 @@ public class NesPpu implements PictureProcessingUnit
     		}
     		else
     		{
-    			if (logger.isDebugEnabled())
-    			{
-    				logger.debug("drawing scanline");
-    			}
     			// draw scanline
     			this.drawScanline(this.getScanlineCount());
     		}
@@ -106,14 +84,14 @@ public class NesPpu implements PictureProcessingUnit
 		{
 			//essentially creates an integer that represents the offset from start of name table (0x2000).
 			int nameTableAddress = 0x2000 + this.getHorizontalPerTileCount() | (this.getVerticalPerTileCount() << 5) | (this.getHorizontalNameCount() << 10) | (this.getVerticalNameCount() << 11);
-			if (logger.isDebugEnabled())
+			//if (logger.isDebugEnabled())
 			{
-				logger.debug("horizontalPerTileCount: " + this.getHorizontalPerTileCount());
-				logger.debug("verticalPerTileCount: " + this.getVerticalPerTileCount());
+				logger.info("horizontalPerTileCount: " + this.getHorizontalPerTileCount());
+				logger.info("verticalPerTileCount: " + this.getVerticalPerTileCount());
 				logger.debug("horizontalNameCount: " + this.getHorizontalNameCount());
 				logger.debug("verticalNameCount: " + this.getVerticalNameCount());
-				logger.debug("scanline: " + this.getScanlineCount());
-				logger.debug("looking at address: 0x" + Integer.toHexString(nameTableAddress));
+				logger.info("scanline: " + this.getScanlineCount());
+				logger.info("looking at address: 0x" + Integer.toHexString(nameTableAddress));
 				logger.debug("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
 			} 
 			
@@ -148,7 +126,7 @@ public class NesPpu implements PictureProcessingUnit
         }
         
         // implements an internal "vertical scroll counter"
-        if (scanline % 8 == 0)
+        if (((scanline + 1) & 7) == 0)
         {
             this.incrementVerticalPerTileCount();
 
@@ -157,7 +135,7 @@ public class NesPpu implements PictureProcessingUnit
                 //this.flipVerticalNameCount();
                 this.setVerticalPerTileCount(0);
             }
-        }        
+        }         
 	}
 	
     private void drawSprites(int scanline)
@@ -320,23 +298,11 @@ public class NesPpu implements PictureProcessingUnit
 	
 	private void drawBackgroundTile(int nameTableAddress, int horizontalPixel, int scanline)
 	{
-		logger.debug("was passed: nameTableAddress: 0x" + Integer.toHexString(nameTableAddress) + " horizontalPixel: " + horizontalPixel + " scanline: " + scanline);
-		
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("scanline passed: " + scanline);
-			logger.debug("background clipping: " + this.getPpuControlRegister2().isBackGroundClipping());
-		}
-		
+		logger.debug("drawing background tile: nameTableAddress: " + nameTableAddress + " horizontalPixel: " + horizontalPixel + " scanline: " + scanline);
 		if (horizontalPixel >= 8 || !this.getPpuControlRegister2().isBackGroundClipping())
 		{
 			// select tile to write.
 			BackgroundTile bg = Platform.getPpuMemory().getNameTableFromHexAddress(nameTableAddress).getTileFromHexAddress(nameTableAddress);
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("drawing background tile: " + Integer.toHexString(bg.getBackgroundNumber())); 
-				logger.debug("nameTableAddress: " + Integer.toHexString(nameTableAddress));
-			}
 
 			for (int tileXindex = 7; tileXindex >= 0; tileXindex--)
 			{   
@@ -346,16 +312,9 @@ public class NesPpu implements PictureProcessingUnit
 				if (horizontalPixel < 256)
 				{
 					// get pixel from line, x
-					logger.debug("getting pixel: horizontal: " + tileXindex + " vertical: " + tileYindex);
 					int paletteIndex = bg.getPixelBackgroundColorPaletteIndex(tileXindex, tileYindex);
 					int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex);
 					PaletteColor backgroundPixelColor = Platform.getMasterPalette().getColor(masterPaletteIndex);
-	    			if (logger.isDebugEnabled())
-	    			{
-	    				logger.debug("painting pixel x: " + horizontalPixel + " y: " + scanline + " masterPaletteIndex: " + masterPaletteIndex + " backgroundPaletteIndex: " + paletteIndex + " colorInt: " + backgroundPixelColor.getColorInt() + " r:" + backgroundPixelColor.getRed() + " b: " + backgroundPixelColor.getBlue() + " g: " + backgroundPixelColor.getGreen());
-	    				logger.debug("screen is null: " + (LambNesGui.getScreen() == null));
-	    				logger.debug("image is null: " + (LambNesGui.getScreen().getImage() == null));
-	    			}
 	    				
 					LambNesGui.getScreen().getImage().setRGB(horizontalPixel, scanline, backgroundPixelColor.getColorInt());
 					horizontalPixel++;

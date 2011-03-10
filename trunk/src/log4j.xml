@@ -35,7 +35,7 @@
     </appender>
 
     <logger name="com.lambelly">
-        <level value="debug"/>
+        <level value="info"/>
         <appender-ref ref="log"/>
     </logger>
 
@@ -45,12 +45,12 @@
     </logger>    
 
     <logger name="com.lambelly.lambnes.test">
-        <level value="debug"/>
+        <level value="info"/>
         <appender-ref ref="log"/>
     </logger>    
 
     <logger name="com.lambelly.lambnes.platform.cpu.NesCpu">
-        <level value="debug"/>
+        <level value="info"/>
         <appender-ref ref="cpulog"/>
     </logger>    
     

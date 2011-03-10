@@ -249,8 +249,21 @@ public class NesCpuMemory
 	
 	public int getIndirectAbsoluteAddress()
 	{
-		int address = this.getNextPrgRomShort();
-		return address;
+		int lsbAddress = this.getNextPrgRomShort();
+		int lsb = this.getMemoryFromHexAddress(lsbAddress);
+		
+		// simulate msb bug
+		int lsbAddressMsb = lsbAddress & 0xFF00;
+		int lsbAddressLsb = lsbAddress & 0x00FF;
+		lsbAddressLsb = lsbAddressLsb + 1;
+		lsbAddressLsb = lsbAddressLsb & 0x00FF;
+		int msb = this.getMemoryFromHexAddress(lsbAddressMsb | lsbAddressLsb);
+		
+		logger.debug("lsbAddress: " + Integer.toHexString(lsbAddress));
+		logger.debug("lsb: " + Integer.toHexString(lsb));
+		logger.debug("msb: " + Integer.toHexString(msb));
+	
+		return BitUtils.unsplitAddress(msb, lsb);
 	}
 	
 	public int getAbsoluteIndexedXAddress()
@@ -335,19 +348,19 @@ public class NesCpuMemory
 	
 	public int getIndexedIndirectXAddress()
 	{ 
-		int lowByteAddress = Platform.getCpuMemory().getNextPrgRomByte() + Platform.getCpu().getX();
-		// zero page wrap around
-		lowByteAddress = lowByteAddress & Platform.EIGHT_BIT_MASK;
-		
-		int highByteAddress =  lowByteAddress + 1;
+		int lowByteAddress = Platform.getCpuMemory().getNextPrgRomByte() + Platform.getCpu().getX() & Platform.EIGHT_BIT_MASK;
+		int highByteAddress =  lowByteAddress + 1 & Platform.EIGHT_BIT_MASK;
 
-		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress)) & Platform.SIXTEEN_BIT_MASK;
+		logger.debug("lowByteAddress: " + lowByteAddress);
+		logger.debug("highByteAddress: " + highByteAddress);
+		
+		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
 	}
 	
 	public int getIndirectIndexedYAddress()
 	{
 		int lowByteAddress = this.getNextPrgRomByte();
-		int highByteAddress =  lowByteAddress + 1;
+		int highByteAddress =  lowByteAddress + 1 & Platform.EIGHT_BIT_MASK;
 		int finalAddress = BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
 		finalAddress += Platform.getCpu().getY();
 		return finalAddress & Platform.SIXTEEN_BIT_MASK;

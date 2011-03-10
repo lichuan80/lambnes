@@ -53,6 +53,17 @@ public class NesCpuRORTest
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
 		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		
+		// test case 4
+		Platform.getCpu().getFlags().setCarry(true);
+		TestUtils.performInstruction(instruction, 0x01);
+		logger.debug("accumulator: " + Platform.getCpu().getAccumulator());		
+		logger.debug("bits: " + Integer.toBinaryString(Platform.getCpu().getAccumulator()));
+		assertEquals(0x80,Platform.getCpu().getAccumulator());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
+		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		
 	}
 	
 	@Test
