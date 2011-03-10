@@ -58,14 +58,13 @@ public class NesCpuPHATest
 		// test case 1
     	((NesCpu)Platform.getCpu()).getFlags().setNegative(true);
     	((NesCpu)Platform.getCpu()).getFlags().setOverflow(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setBrkCommand(true);
     	((NesCpu)Platform.getCpu()).getFlags().setDecimalMode(false);
     	((NesCpu)Platform.getCpu()).getFlags().setIrqDisable(true);
     	((NesCpu)Platform.getCpu()).getFlags().setZero(false);
     	((NesCpu)Platform.getCpu()).getFlags().setCarry(true);
     	TestUtils.performInstruction(instruction);
     	int result = Platform.getCpuMemory().popStack();
-    	assertEquals(85,result);
+    	assertEquals(0xB5,result);
 	}	
 
 	@Test
@@ -91,7 +90,6 @@ public class NesCpuPHATest
 		 * */
     	((NesCpu)Platform.getCpu()).getFlags().setNegative(true);
     	((NesCpu)Platform.getCpu()).getFlags().setOverflow(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setBrkCommand(false);
     	((NesCpu)Platform.getCpu()).getFlags().setDecimalMode(false);
     	((NesCpu)Platform.getCpu()).getFlags().setIrqDisable(true);
     	((NesCpu)Platform.getCpu()).getFlags().setZero(false);
@@ -99,7 +97,7 @@ public class NesCpuPHATest
     	TestUtils.performInstruction(instruction);
     	int result = Platform.getCpuMemory().popStack();
     	logger.debug("status: 0x" + Integer.toHexString(result));
-    	assertEquals(100,result);
+    	assertEquals(0xF4,result);
 	}	
 	
 	@Test
@@ -112,12 +110,11 @@ public class NesCpuPHATest
 		// test case 1
     	Platform.getCpuMemory().pushStack(0x55);
     	TestUtils.performInstruction(instruction);
-    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-    	assertTrue(!((NesCpu)Platform.getCpu()).getFlags().isOverflow());
-    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isBrkCommand());
-    	assertTrue(!((NesCpu)Platform.getCpu()).getFlags().isDecimalMode());
+    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
+    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
+    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isDecimalMode());
     	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isIrqDisable());
-    	assertTrue(!((NesCpu)Platform.getCpu()).getFlags().isZero());
+    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
     	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
 
 	}		

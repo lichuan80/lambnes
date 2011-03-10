@@ -40,7 +40,7 @@ public class NesInterrupts
         	int a[] = BitUtils.splitAddress(Platform.getCpuMemory().getProgramCounter());
         	Platform.getCpuMemory().pushStack(a[1]);
         	Platform.getCpuMemory().pushStack(a[0]);
-			Platform.getCpu().pushStatus();
+			Platform.getCpu().pushStatus(false);
         	
 			// set the interrupt disable flag
         	Platform.getCpu().getFlags().setIrqDisable(true);
@@ -73,7 +73,6 @@ public class NesInterrupts
 					logger.debug("RESET Interrupt: " + Integer.toHexString(getResetInterruptJumpAddress()));
 				}
 				// execute the interrupt handling routine
-				//Platform.getCpuMemory().setProgramCounter(0xC000);
 				Platform.getCpuMemory().setProgramCounter(getResetInterruptJumpAddress());
 			}
 		}

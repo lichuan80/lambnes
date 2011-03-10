@@ -20,7 +20,7 @@ public interface CentralProcessingUnit
 	public void setY(int y);
 	public Flags getFlags();
 	public void setFlags(Flags flags);
-	public void pushStatus();
+	public void pushStatus(boolean brk);
 	public void pullStatus();
 	public void resetRegisters();
 }

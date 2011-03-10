@@ -23,6 +23,15 @@ public class BitUtilsTest
 	}
 	
 	@Test
+	public void setBitTest2()
+	{
+		int value = 0;
+		value = BitUtils.setBit(value, 7);
+		assertEquals(0x80,value);
+	}
+	
+	
+	@Test
 	public void assureBitTest()
 	{
 		int value = 2;

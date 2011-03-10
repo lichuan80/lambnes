@@ -1,20 +1,21 @@
 package com.lambelly.lambnes.platform.cpu;
 
+import org.apache.log4j.Logger;
+
 public class NesFlags implements Flags
 {
     private boolean negative = false;
     private boolean overflow = false; // signed overflow
-    private boolean brkCommand = false;
     private boolean decimalMode = false;
     private boolean irqDisable = false;
     private boolean zero = false;
     private boolean carry = false; // unsigned overflow
+	private Logger logger = Logger.getLogger(NesFlags.class);
 
     public void resetFlags()
     {
     	this.setNegative(false);
     	this.setOverflow(false);
-    	this.setBrkCommand(false);
     	this.setDecimalMode(false);
     	this.setIrqDisable(false);
     	this.setZero(false);
@@ -25,7 +26,6 @@ public class NesFlags implements Flags
     {
     	return "negative: " + this.isNegative() + "\n" +
     		"overflow: " + this.isOverflow() + "\n" +
-    		"brkCommand: " + this.isBrkCommand() + "\n" +
     		"decimalMode: " + this.isDecimalMode() + "\n" +
     		"irqDisable: " + this.isIrqDisable() + "\n" +
     		"zero: " + this.isZero() + "\n" +
@@ -61,23 +61,8 @@ public class NesFlags implements Flags
      */
     public void setOverflow(boolean overflow)
     {
+    	logger.debug("overflow set: " + overflow);
         this.overflow = overflow;
-    }
-
-    /**
-     * @return the brkCommand
-     */
-    public boolean isBrkCommand()
-    {
-        return brkCommand;
-    }
-
-    /**
-     * @param brkCommand the brkCommand to set
-     */
-    public void setBrkCommand(boolean brkCommand)
-    {
-        this.brkCommand = brkCommand;
     }
 
     /**
