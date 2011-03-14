@@ -42,8 +42,8 @@ public class PPUControlRegister2
 				this.setControlByte(this.getRawControlByte());
 				this.setSpriteVisibility(BitUtils.isBitSet(this.getRawControlByte(), 4));
 				this.setBackgroundVisibility(BitUtils.isBitSet(this.getRawControlByte(), 3));
-				this.setSpriteClipping(BitUtils.isBitSet(this.getRawControlByte(), 2));
-				this.setBackGroundClipping(BitUtils.isBitSet(this.getRawControlByte(), 1));
+				this.setSpriteClipping(!BitUtils.isBitSet(this.getRawControlByte(), 2));
+				this.setBackGroundClipping(!BitUtils.isBitSet(this.getRawControlByte(), 1));
 				this.setDisplayType(BitUtils.isBitSet(this.getRawControlByte(), 0)?DISPLAY_TYPE_MONOCHROME:DISPLAY_TYPE_COLOR);
 				
 				if (this.getDisplayType() == DISPLAY_TYPE_MONOCHROME)

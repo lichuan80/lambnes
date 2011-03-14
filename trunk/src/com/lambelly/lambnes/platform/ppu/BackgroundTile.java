@@ -60,7 +60,7 @@ public class BackgroundTile
 		// determine address high bit (either in 0x0000 or 0x1000)
 		int highBit = Platform.getPpu().getPpuControlRegister1().getBackgroundPatternTableAddress();
 		int address = (highBit * 0x1000) | (backgroundNumber * 16);
-		for (int x = 0; x < 15; x++)
+		for (int x = 0; x < 16; x++)
 		{
 			if(logger.isDebugEnabled())
 			{

@@ -65,21 +65,22 @@ public class SpriteTile
 	
 	public int getPixelSpriteColorPaletteIndex(int column, int row)
 	{
-		if(logger.isDebugEnabled())
+		//if(logger.isDebugEnabled())
 		{
-			logger.debug("generating pixel color for sprite: " + this.getSpriteAttributes().getTileIndex() + ", spriteNumber: " + this.getSpriteNumber() + " column:" + column + ", row: " + row);
-			logger.debug("pattern a row " + row + ": " + this.getPatternA()[row]);
-			logger.debug("pattern b row " + row + ": " + this.getPatternB()[row]);
+			logger.info("generating pixel color for sprite: " + this.getSpriteAttributes().getTileIndex() + ", spriteNumber: " + this.getSpriteNumber() + " column:" + column + ", row: " + row + ", msb: " + this.getSpriteAttributes().getColorHighBit());
+			logger.info("pattern a row " + row + ": " + this.getPatternA()[row]);
+			logger.info("pattern b row " + row + ": " + this.getPatternB()[row]);
 		}
 		
-		int patternABit = (BitUtils.isBitSet(this.getPatternA()[row],column))?1:0;
-		int patternBBit = (BitUtils.isBitSet(this.getPatternB()[row],column))?1:0;
+		int color = 0;
 		
-		int lowbit = (patternBBit) << 1 | (patternABit); 
-		int color = (this.getSpriteAttributes().getColorHighBit() << 2) | lowbit;
-		if(logger.isDebugEnabled())
+		color = (this.getSpriteAttributes().getColorHighBit() << 2) | 
+			(((BitUtils.isBitSet(this.getPatternB()[row],column))?1:0) << 1) | 
+			((BitUtils.isBitSet(this.getPatternA()[row],column))?1:0);
+ 
+		//if(logger.isDebugEnabled())
 		{
-			logger.debug("color bitstring generated for " + column + ", " + row + ": " + Integer.toBinaryString(color));
+			logger.info("color bitstring generated for sprite " + this.getSpriteNumber()+ ": c: " + column + ", r: " + row + ": " + Integer.toBinaryString(color));
 		}
 		return color;
 	}
@@ -93,11 +94,12 @@ public class SpriteTile
 		int address = (spriteNumber * 16) | (highBit * 0x1000);
 		for (int x = 0; x < 16; x++)
 		{
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("getting memory from " + (address + x) + " for sprite " + spriteNumber);
-			}
 			sprite[x] = Platform.getPpuMemory().getMemoryFromHexAddress(address + x);
+			
+			//if(logger.isDebugEnabled())
+			{
+				logger.info("getting memory from " + (address + x) + " for sprite " + spriteNumber + ": " + sprite[x]);
+			}
 		}
 		
 		return sprite;
@@ -125,6 +127,17 @@ public class SpriteTile
 		}
 		
 		return bImage;
+	}
+	
+	public void refreshAttributes()
+	{
+		this.setSpriteAttributes(new SpriteAttribute(this.getSpriteNumber()));
+	}
+	
+	public void refreshSprite()
+	{
+		this.refreshAttributes();
+		this.instantiateSprite();
 	}
 	
 	public String toString()
