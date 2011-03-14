@@ -33,9 +33,12 @@ public class PPUSpriteDMARegister
 
 			System.arraycopy(Platform.getCpuMemory().getMemory(), start, Platform.getPpuMemory().getSprRam(), 0, 256);
 			
-			if(logger.isDebugEnabled())
+			//if(logger.isDebugEnabled())
 			{
-				logger.debug("SPR: " + Platform.getPpuMemory().getSprRam()[0]);
+				for (int i = 0; i< Platform.getPpuMemory().getSprRam().length; i++)
+				{
+					logger.info("spr[" + i + "] : " + Platform.getPpuMemory().getSprRam()[i]);
+				}
 			}
 			
 			this.clear();

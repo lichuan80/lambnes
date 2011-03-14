@@ -351,6 +351,7 @@ public class NesPpuMemory
 		}
 		else if (address >= 0x3F00 && address <= 0x3FFF)
 		{
+			logger.info("setting address: " + Integer.toHexString(address) + " to value: " + value);
 			// don't much care about high byte.
 			int lowbyte = address & 0x00FF;
 			

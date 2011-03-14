@@ -2,11 +2,13 @@ package com.lambelly.lambnes.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.ppu.*;
 import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
 import com.lambelly.lambnes.test.utils.TestUtils;
+import com.lambelly.lambnes.util.BitUtils;
 
 import org.apache.log4j.*;
 
@@ -38,5 +40,21 @@ public class SpriteTest
 		
 		SpriteTile s0 = new SpriteTile(0);
 		logger.debug(s0);
+	}
+	
+	@Test
+	public void attributeTest()
+	{
+		int rb = 34;
+		int b1 = ((BitUtils.isBitSet(rb,1)?1:0) << 1);
+		int b2 = (BitUtils.isBitSet(rb, 0)?1:0);
+		
+		logger.debug("b1: " + b1);
+		logger.debug("b2 " + b2);
+		
+		int colorMSB = 0;
+		colorMSB = ((BitUtils.isBitSet(rb,1)?1:0) << 1) | (BitUtils.isBitSet(rb, 0)?1:0);
+		
+		assertEquals(2,colorMSB);
 	}
 }

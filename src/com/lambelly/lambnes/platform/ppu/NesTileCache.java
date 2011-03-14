@@ -46,7 +46,10 @@ public class NesTileCache
 		{
 			NesTileCache.loadSpriteCache();
 		}
-
+		
+		SpriteTile s = spriteTileCache[spriteTileNumber];
+		s.refreshAttributes();
+		
 		return spriteTileCache[spriteTileNumber];
 	}
 	
