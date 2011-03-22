@@ -8,6 +8,7 @@ import org.apache.log4j.*;
 public class MasterPaletteVisualization extends JPanel
 {
 	private Logger logger = Logger.getLogger(MasterPaletteVisualization.class);
+	PanelThread t = null;
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
 	
@@ -26,5 +27,8 @@ public class MasterPaletteVisualization extends JPanel
 		{
 			this.add(new MasterPaletteLabel(x));
 		}
+		
+		t = new PanelThread(this);
+		new Thread(t).start();
 	}
 }

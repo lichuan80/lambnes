@@ -12,7 +12,6 @@ public class SpriteLabel extends JLabel
 		this.setSpriteNumber(spriteNumber);
 		this.setHorizontalTextPosition(JLabel.CENTER);
 		this.setVerticalTextPosition(JLabel.BOTTOM);
-		this.setText(Integer.toString(spriteNumber));
 		this.setIcon(new SpriteIcon(this.getSpriteNumber()));
 		this.setBorder(LineBorder.createGrayLineBorder());
 	}

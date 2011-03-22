@@ -22,6 +22,11 @@ public class SpriteAttribute
 		this.generateSpriteAttributes(spriteNumber);
 	}
 	
+	public SpriteAttribute(int rawBit1, int rawBit2, int rawBit3, int rawBit4)
+	{
+		this.parseSprRam(rawBit1, rawBit2, rawBit3, rawBit4);
+	}
+	
 	private void generateSpriteAttributes(int spriteNumber)
 	{
 		int rawBit1 = 0;
@@ -29,19 +34,42 @@ public class SpriteAttribute
 		int rawBit3 = 0;
 		int rawBit4 = 0;
 		
-		rawBit1 = Platform.getPpuMemory().getSprRamFromHexAddress(spriteNumber * 4);
-		rawBit2 = Platform.getPpuMemory().getSprRamFromHexAddress(spriteNumber * 4 + 1);
-		rawBit3 = Platform.getPpuMemory().getSprRamFromHexAddress(spriteNumber * 4 + 2);
-		rawBit4 = Platform.getPpuMemory().getSprRamFromHexAddress(spriteNumber * 4 + 3);
-	
-		//if(logger.isDebugEnabled())
-		{
-			logger.info("sprite " + spriteNumber + " rawBit1: " + rawBit1);
-			logger.info("sprite " + spriteNumber + " rawBit2: " + rawBit2);
-			logger.info("sprite " + spriteNumber + " rawBit3: " + rawBit3);
-			logger.info("sprite " + spriteNumber + " rawBit4: " + rawBit4);
+		// tileIndex and spriteNumber ought to match, so iterate the spr-ram until the right tileIndex is found
+		int tileIndex = -1;
+		int x = 0;
+		while (tileIndex != spriteNumber && x < 64)
+		{	
+			tileIndex = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 1); 
+		
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("looking at sprite attribute: " + x + " : tileIndex: " + tileIndex + " : spriteNumber: " + spriteNumber);
+			}
+			
+			if (tileIndex == spriteNumber)
+			{
+				rawBit1 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4);
+				rawBit2 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 1);
+				rawBit3 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 2);
+				rawBit4 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 3);
+			}
+			x++;
 		}
 		
+		
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("sprite " + spriteNumber + " rawBit1: " + rawBit1);
+			logger.debug("sprite " + spriteNumber + " rawBit2: " + rawBit2);
+			logger.debug("sprite " + spriteNumber + " rawBit3: " + rawBit3);
+			logger.debug("sprite " + spriteNumber + " rawBit4: " + rawBit4);
+		}
+
+		this.parseSprRam(rawBit1, rawBit2, rawBit3, rawBit4);
+	}
+	
+	private void parseSprRam(int rawBit1, int rawBit2, int rawBit3, int rawBit4)
+	{		
 		this.setyCoordinate(rawBit1);
 		this.setTileIndex(rawBit2);
 		
@@ -59,7 +87,7 @@ public class SpriteAttribute
 		int colorMSB = 0;
 		colorMSB = ((BitUtils.isBitSet(rawBit3,1)?1:0) << 1) | (BitUtils.isBitSet(rawBit3, 0)?1:0);
 
-		logger.info("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3) + " for sprite " + spriteNumber);
+		logger.info("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3));
 		
 		this.setColorHighBit(colorMSB);
 		

@@ -38,16 +38,14 @@ public class LambNes
         }
         
         // instantiate platform
-
-        
-        // start gui
-    	LambNesGui gui = new LambNesGui();
-        Thread mainwindow = new Thread(gui);
-        
-        
         System.out.println("\nLambNes\nby Tom McCarthy\nversion " + LambNes.VERSION + "\n");
         logger.info("instantiating platform");
         Platform p = Platform.getInstance();
+        
+        // start gui
+    	LambNesGui gui = new LambNesGui();
+        //Thread mainwindow = new Thread(gui);
+        //mainwindow.setDaemon(true);
         
         // load default cartridge
     	try
@@ -65,7 +63,7 @@ public class LambNes
 		        
 		        // start
 		        gui.setVisible(true);
-		        mainwindow.start();
+		        //mainwindow.start();
 		        Platform.power();
 		        
     		}
@@ -76,22 +74,22 @@ public class LambNes
     	}
     	catch(IllegalStateException ex)
     	{
-    		mainwindow.interrupt();
+    		//mainwindow.interrupt();
     		logger.error("illegal state",ex);
     	}
     	catch(FileNotFoundException ex)
     	{
-    		mainwindow.interrupt();
+    		//mainwindow.interrupt();
     		logger.error("unable to load default cartridge: " + cartridgeLoadPath,ex);
     	}
     	catch(NullPointerException ex)
     	{
-    		mainwindow.interrupt();
+    		//mainwindow.interrupt();
     		logger.error("null pointer", ex);
     	}
     	catch(Exception e)
     	{
-    		mainwindow.interrupt();
+    		//mainwindow.interrupt();
     		logger.error("unhandled exception",e);
     	}        
     }
