@@ -3,7 +3,7 @@ package com.lambelly.lambnes.platform.ppu;
 public class NesTileCache
 {
 	private static BackgroundTile[] backgroundTileCache = new BackgroundTile[256];
-	private static SpriteTile[] spriteTileCache = new SpriteTile[64];
+	private static SpriteTile[] spriteTileCache = new SpriteTile[256];
 	
 	private static void loadBackgroundCache()
 	{
@@ -49,6 +49,20 @@ public class NesTileCache
 		
 		SpriteTile s = spriteTileCache[spriteTileNumber];
 		s.refreshAttributes();
+		
+		return spriteTileCache[spriteTileNumber];
+	}
+	
+	public static SpriteTile getSpriteTile(int spriteTileNumber, SpriteAttribute spriteAttribute)
+	{
+		// make sure the cache is loaded -- loads on first request
+		if (spriteTileCache[spriteTileNumber] == null)
+		{
+			NesTileCache.loadSpriteCache();
+		}
+		
+		SpriteTile s = spriteTileCache[spriteTileNumber];
+		s.setSpriteAttributes(spriteAttribute);
 		
 		return spriteTileCache[spriteTileNumber];
 	}

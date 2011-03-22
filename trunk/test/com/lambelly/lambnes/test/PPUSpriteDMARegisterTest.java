@@ -22,10 +22,12 @@ public class PPUSpriteDMARegisterTest
 	public void write()
 	{
 		// write to 0X3F00
+		Platform.getCpuMemory().setMemoryFromHexAddress(0x0350, 0x8C);
 		Platform.getCpuMemory().setMemoryFromHexAddress(0x4014, 0x03);
 		Platform.getPpu().cycle(1);
 		
 		// test
 		assertEquals(0x3F, Platform.getPpuMemory().getSprRam()[0x3F]);
+		assertEquals(0x8C, Platform.getPpuMemory().getSprRam()[0x50]);
 	}	
 }

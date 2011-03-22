@@ -10,11 +10,12 @@ public class SpritePatternTableVisualization extends JPanel
 	private Logger logger = Logger.getLogger(SpritePatternTableVisualization.class);
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
+	public PanelThread t = null;
 	public static final String SCREEN_TITLE = "Sprite Pattern Table"; 
 	
 	public SpritePatternTableVisualization()
 	{
-		super(new GridLayout(8,8));
+		super(new GridLayout(16,16));
 		if(logger.isDebugEnabled())
 		{
 			logger.debug("initializing");
@@ -23,9 +24,12 @@ public class SpritePatternTableVisualization extends JPanel
     	this.setPreferredSize(new Dimension(SpritePatternTableVisualization.SCREEN_HORIZONTAL_RESOLUTION, SpritePatternTableVisualization.SCREEN_VERTICAL_RESOLUTION));
     	this.setToolTipText("sprite pattern table");
     	
-		for (int x=0;x<64;x++)
+		for (int x=0;x<256;x++)
 		{
 			this.add(new SpriteLabel(x));
 		}
+		
+		t = new PanelThread(this);
+    	new Thread(t).start();
 	}
 }

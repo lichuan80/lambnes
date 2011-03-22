@@ -8,7 +8,7 @@ import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
 
-public class LambNesGui extends JFrame implements Runnable 
+public class LambNesGui extends JFrame //implements Runnable 
 {
 	private static Screen screen = new Screen();
 	private static Container content = null;
@@ -121,23 +121,22 @@ public class LambNesGui extends JFrame implements Runnable
         });
         
         setContent(getContentPane());
-        getContent().setLayout(new GridLayout(1,1));
-        //SpritePaletteVisualization spv = new SpritePaletteVisualization();
-        //content.add(spv);
-        //MasterPaletteVisualization mpv = new MasterPaletteVisualization();
-        //content.add(mpv);
-        //BackgroundPaletteVisualization bpv = new BackgroundPaletteVisualization();
-        //content.add(bpv);
-        //SpritePatternTableVisualization sptv = new SpritePatternTableVisualization();
-        //content.add(sptv);
+        getContent().setLayout(new GridLayout(2,3));
+        PaletteVisualization spv = new PaletteVisualization(0x3F10);
+        content.add(spv);
+        MasterPaletteVisualization mpv = new MasterPaletteVisualization();
+        content.add(mpv);
+        PaletteVisualization bpv = new PaletteVisualization(0x3F00);
+        content.add(bpv);
+        SpritePatternTableVisualization sptv = new SpritePatternTableVisualization();
+        content.add(sptv);
         getContent().add(LambNesGui.getScreen());
-        //BackgroundPatternTableVisualization bptv = new BackgroundPatternTableVisualization();
-        //content.add(bptv);
-        
+        BackgroundPatternTableVisualization bptv = new BackgroundPatternTableVisualization();
+        content.add(bptv);
         this.pack();    
 	}
 
-	
+	/*
 	public void run()
 	{
         while (isRun())
@@ -146,14 +145,15 @@ public class LambNesGui extends JFrame implements Runnable
         	
         	try
         	{
-        		Thread.sleep(42);
+        		Thread.sleep(1000/30);
         	}
         	catch (Exception e)
         	{
         		logger.error(e);
         	}
         }   
-	}  
+	} 
+	*/ 
 
 	public static Screen getScreen()
 	{

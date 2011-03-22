@@ -44,15 +44,18 @@ public class Ines implements Cartridge
 
         // the program length is determined by byte 4 of the header
         this.setProgramInstructions(ArrayUtils.subarray(rawRomData, 16, programLength + 16));
-        logger.debug("getting pattern from: " + (16 + programLength));
-        logger.debug("getting pattern to: " + rawRomData.length);
+        logger.info("getting pattern from: " + (16 + programLength));
+        logger.info("getting pattern to: " + rawRomData.length);
         int[] patternTiles = ArrayUtils.subarray(rawRomData,(16 + programLength), rawRomData.length);
-        logger.debug("pattern tile length: " + patternTiles.length);
+        logger.info("pattern tile length: " + patternTiles.length);
         this.setPatternTiles(patternTiles);
 
+        logger.info("program pages: " + this.getHeader().getProgramInstructionByte());
         logger.info("chr-rom pages: " + this.getHeader().getPatternTileByte());
-        logger.debug("program array length: " + this.getProgramInstructions().length);
+        logger.info("program array length: " + this.getProgramInstructions().length);
         logger.info("pattern array length: " + this.getPatternTiles().length);
+        logger.info("pattern[0]: " + this.getPatternTiles()[0]);
+        logger.info("pattern[last]: " + this.getPatternTiles()[this.getPatternTiles().length - 1]);
 		for (int i = 0; i< 32; i++)
 		{
 			logger.debug("pattern array data: " + this.getPatternTiles()[i]);

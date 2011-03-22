@@ -8,8 +8,10 @@ import org.apache.log4j.*;
 public class BackgroundPatternTableVisualization extends JPanel
 {
 	private Logger logger = Logger.getLogger(BackgroundPatternTableVisualization.class);
+	
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
+	public PanelThread t = null;
 	public static final String SCREEN_TITLE = "Background Pattern Table"; 
 	
 	public BackgroundPatternTableVisualization()
@@ -27,5 +29,8 @@ public class BackgroundPatternTableVisualization extends JPanel
 		{
 			this.add(new BackgroundLabel(x));
 		}
+		
+		t = new PanelThread(this);
+    	new Thread(t).start();
 	}
 }

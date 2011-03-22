@@ -9,8 +9,8 @@ public class NesPpuMemory
 {
 	private Logger logger = Logger.getLogger(NesPpuMemory.class);
 	// VRAM
-	private int[] patternTable0 = new int[4096]; // 0x0000 -- holds 256 background tiles or 64 sprite tiles 
-	private int[] patternTable1 = new int[4096]; // 0x1000 -- holds 256 background tiles or 64 sprite tiles
+	private int[] patternTable0 = new int[4096]; // 0x0000 -- holds 256 tiles 
+	private int[] patternTable1 = new int[4096]; // 0x1000 -- holds 256 tiles
 	private PPUNameTable nameTable0 = null;      // 0x2000
 	private PPUNameTable nameTable1 = null;      // 0x2400
 	private PPUNameTable nameTable2 = null;      // 0x2800
@@ -257,7 +257,7 @@ public class NesPpuMemory
 	
 	public void setMemoryFromHexAddress(int address, int value) throws IllegalStateException
 	{
-		//if(logger.isDebugEnabled())
+		if(logger.isDebugEnabled())
 		{
 			logger.debug("setting value " + value + " to ppu address: 0x" + Integer.toHexString(address));
 		}
@@ -351,7 +351,7 @@ public class NesPpuMemory
 		}
 		else if (address >= 0x3F00 && address <= 0x3FFF)
 		{
-			logger.info("setting address: " + Integer.toHexString(address) + " to value: " + value);
+			logger.debug("setting address: " + Integer.toHexString(address) + " to value: " + value);
 			// don't much care about high byte.
 			int lowbyte = address & 0x00FF;
 			
@@ -382,7 +382,17 @@ public class NesPpuMemory
 		{
 			throw new IllegalStateException("tried to access memory address 0x" + Integer.toHexString(address) + " which is not mapped to any data structure");
 		}
-	}	
+	}
+	
+	public SpriteAttribute getSpriteAttribute(int spriteAttributeIndex)
+	{
+		int rawBit1 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4);
+		int rawBit2 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 1);
+		int rawBit3 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 2);
+		int rawBit4 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 3);
+		
+		return new SpriteAttribute(rawBit1, rawBit2, rawBit3, rawBit4);
+	}
 
 	public int[] getPatternTable0()
 	{
@@ -423,6 +433,7 @@ public class NesPpuMemory
 	{
 		this.sprRam[address] = value;
 	}	
+	
 
 	public int[] getImagePalette()
 	{
