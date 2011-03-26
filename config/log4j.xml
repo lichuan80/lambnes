@@ -35,27 +35,27 @@
     </appender>
 
     <logger name="com.lambelly">
-        <level value="info"/>
-        <appender-ref ref="log"/>
+        <level value="fatal"/>
+        <appender-ref ref="console"/>
     </logger>
 
     <logger name="org.apache">
         <level value="fatal"/>
-        <appender-ref ref="log"/>
+        <appender-ref ref="console"/>
     </logger>    
 
     <logger name="com.lambelly.lambnes.test">
-        <level value="info"/>
-        <appender-ref ref="log"/>
+        <level value="fatal"/>
+        <appender-ref ref="console"/>
     </logger>    
 
     <logger name="com.lambelly.lambnes.platform.cpu.NesCpu">
-        <level value="info"/>
-        <appender-ref ref="cpulog"/>
+        <level value="fatal"/>
+        <appender-ref ref="console"/>
     </logger>    
     
     <logger name="com.lambelly.lambnes.platform.ppu">
-        <level value="info"/>
+        <level value="fatal"/>
         <appender-ref ref="ppulog"/>
     </logger>        
 

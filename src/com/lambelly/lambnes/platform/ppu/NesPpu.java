@@ -164,16 +164,15 @@ public class NesPpu implements PictureProcessingUnit
 	
 	private boolean drawSpriteTile(SpriteTile sprite, int scanline)
 	{
-		// TODO: horizontal flip logics
-		
-		logger.info("drawing sprite " + sprite.getSpriteNumber() + " at " + scanline); 
+		logger.debug("drawing sprite " + sprite.getSpriteNumber() + " at " + scanline); 
 		
 		boolean sprite0Triggered = false;
         int spriteLine = scanline - sprite.getSpriteAttributes().getyCoordinate();
         
-        logger.info("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + scanline + " y coord: " + sprite.getSpriteAttributes());
+        logger.debug("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + scanline + " y coord: " + sprite.getSpriteAttributes());
         
-        /** unneeded
+        //TODO -- 8x16 logics
+        /** unused for the moment. 
         if (!(this.getPpuControlRegister1().getSpriteSize() == PPUControlRegister1.SPRITE_SIZE_8X16))
         { 
         	// 8x8 tiles
@@ -210,18 +209,9 @@ public class NesPpu implements PictureProcessingUnit
         spriteLine = spriteLine & 7; // if more than the index, roll over
 
         int spriteXPosition = sprite.getSpriteAttributes().getxCoordinate();
-
-        /**
-        if (!sprite.getSpriteAttributes().isHorizontalFlip())
-        {
-            spriteXPosition += 7;
-        }
-		*/
         
         logger.debug("sprite attributes for sprite: " + sprite.getSpriteAttributes().getTileIndex() + "\n" + sprite.getSpriteAttributes());
         
-        // we actually draw from the end of it
-        // which is why we add for !reverse
         // TODO -- should this be the way that transparentColor is determined? It probably should be part of an object so it can be reused.
         int transparentColor = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS);
         
@@ -246,16 +236,16 @@ public class NesPpu implements PictureProcessingUnit
                 int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(masterPaletteAddress);
                 PaletteColor color = Platform.getMasterPalette().getColor(masterPaletteIndex);
                 
-                if (logger.isDebugEnabled())
+                //if (logger.isDebugEnabled())
                 {
-	            	logger.debug("sprite pixel column for sprite " + sprite.getSpriteNumber() + ": " + spritePixelColumn);
-	            	logger.debug("sprite pixel row for sprite " + sprite.getSpriteNumber() + ": " + spritePixelRow);
-	                logger.debug("sprite index number: " + sprite.getSpriteAttributes().getTileIndex());
-	                logger.debug("spritePaletteIndex: " + spritePaletteIndex);
-	                logger.debug("masterPaletteIndex: " + masterPaletteIndex);
-	                logger.debug("palette color: " + color);
-	                logger.debug("pulling masterPaletteIndex from " + masterPaletteAddress);
-	                logger.debug("painting screen for sprite: " + sprite.getSpriteAttributes().getTileIndex() + " x: " + (spriteXPosition + (spritePixelColumn ^ 0x7)) + " y: " + scanline + " r: " + color.getRed() + " g: " + color.getGreen() + " b: " + color.getBlue());
+	            	logger.info("sprite pixel column for sprite " + sprite.getSpriteNumber() + ": " + spritePixelColumn);
+	            	logger.info("sprite pixel row for sprite " + sprite.getSpriteNumber() + ": " + spritePixelRow);
+	                logger.info("sprite index number: " + sprite.getSpriteAttributes().getTileIndex());
+	                logger.info("spritePaletteIndex: " + spritePaletteIndex);
+	                logger.info("masterPaletteIndex: " + masterPaletteIndex);
+	                logger.info("palette color: " + color);
+	                logger.info("pulling masterPaletteIndex from " + masterPaletteAddress);
+	                logger.info("painting screen for sprite: " + sprite.getSpriteAttributes().getTileIndex() + " x: " + (spriteXPosition + (spritePixelColumn ^ 0x7)) + " y: " + scanline + " r: " + color.getRed() + " g: " + color.getGreen() + " b: " + color.getBlue());
                 }
                 
                 if (masterPaletteIndex != transparentColor)
@@ -267,7 +257,7 @@ public class NesPpu implements PictureProcessingUnit
                     }
                     if (spriteXPosition >= 8 || this.getPpuControlRegister2().isSpriteVisibility())
                     {
-                        LambNesGui.getScreen().getImage().setRGB((spriteXPosition + (spritePixelColumn ^ 0x7)),scanline,color.getColorInt());
+                        LambNesGui.getScreen().getImage().setRGB(((spriteXPosition + (spritePixelColumn ^ 0x7)) & 0xFF),scanline,color.getColorInt());
                     }
                 }
             }

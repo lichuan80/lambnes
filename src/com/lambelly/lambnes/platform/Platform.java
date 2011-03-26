@@ -107,6 +107,8 @@ public class Platform
 	        	
 	        	cycleCount++;
         	}
+        	
+        	cycleCount = 0;
         }
         
         // shutdown

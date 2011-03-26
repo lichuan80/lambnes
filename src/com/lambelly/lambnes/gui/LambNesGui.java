@@ -26,7 +26,7 @@ public class LambNesGui extends JFrame //implements Runnable
 	    super();
         this.setTitle(LambNesGui.SCREEN_TITLE);
         this.setResizable(false);
-        
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.addWindowListener( new WindowAdapter()
         {
             public void windowClosing( WindowEvent e )
@@ -97,20 +97,40 @@ public class LambNesGui extends JFrame //implements Runnable
 					logger.info("key: W released");
 					Platform.getControllerPorts().getPortA().setUp(false);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_A)
+				else if (e.getKeyCode() == KeyEvent.VK_A)
 				{
 					logger.info("key: A released");
 					Platform.getControllerPorts().getPortA().setLeft(false);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_D)
+				else if (e.getKeyCode() == KeyEvent.VK_D)
 				{
 					logger.info("key: D released");
 					Platform.getControllerPorts().getPortA().setRight(false);
 				}
-				if (e.getKeyCode() == KeyEvent.VK_X)
+				else if (e.getKeyCode() == KeyEvent.VK_X)
 				{
 					logger.info("key: X released");
 					Platform.getControllerPorts().getPortA().setDown(false);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_J)
+				{
+					logger.debug("key: J released");
+					Platform.getControllerPorts().getPortA().setA(false);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_K)
+				{
+					logger.debug("key: K released");
+					Platform.getControllerPorts().getPortA().setB(false);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_J)
+				{
+					logger.debug("key: J released");
+					Platform.getControllerPorts().getPortA().setA(false);
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_K)
+				{
+					logger.debug("key: K released");
+					Platform.getControllerPorts().getPortA().setB(false);
 				}
 			}
 
@@ -135,25 +155,6 @@ public class LambNesGui extends JFrame //implements Runnable
         content.add(bptv);
         this.pack();    
 	}
-
-	/*
-	public void run()
-	{
-        while (isRun())
-        {
-        	getContent().repaint();
-        	
-        	try
-        	{
-        		Thread.sleep(1000/30);
-        	}
-        	catch (Exception e)
-        	{
-        		logger.error(e);
-        	}
-        }   
-	} 
-	*/ 
 
 	public static Screen getScreen()
 	{
