@@ -57,4 +57,13 @@ public class SpriteTest
 		
 		assertEquals(2,colorMSB);
 	}
+	
+	@Test
+	public void horizontalFlipTest()
+	{
+		int flip = 0x07;
+		assertEquals(0x00, flip ^ 0x7);
+		
+
+	}
 }

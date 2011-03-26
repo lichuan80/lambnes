@@ -8,13 +8,18 @@ import java.util.Iterator;
 
 public class CartridgeLocator
 {
-	private static final String DEFAULT_ROM_LOCATION = "./roms/";
+	private static final String DEFAULT_ROM_LOCATION = "roms/";
 	private Vector<String> roms = new Vector<String>();
 	private Logger logger = Logger.getLogger(CartridgeLocator.class);
 	
 	public CartridgeLocator()
 	{
-		this.generateListOfDefaultRoms();
+		this.generateListOfDefaultRoms(CartridgeLocator.DEFAULT_ROM_LOCATION);
+	}
+	
+	public CartridgeLocator(String secondaryPath)
+	{
+		this.generateListOfDefaultRoms(secondaryPath);
 	}
 	
 	public String locateCartridge()
@@ -25,7 +30,7 @@ public class CartridgeLocator
 		}
 		else if (this.getRoms().size() == 1)
 		{
-			return CartridgeLocator.DEFAULT_ROM_LOCATION + this.getRoms().get(0);
+			return this.getRoms().get(0);
 		}	
 		else
 		{
@@ -57,15 +62,24 @@ public class CartridgeLocator
 		}
 	}
 
-	private void generateListOfDefaultRoms()
+	private void generateListOfDefaultRoms(String path)
 	{
 		// maybe eventually make a version capable of traversing subdirectories.
-		File dir = new File(CartridgeLocator.DEFAULT_ROM_LOCATION);
-
+		File dir = new File(path);
+		
 		String[] children = dir.list();
 		if (children == null) 
 		{
 		    // Either dir does not exist or is not a directory
+			if (dir.isFile())
+			{
+				// path was direct to a file
+				logger.debug("loading file directly");
+				if (path.toLowerCase().endsWith(".zip"))
+				{
+					this.addRom(path);
+				}
+			}
 		} 
 		else 
 		{

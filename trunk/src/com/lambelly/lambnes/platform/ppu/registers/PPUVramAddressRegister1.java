@@ -32,7 +32,7 @@ public class PPUVramAddressRegister1
 	{
 		if (this.getRawControlByte() != null)
 		{
-			logger.warn("use of unsupported register 0x2005");
+			logger.warn("write to register 0x2005: " + this.getRawControlByte());
 		}
 		
 		this.clear();

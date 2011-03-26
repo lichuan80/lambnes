@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="277CA.maketar" default="build-jar" basedir=".">
+	<property name="dist.dir" value="./dist"/>
+	<property name="build.dir" value="./bin"/>
+	<property name="lib.dir" value="D:/cygwin/home/c617177/library/jars/" />
+	<property name="config.dir" value="./config"/>
+
+	<!--
+	<target name ="dist" description="Create an executable jar for distribution">
+		<jar destfile="${dist}/lambnes.jar">
+			<zipfileset dir="./bin" />
+			<manifest>
+				<attribute name="Main-Class"
+		            value="com.lambelly.lambnes.LambNes"/>
+				<attribute name="Built-By" value="Thomas McCarthy"/>
+			</manifest>
+		</jar>
+	</target>
+	-->
+	<target name="build-jar">
+	    <jar destfile="${dist.dir}/lambnes.jar" compress="true">
+	        <manifest>
+	            <attribute name="Main-Class" value="com.lambelly.lambnes.LambNes"/>
+	        </manifest>
+	        <fileset dir="${build.dir}" includes="**/*.class"/>
+	    	<fileset file="${config.dir}/log4j.xml" />
+	    	<fileset file="${config.dir}/palette.xml" />
+	    	<zipgroupfileset dir="${lib.dir}">
+	            <includesfile name="dependencies.list"/>
+	        </zipgroupfileset>
+	    </jar>
+	</target>
+
+</project>

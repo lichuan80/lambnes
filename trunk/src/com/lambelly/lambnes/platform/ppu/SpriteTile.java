@@ -79,8 +79,21 @@ public class SpriteTile
 			logger.debug("pattern b row " + row + ": " + this.getPatternB()[row]);
 		}
 		
-		int color = 0;
+		// horizontal flip
+		if (this.getSpriteAttributes().isHorizontalFlip())
+		{
+			// flip column's bits
+			column ^= 0x07;
+		}
 		
+		// vertical flip
+		if (this.getSpriteAttributes().isVerticalFlip())
+		{
+			// flip row's bits
+			row ^= 0x07;
+		}
+		
+		int color = 0;
 		color = (this.getSpriteAttributes().getColorHighBit() << 2) | 
 			(((BitUtils.isBitSet(this.getPatternB()[row],column))?1:0) << 1) | 
 			((BitUtils.isBitSet(this.getPatternA()[row],column))?1:0);

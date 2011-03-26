@@ -87,7 +87,10 @@ public class SpriteAttribute
 		int colorMSB = 0;
 		colorMSB = ((BitUtils.isBitSet(rawBit3,1)?1:0) << 1) | (BitUtils.isBitSet(rawBit3, 0)?1:0);
 
-		logger.info("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3));
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3));
+		}
 		
 		this.setColorHighBit(colorMSB);
 		

@@ -422,6 +422,10 @@ public class NesCpuMemory
 			{
 				value = this.getPpuStatusRegister().getRegisterValue();
 			}
+			else if (address == PPUVramAddressRegister1.REGISTER_ADDRESS)
+			{
+				throw new IllegalStateException("reading from write only register");
+			}
 			else if (address == PPUVramAddressRegister2.REGISTER_ADDRESS)
 			{
 				throw new IllegalStateException("reading from write only register");

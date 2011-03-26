@@ -18,7 +18,7 @@ public class PanelThread implements Runnable
 		{   
 			while(true)
 			{   
-				Thread.sleep(1);   
+				Thread.sleep(50);   
 	  
 				SwingUtilities.invokeLater
 				(   

@@ -51,7 +51,16 @@ public class LambNes
     	try
     	{
     		// get cartridge
-    		CartridgeLocator c = new CartridgeLocator();
+    		CartridgeLocator c = null;
+    		if (cartridgeLoadPath != null)
+    		{
+    			c = new CartridgeLocator(cartridgeLoadPath);
+    		}
+    		else
+    		{
+    			c = new CartridgeLocator();
+    		}
+    		
     		cartridgeLoadPath = c.locateCartridge();
     		
     		if (cartridgeLoadPath != null)
