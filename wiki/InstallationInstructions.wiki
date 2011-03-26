@@ -1,0 +1,24 @@
+#summary how to install and run the jar
+
+= Introduction =
+
+general instructions on installation and use of lambnes software
+
+
+= Details =
+
+If all has gone well, the jar is self-executing, containing all source and dependencies. I have personally ran the jar from the command line. 
+
+After downloading the jar, execute
+java -jar lambnes.jar /path/to/rom.zip
+
+At this time, this is the key mapping:<br />
+W: up<br />
+A: left<br />
+D: right<br />
+X: down<br />
+J: A<br />
+K: B<br />
+esc: select<br />
+enter: start<br />
+There are plans to implement the ability to customize key mapping.
