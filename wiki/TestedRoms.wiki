@@ -1,0 +1,6 @@
+#List of the roms that have been tested with the LambNes emulator.
+
+||game name||support||details||
+||Balloon Fight||partial||main game is playable, some errors in background generation||
+||Donkey Kong||minimal||the title screen is pretty seriously jacked up, sprites unable to move.||
+||Super Mario Brothers||none||game does not start due to sprite0 error||
