@@ -1,4 +1,4 @@
-#List of the roms that have been tested with the LambNes emulator.
+#summary List of the roms that have been tested with the LambNes emulator.
 
 ||game name||support||details||
 ||Balloon Fight||partial||main game is playable, some errors in background generation||
