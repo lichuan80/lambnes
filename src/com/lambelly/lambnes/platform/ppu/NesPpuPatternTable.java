@@ -1,7 +1,7 @@
 package com.lambelly.lambnes.platform.ppu;
 
 import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 
 public class NesPpuPatternTable
 {
@@ -11,7 +11,7 @@ public class NesPpuPatternTable
 	public NesPpuPatternTable()
 	{
 		// set up pattern table
-		if (Platform.getPpu().getPpuControlRegister1().getSpriteSize() == PPUControlRegister1.SPRITE_SIZE_8X8)
+		if (Platform.getPpu().getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X8)
 		{
 			this.setNumSprites(64);
 		}

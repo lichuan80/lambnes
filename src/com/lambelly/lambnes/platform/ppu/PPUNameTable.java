@@ -44,11 +44,13 @@ public class PPUNameTable
 			
 			// determine row and column in nametable for address
 			int nameTableRow = address % 30; // each nameTable has 30 rows
-			int nameTableCol = address % 32; // each nameTable has 32 rows
+			int nameTableCol = address % 32; // each nameTable has 32 columns
 			
 			colorMSB = this.getColorMSB(nameTableRow, nameTableCol);
-			logger.debug("upperBits: " + colorMSB);
-			return (NesTileCache.getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB));
+			
+			BackgroundTile bTile = new BackgroundTile(NesTileCache.getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB));
+			logger.info("using background tile MSBs: " + colorMSB + " for tile " + bTile.getBackgroundNumber() + " at nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
+			return (bTile);
 		}
 		else
 		{
@@ -79,14 +81,15 @@ public class PPUNameTable
 		// determine which attribute applies to this particular row and column
 		// nameTableRow ought to be a value between 0-31
 		// nameTableCol ought to be a value between 0-29
-		
-		int attributeIndex = (nameTableCol >> 2) | (nameTableRow >> 2);
-		logger.debug("looking up row: " + nameTableRow + " col: " + nameTableCol + " attributeIndex: " + attributeIndex);
+		int attributeIndex = (nameTableCol >> 2) | (nameTableRow);
 		
 		// determine which bit applies to this particular col / row
         int bit1 = nameTableCol & 0x2;
         int bit2 =  nameTableRow & 0x2;
         int shift = bit1 | (bit2 << 1);
+        
+		logger.info("looking up row: " + nameTableRow + " col: " + nameTableCol + " attributeIndex: " + attributeIndex + " shift " + shift);
+        
         return (this.getAttributeTable()[attributeIndex] >> shift) & 0x3;
 	}    
 	

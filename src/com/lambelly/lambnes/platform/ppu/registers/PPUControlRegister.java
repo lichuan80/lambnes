@@ -4,7 +4,7 @@ import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.*;
 import org.apache.log4j.*;
 
-public class PPUControlRegister1
+public class PPUControlRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2000;
 	public static final int MASTER_SLAVE_SELECTION_SLAVE = 1;
@@ -17,12 +17,13 @@ public class PPUControlRegister1
 	public static final int SPRITE_PATTERN_TABLE_ADDRESS_1000 = 1;
 	public static final int PPU_ADDRESS_INCREMENT_1 = 0;
 	public static final int PPU_ADDRESS_INCREMENT_32 = 1;
+	private static final int CYCLES_PER_EXECUTION = 0;
 	public static final int NAME_TABLE_ADDRESS_2000 = 0;
 	public static final int NAME_TABLE_ADDRESS_2400 = 1;
 	public static final int NAME_TABLE_ADDRESS_2800 = 2;
 	public static final int NAME_TABLE_ADDRESS_2C00 = 3;
 	
-	private static PPUControlRegister1 register = new PPUControlRegister1();
+	private static PPUControlRegister register = new PPUControlRegister();
 	private Integer rawControlByte = null;
 	private boolean executeNMIOnVBlank = false;
 	private int masterSlaveSelection = 0;
@@ -31,14 +32,14 @@ public class PPUControlRegister1
 	private int spritePatternTableAddress = 0;
 	private int ppuAddressIncrement = 0;
 	private int nameTableAddress = 0;
-	private Logger logger = Logger.getLogger(PPUControlRegister1.class);
+	private Logger logger = Logger.getLogger(PPUControlRegister.class);
 	
-	private PPUControlRegister1()
+	private PPUControlRegister()
 	{
 	
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
 		if (this.getRawControlByte() != null)
 		{
@@ -77,6 +78,8 @@ public class PPUControlRegister1
 			
 			this.clear();
 		}
+		
+		return PPUControlRegister.CYCLES_PER_EXECUTION;
 	}
 	
 	private void clear()
@@ -169,13 +172,13 @@ public class PPUControlRegister1
 		this.nameTableAddress = nameTableAddress;
 	}
 
-	public static PPUControlRegister1 getRegister()
+	public static PPUControlRegister getRegister()
 	{
 		return register;
 	}
 
-	private static void setRegister(PPUControlRegister1 register)
+	private static void setRegister(PPUControlRegister register)
 	{
-		PPUControlRegister1.register = register;
+		PPUControlRegister.register = register;
 	}
 }

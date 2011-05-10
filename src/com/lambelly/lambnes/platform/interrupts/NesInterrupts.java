@@ -29,8 +29,10 @@ public class NesInterrupts
 		setResetInterruptJumpAddress(this.getJumpAddress(NesInterrupts.RESET_INTERRUPT_ADDRESS));
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
+		int cyclesPassed = 0;
+		
 		// check for interrupts
 		InterruptRequest ir = null;
 		ir = this.getNextInterruptRequest();
@@ -76,6 +78,8 @@ public class NesInterrupts
 				Platform.getCpuMemory().setProgramCounter(getResetInterruptJumpAddress());
 			}
 		}
+		
+		return cyclesPassed;
 	}
 	
 	private int getJumpAddress(int baseAddress)

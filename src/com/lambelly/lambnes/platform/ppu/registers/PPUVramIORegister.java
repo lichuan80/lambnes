@@ -7,6 +7,7 @@ public class PPUVramIORegister
 {
 	public static final int REGISTER_ADDRESS = 0x2007;
 	private static PPUVramIORegister register = new PPUVramIORegister();
+	private static final int CYCLES_PER_EXECUTION = 0;
 	private boolean readAccess = false;
 	private boolean writeAccess = false;
 	private Integer ioAddress = null;
@@ -18,7 +19,7 @@ public class PPUVramIORegister
 	{
 		
 	}
-	public void cycle()
+	public int cycle()
 	{
 		if (logger.isDebugEnabled())
 		{	
@@ -43,6 +44,8 @@ public class PPUVramIORegister
 		}
 		
 		this.clear();
+		
+		return PPUVramIORegister.CYCLES_PER_EXECUTION;
 	}
 	
 	private void clear()

@@ -5,8 +5,8 @@
 
 package com.lambelly.lambnes.platform.ppu;
 
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister2;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
+import com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUStatusRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUVramIORegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister;
@@ -18,11 +18,13 @@ import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister;
 public interface PictureProcessingUnit
 {
 	public void doRegisterReadsWrites();
-	public PPUControlRegister1 getPpuControlRegister1();
-	public PPUControlRegister2 getPpuControlRegister2();
+	public PPUControlRegister getPpuControlRegister();
+	public PPUMaskRegister getPpuMaskRegister();
 	public PPUStatusRegister getPpuStatusRegister();
 	public PPUVramIORegister getPpuVramIORegister();
 	public PPUSprRamIORegister getPpuSprRamIORegister();
+	public int getRegisterAddressFlipFlopLatch();
+	public void resetRegisterAddressFlipFlopLatch();
 	
 	public void cycle(int cycleCount);
 }

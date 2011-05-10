@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.ppu.*;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 import com.lambelly.lambnes.test.utils.TestUtils;
 import com.lambelly.lambnes.util.BitUtils;
 

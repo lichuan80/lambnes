@@ -3,14 +3,14 @@ package com.lambelly.lambnes.platform.ppu;
 import com.lambelly.lambnes.gui.*;
 import com.lambelly.lambnes.platform.*;
 import com.lambelly.lambnes.platform.interrupts.InterruptRequest;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister2;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
+import com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamAddressRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSpriteDMARegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUStatusRegister;
-import com.lambelly.lambnes.platform.ppu.registers.PPUVramAddressRegister1;
-import com.lambelly.lambnes.platform.ppu.registers.PPUVramAddressRegister2;
+import com.lambelly.lambnes.platform.ppu.registers.PPUScrollRegister;
+import com.lambelly.lambnes.platform.ppu.registers.PPUVramAddressRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUVramIORegister;
 
 import java.awt.*;  
@@ -27,21 +27,24 @@ public class NesPpu implements PictureProcessingUnit
 	private static final int NUM_VERTICAL_TILES = 30;
 	public static final int SPRITE_COUNT = 64;
 	private static final double NUM_CYCLES_PER_SCANLINE = (Platform.CPU_FREQUENCY / NesPpu.REFRESH_RATE) / NesPpu.NUM_SCANLINES_PER_FRAME;
-	private PPUControlRegister1 ppuControlRegister1 = PPUControlRegister1.getRegister();
-	private PPUControlRegister2 ppuControlRegister2 = PPUControlRegister2.getRegister();
+	private PPUControlRegister ppuControlRegister = PPUControlRegister.getRegister();
+	private PPUMaskRegister ppuMaskRegister = PPUMaskRegister.getRegister();
 	private PPUStatusRegister ppuStatusRegister = PPUStatusRegister.getRegister();
 	private PPUSpriteDMARegister ppuSpriteDMARegister = PPUSpriteDMARegister.getRegister();
 	private PPUSprRamAddressRegister ppuSprRamAddressRegister = PPUSprRamAddressRegister.getRegister();
 	private PPUSprRamIORegister ppuSprRamIORegister = PPUSprRamIORegister.getRegister();
-	private PPUVramAddressRegister1 ppuVramAddressRegister1 = PPUVramAddressRegister1.getRegister();
-	private PPUVramAddressRegister2 ppuVramAddressRegister2 = PPUVramAddressRegister2.getRegister();
+	private PPUScrollRegister ppuVramAddressRegister1 = PPUScrollRegister.getRegister();
+	private PPUVramAddressRegister ppuVramAddressRegister2 = PPUVramAddressRegister.getRegister();
 	private PPUVramIORegister ppuVramIORegister = PPUVramIORegister.getRegister();
 	private int scanlineCount = 0;
 	private int horizontalPerPixelCount = 0;
 	private int horizontalPerTileCount = 0;
 	private int horizontalNameCount = 0;
 	private int verticalPerTileCount = 0;
+	private int verticalPerPixelCount = 0;
 	private int verticalNameCount = 0;
+	private int registerAddressFlipFlopLatch = 0;
+    private ScreenBuffer screenBuffer = new ScreenBuffer();
 	private Logger logger = Logger.getLogger(NesPpu.class);
 	
 	public void cycle(int cycleCount)
@@ -49,16 +52,21 @@ public class NesPpu implements PictureProcessingUnit
 		Platform.getPpu().doRegisterReadsWrites();
 		
     	if (cycleCount % NesPpu.NUM_CYCLES_PER_SCANLINE == 0)
-    	{	
+    	{	 
     		if (getScanlineCount() >= NesPpu.VBLANK_SCANLINE_START && getScanlineCount() <= NesPpu.VBLANK_SCANLINE_END)
     		{
     			// vblank
     			Platform.getPpu().getPpuStatusRegister().setVblank(true);
     			
     			// request interrupt (assumed it happens once per vBlank.
-    			if (getScanlineCount() == 241 && this.getPpuControlRegister1().isExecuteNMIOnVBlank())
+    			if (getScanlineCount() == NesPpu.VBLANK_SCANLINE_START)
     			{
-    				Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeNMI));
+        			this.getScreenBuffer().pushBufferToScreen();
+        			
+        			if (this.getPpuControlRegister().isExecuteNMIOnVBlank())
+        			{
+        				Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeNMI));
+        			}
     			}
     		}
     		else if (getScanlineCount() >= NesPpu.VBLANK_SCANLINE_END)
@@ -95,7 +103,7 @@ public class NesPpu implements PictureProcessingUnit
 				logger.debug("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
 			} 
 			
-			if (this.getPpuControlRegister2().isBackgroundVisibility())
+			if (this.getPpuMaskRegister().isBackgroundVisibility())
 			{
 				drawBackgroundTile(nameTableAddress, this.getHorizontalPerPixelCount(), scanline);
 			}
@@ -113,7 +121,7 @@ public class NesPpu implements PictureProcessingUnit
 		}
 		
         // for 64 sprites  
-        if (this.getPpuControlRegister2().isSpriteVisibility())
+        if (this.getPpuMaskRegister().isSpriteVisibility())
         {
         	// use sprites currently in buffer
             drawSprites(scanline);
@@ -138,22 +146,21 @@ public class NesPpu implements PictureProcessingUnit
         }         
 	}
 	
-    private void drawSprites(int scanline)
+    private void drawSprites(int verticalPerPixelCount)
     {
-    	logger.debug("using pattern memory for sprite tiles: " + (Platform.getPpu().getPpuControlRegister1().getSpritePatternTableAddress() == PPUControlRegister1.SPRITE_PATTERN_TABLE_ADDRESS_1000 ? 1000 : 0));
-    	logger.debug("previousSpriteCount: " + Platform.getPpuMemory().getSpritesInBufferCount());
+    	if (logger.isDebugEnabled())
+    	{
+	    	logger.debug("using pattern memory for sprite tiles: " + (Platform.getPpu().getPpuControlRegister().getSpritePatternTableAddress() == PPUControlRegister.SPRITE_PATTERN_TABLE_ADDRESS_1000 ? 1000 : 0));
+	    	logger.debug("previousSpriteCount: " + Platform.getPpuMemory().getSpritesInBufferCount());
+	    	logger.debug("vline: " + verticalPerPixelCount + " sprite buffer size: " + Platform.getPpuMemory().getSpritesInBufferCount());
+    	}
         if (Platform.getPpuMemory().getSpritesInBufferCount() > 0)
         {
             for (int i = 0 ; i < Platform.getPpuMemory().getSpritesInBufferCount(); i++)
             {
                 SpriteTile sprite = Platform.getPpuMemory().getSpriteFromBuffer(i);
                 
-                //if (logger.isDebugEnabled())
-                {
-                	logger.debug("drawing sprite " + sprite.getSpriteAttributes().getTileIndex());
-                }
-                
-                if (drawSpriteTile(sprite,scanline) && 
+                if (drawSpriteTileLine(sprite,verticalPerPixelCount) && 
                     (!this.getPpuStatusRegister().isSprite0Occurance()))
                 {
                     this.getPpuStatusRegister().setSprite0Occurance(true);                        
@@ -162,14 +169,21 @@ public class NesPpu implements PictureProcessingUnit
         }
     }
 	
-	private boolean drawSpriteTile(SpriteTile sprite, int scanline)
+	private boolean drawSpriteTileLine(SpriteTile sprite, int verticalPerPixelCount)
 	{
-		logger.debug("drawing sprite " + sprite.getSpriteNumber() + " at " + scanline); 
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("drawing sprite " + sprite.getSpriteNumber() + " at " + verticalPerPixelCount);
+		}
 		
 		boolean sprite0Triggered = false;
-        int spriteLine = scanline - sprite.getSpriteAttributes().getyCoordinate();
+        int spriteLine = verticalPerPixelCount - sprite.getSpriteAttributes().getyCoordinate();
         
-        logger.debug("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + scanline + " y coord: " + sprite.getSpriteAttributes());
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + verticalPerPixelCount + " y coord: " + sprite.getSpriteAttributes());
+        	logger.debug("sprite attributes for sprite: " + sprite.getSpriteAttributes().getTileIndex() + "\n" + sprite.getSpriteAttributes());
+        }
         
         //TODO -- 8x16 logics
         /** unused for the moment. 
@@ -210,62 +224,20 @@ public class NesPpu implements PictureProcessingUnit
 
         int spriteXPosition = sprite.getSpriteAttributes().getxCoordinate();
         
-        logger.debug("sprite attributes for sprite: " + sprite.getSpriteAttributes().getTileIndex() + "\n" + sprite.getSpriteAttributes());
-        
         // TODO -- should this be the way that transparentColor is determined? It probably should be part of an object so it can be reused.
         int transparentColor = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS);
         
-        // draw one row from the sprite -- leftmost pixel column is 7, rightmost is 0.
-        for (int spritePixelColumn = 7; spritePixelColumn >= 0; spritePixelColumn--)
+        //if (logger.isDebugEnabled())
         {
-            if (spriteXPosition < 256)
-            {
-            	int spritePixelRow = 0;
-            	if (sprite.getSpriteAttributes().isVerticalFlip())
-            	{
-            		spritePixelRow = 7 - spriteLine;
-            	}
-            	else
-            	{
-            		spritePixelRow = spriteLine;
-            	}
-                        	
-            	// TODO -- kind of shitty way of doing this.
-            	int spritePaletteIndex = sprite.getPixelSpriteColorPaletteIndex(spritePixelColumn, spritePixelRow);
-            	int masterPaletteAddress = NesPpuMemory.SPRITE_PALETTE_ADDRESS + spritePaletteIndex;
-                int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(masterPaletteAddress);
-                PaletteColor color = Platform.getMasterPalette().getColor(masterPaletteIndex);
-                
-                //if (logger.isDebugEnabled())
-                {
-	            	logger.info("sprite pixel column for sprite " + sprite.getSpriteNumber() + ": " + spritePixelColumn);
-	            	logger.info("sprite pixel row for sprite " + sprite.getSpriteNumber() + ": " + spritePixelRow);
-	                logger.info("sprite index number: " + sprite.getSpriteAttributes().getTileIndex());
-	                logger.info("spritePaletteIndex: " + spritePaletteIndex);
-	                logger.info("masterPaletteIndex: " + masterPaletteIndex);
-	                logger.info("palette color: " + color);
-	                logger.info("pulling masterPaletteIndex from " + masterPaletteAddress);
-	                logger.info("painting screen for sprite: " + sprite.getSpriteAttributes().getTileIndex() + " x: " + (spriteXPosition + (spritePixelColumn ^ 0x7)) + " y: " + scanline + " r: " + color.getRed() + " g: " + color.getGreen() + " b: " + color.getBlue());
-                }
-                
-                if (masterPaletteIndex != transparentColor)
-                {
-                	
-                    if (sprite.getSpriteAttributes().getTileIndex() == 0 && LambNesGui.getScreen().getImage().getRGB(spriteXPosition, scanline) != transparentColor)
-                    {
-                        sprite0Triggered = true;
-                    }
-                    if (spriteXPosition >= 8 || this.getPpuControlRegister2().isSpriteVisibility())
-                    {
-                        LambNesGui.getScreen().getImage().setRGB(((spriteXPosition + (spritePixelColumn ^ 0x7)) & 0xFF),scanline,color.getColorInt());
-                    }
-                }
-            }
+        	logger.info("drawing line " + spriteLine + " of sprite number: " + sprite.getSpriteNumber() +  " index: " + sprite.getSpriteAttributes().getTileIndex() + " at y: " + verticalPerPixelCount + "x: " + spriteXPosition);
         }
+        
+		this.getScreenBuffer().setScreenBufferTileRow(spriteXPosition, verticalPerPixelCount, sprite.getTileColorRow(spriteLine));
+
         return sprite0Triggered;		
 	}
 	
-    private void updateSpriteBuffer(int scanline)
+    private void updateSpriteBuffer(int verticalPerPixelCount)
     {
     	// reset sprite overflow status
         this.getPpuStatusRegister().setScanlineSpriteCount(false);
@@ -273,25 +245,35 @@ public class NesPpu implements PictureProcessingUnit
         int spriteCount = 0;
         for (int spriteNumber = 0; spriteNumber < SPRITE_COUNT; spriteNumber++)
         {
+        	// inspect each sprite attribute
         	SpriteAttribute spriteAttribute = Platform.getPpuMemory().getSpriteAttribute(spriteNumber);
         	
         	if (logger.isDebugEnabled())
         	{
-	        	logger.info("scanline: " + scanline + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate());
-	        	logger.info("ppu sprite clipping: " + this.getPpuControlRegister2().isSpriteClipping());
+	        	logger.debug("scanline: " + verticalPerPixelCount + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate());
+	        	logger.debug("ppu sprite clipping: " + this.getPpuMaskRegister().isSpriteClipping());
         	}
         	
             //   determine if Y coord is being drawn (for line + 1) 
-            int diff = ((scanline + 1) - spriteAttribute.getyCoordinate());
+            int diff = ((verticalPerPixelCount + 1) - spriteAttribute.getyCoordinate());
             
-            if ((diff >= 0 && diff <= 7) || ((this.getPpuControlRegister1().getSpriteSize() == PPUControlRegister1.SPRITE_SIZE_8X16) && (diff >= 0 && diff <= 15)))
+            if ((diff >= 0 && diff <= 7) || ((this.getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X16) && (diff >= 0 && diff <= 15)))
             {
-            	logger.debug("adding sprite to buffer: scanline: " + scanline + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate() + " diff: " + diff);
-            	Platform.getPpuMemory().setSpriteToBuffer(spriteCount, NesTileCache.getSpriteTile(spriteAttribute.getTileIndex(), spriteAttribute));
+            	if (logger.isDebugEnabled())
+            	{
+            		logger.debug("adding sprite to buffer: scanline: " + verticalPerPixelCount + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate() + " diff: " + diff + " spritecount: " + spriteCount);
+            	}
+            	SpriteTile currentSprite = new SpriteTile(NesTileCache.getSpriteTile(spriteAttribute.getTileIndex()));
+            	currentSprite.setSpriteAttributes(spriteAttribute);
+            	Platform.getPpuMemory().setSpriteToBuffer(spriteCount, currentSprite);
                 spriteCount++;
                 
                 if (spriteCount == 9 )
                 {
+                	if (logger.isDebugEnabled())
+                	{
+                		logger.debug("sprite overflow");
+                	}
                     spriteCount = 8;
                     this.getPpuStatusRegister().setScanlineSpriteCount(true);
                     break;
@@ -300,44 +282,33 @@ public class NesPpu implements PictureProcessingUnit
         }   
     }	
 	
-	private void drawBackgroundTile(int nameTableAddress, int horizontalPixel, int scanline)
+	private void drawBackgroundTile(int nameTableAddress, int horizontalPixel, int verticalPerPixelCount)
 	{
-		logger.debug("drawing background tile: nameTableAddress: " + nameTableAddress + " horizontalPixel: " + horizontalPixel + " scanline: " + scanline);
-		if (horizontalPixel >= 8 || !this.getPpuControlRegister2().isBackGroundClipping())
+		if (horizontalPixel >= 8 || !this.getPpuMaskRegister().isBackGroundClipping())
 		{
 			// select tile to write.
 			BackgroundTile bg = Platform.getPpuMemory().getNameTableFromHexAddress(nameTableAddress).getTileFromHexAddress(nameTableAddress);
 
-			for (int tileXindex = 7; tileXindex >= 0; tileXindex--)
-			{   
-				int tileYindex = scanline & 7; // find out tile y index.
-				logger.debug("background tile: " + bg.getBackgroundNumber() + " scanline: " + scanline + " tileYindex: " + tileYindex);
-				
-				if (horizontalPixel < 256)
-				{
-					// get pixel from line, x
-					int paletteIndex = bg.getPixelBackgroundColorPaletteIndex(tileXindex, tileYindex);
-					int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex);
-					PaletteColor backgroundPixelColor = Platform.getMasterPalette().getColor(masterPaletteIndex);
-	    				
-					LambNesGui.getScreen().getImage().setRGB(horizontalPixel, scanline, backgroundPixelColor.getColorInt());
-					horizontalPixel++;
-				}
-			}
+			logger.info("drawing background tile: nameTableAddress: " + nameTableAddress + " background tile number: " + bg.getBackgroundNumber() + " horizontalPixel: " + horizontalPixel + " scanline: " + verticalPerPixelCount + " color high bit: " + bg.getBackgroundAttributes().getColorHighBit());
+			
+			int tileYindex = verticalPerPixelCount & 7; // find out tile y index.
+			
+			this.getScreenBuffer().setScreenBufferTileRow(horizontalPixel, verticalPerPixelCount, bg.getTileColorRow(tileYindex));
+			horizontalPixel += 8;
 		}
 		else
 		{
 			if (logger.isDebugEnabled())
 			{
-				logger.debug("isBackgroundClipping: " + this.getPpuControlRegister2().isBackGroundClipping());
+				logger.debug("isBackgroundClipping: " + this.getPpuMaskRegister().isBackGroundClipping());
 			}
 		}
 	}
 	
 	public void doRegisterReadsWrites()
 	{
-		this.getPpuControlRegister1().cycle();
-		this.getPpuControlRegister2().cycle();
+		this.getPpuControlRegister().cycle();
+		this.getPpuMaskRegister().cycle();
 		this.getPpuStatusRegister().cycle();
 		this.getPpuSpriteDMARegister().cycle();
 		this.getPpuSprRamAddressRegister().cycle();
@@ -347,24 +318,24 @@ public class NesPpu implements PictureProcessingUnit
 		this.getPpuVramIORegister().cycle();
 	}
 
-	public PPUControlRegister1 getPpuControlRegister1()
+	public PPUControlRegister getPpuControlRegister()
 	{
-		return ppuControlRegister1;
+		return ppuControlRegister;
 	}
 
-	public void setPpuControlRegister1(PPUControlRegister1 ppuControlRegister1)
+	public void setPpuControlRegister(PPUControlRegister ppuControlRegister)
 	{
-		this.ppuControlRegister1 = ppuControlRegister1;
+		this.ppuControlRegister = ppuControlRegister;
 	}
 
-	public PPUControlRegister2 getPpuControlRegister2()
+	public PPUMaskRegister getPpuMaskRegister()
 	{
-		return ppuControlRegister2;
+		return ppuMaskRegister;
 	}
 
-	public void setPpuControlRegister2(PPUControlRegister2 ppuControlRegister2)
+	public void setPpuControlRegister2(PPUMaskRegister ppuControlRegister2)
 	{
-		this.ppuControlRegister2 = ppuControlRegister2;
+		this.ppuMaskRegister = ppuControlRegister2;
 	}
 
 	public PPUStatusRegister getPpuStatusRegister()
@@ -423,13 +394,13 @@ public class NesPpu implements PictureProcessingUnit
 		this.ppuSprRamIORegister = ppuSprRamIORegister;
 	}
 
-	public PPUVramAddressRegister2 getPpuVramAddressRegister2()
+	public PPUVramAddressRegister getPpuVramAddressRegister2()
 	{
 		return ppuVramAddressRegister2;
 	}
 
 	public void setPpuVramAddressRegister2(
-			PPUVramAddressRegister2 ppuVramAddressRegister)
+			PPUVramAddressRegister ppuVramAddressRegister)
 	{
 		this.ppuVramAddressRegister2 = ppuVramAddressRegister;
 	}
@@ -456,14 +427,21 @@ public class NesPpu implements PictureProcessingUnit
 	
 	public void incrementHorizontalPerPixelCount()
 	{
-		this.horizontalPerPixelCount++;
+		if (this.getPpuControlRegister().getPpuAddressIncrement() == PPUControlRegister.PPU_ADDRESS_INCREMENT_1)
+		{
+			this.horizontalPerPixelCount++;
+		}
+		else
+		{
+			this.horizontalPerPixelCount += 32;
+		}
 	}
 
 	public int getHorizontalPerTileCount()
 	{
 		return horizontalPerTileCount;
 	}
-
+	
 	public void setHorizontalPerTileCount(int horizontalTileCount)
 	{
 		this.horizontalPerTileCount = horizontalTileCount;
@@ -519,14 +497,67 @@ public class NesPpu implements PictureProcessingUnit
 		this.setVerticalNameCount((this.getVerticalNameCount() == 0)?1:0);
 	}	
 
-	public PPUVramAddressRegister1 getPpuVramAddressRegister1()
+	public PPUScrollRegister getPpuVramAddressRegister1()
 	{
 		return ppuVramAddressRegister1;
 	}
 
 	public void setPpuVramAddressRegister1(
-			PPUVramAddressRegister1 ppuVramAddressRegister1)
+			PPUScrollRegister ppuVramAddressRegister1)
 	{
 		this.ppuVramAddressRegister1 = ppuVramAddressRegister1;
+	}
+	
+	public int getRegisterAddressFlipFlopLatch()
+	{
+		int latchValue = this.registerAddressFlipFlopLatch;
+		this.flipRegisterAddressFlipFlopLatch();
+		return latchValue;
+	}
+
+	public void flipRegisterAddressFlipFlopLatch()
+	{
+		logger.debug("flipping flip flop from " + this.registerAddressFlipFlopLatch + " to " + (1^this.registerAddressFlipFlopLatch));
+		this.registerAddressFlipFlopLatch = (1^this.registerAddressFlipFlopLatch);
+	}
+	
+	public void resetRegisterAddressFlipFlopLatch()
+	{
+		this.registerAddressFlipFlopLatch = 0;
+	}
+
+	public int getVerticalPerPixelCount()
+	{
+		return verticalPerPixelCount;
+	}
+
+	public void setVerticalPerPixelCount(int verticalPerPixelCount)
+	{
+		this.verticalPerPixelCount = verticalPerPixelCount;
+	}
+	
+	public void incrementVerticalPerPixelCount()
+	{
+		this.verticalPerPixelCount++;
+	}
+
+	public void setPpuMaskRegister(PPUMaskRegister ppuMaskRegister)
+	{
+		this.ppuMaskRegister = ppuMaskRegister;
+	}
+
+	public void setRegisterAddressFlipFlopLatch(int registerAddressFlipFlopLatch)
+	{
+		this.registerAddressFlipFlopLatch = registerAddressFlipFlopLatch;
+	}
+
+	public ScreenBuffer getScreenBuffer()
+	{
+		return screenBuffer;
+	}
+
+	public void setScreenBuffer(ScreenBuffer screenBuffer)
+	{
+		this.screenBuffer = screenBuffer;
 	}
 }

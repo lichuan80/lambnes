@@ -122,15 +122,15 @@ public class LambNesGui extends JFrame //implements Runnable
 					logger.debug("key: K released");
 					Platform.getControllerPorts().getPortA().setB(false);
 				}
-				else if (e.getKeyCode() == KeyEvent.VK_J)
+				else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
-					logger.debug("key: J released");
-					Platform.getControllerPorts().getPortA().setA(false);
+					logger.debug("key: esc released");
+					Platform.getControllerPorts().getPortA().setSelect(false);
 				}
-				else if (e.getKeyCode() == KeyEvent.VK_K)
+				else if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
 					logger.debug("key: K released");
-					Platform.getControllerPorts().getPortA().setB(false);
+					Platform.getControllerPorts().getPortA().setStart(false);
 				}
 			}
 

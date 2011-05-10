@@ -54,12 +54,6 @@ public class Ines implements Cartridge
         logger.info("chr-rom pages: " + this.getHeader().getPatternTileByte());
         logger.info("program array length: " + this.getProgramInstructions().length);
         logger.info("pattern array length: " + this.getPatternTiles().length);
-        logger.info("pattern[0]: " + this.getPatternTiles()[0]);
-        logger.info("pattern[last]: " + this.getPatternTiles()[this.getPatternTiles().length - 1]);
-		for (int i = 0; i< 32; i++)
-		{
-			logger.debug("pattern array data: " + this.getPatternTiles()[i]);
-		}
     }
 
     /**

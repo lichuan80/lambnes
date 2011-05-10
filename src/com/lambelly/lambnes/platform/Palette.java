@@ -15,10 +15,10 @@ public class Palette
 	{
 		try
 		{
-		    XMLConfiguration config = new XMLConfiguration("palette.xml");
-		    List<String> reds = config.getList("color[@red]");
-		    List<String> blues = config.getList("color[@blue]");
-		    List<String> greens = config.getList("color[@green]");
+		    XMLConfiguration paletteConfig = new XMLConfiguration("palette.xml");
+		    List<String> reds = paletteConfig.getList("color[@red]");
+		    List<String> blues = paletteConfig.getList("color[@blue]");
+		    List<String> greens = paletteConfig.getList("color[@green]");
 		    
 		    for (int i=0;i<64;i++)
 		    {
@@ -59,7 +59,12 @@ public class Palette
 	
 	public PaletteColor getColor(int index)
 	{
-		return this.getPaletteColors()[index];
+		if (!Config.getConfig().getBoolean("colorScreen"))
+		{
+			index = (index & 0x30);
+		}
+		
+		return this.getPaletteColors()[index];	
 	}
 	
 	public void setColor(int index, PaletteColor color)

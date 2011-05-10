@@ -28,7 +28,7 @@ public class RomLoader
     	this.setFilePath(filePath);
     	if (new File(filePath) != null)
     	{
-    		logger.debug("loading rom");
+    		logger.debug("loading rom: " + filePath);
     		this.loadRom();
     	}
     	else

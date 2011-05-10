@@ -6,6 +6,7 @@ import org.apache.log4j.*;
 public class PPUSprRamIORegister
 {
 	public static final int REGISTER_ADDRESS = 0x2004;
+	private static final int CYCLES_PER_EXECUTION = 0;
 	private static PPUSprRamIORegister register = new PPUSprRamIORegister();
 	private Integer ioAddress = null;
 	private Integer rawControlByte = null;
@@ -16,7 +17,7 @@ public class PPUSprRamIORegister
 		
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
 		// get raw control byte
 		logger.debug("0x2004 raw control byte: " + this.getRawControlByte());
@@ -40,6 +41,7 @@ public class PPUSprRamIORegister
 			
 			this.clear();
 		}
+		return PPUSprRamIORegister.CYCLES_PER_EXECUTION;
 	}
 	
 	public void setRegisterValue(int value)

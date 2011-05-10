@@ -1,34 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="277CA.maketar" default="build-jar" basedir=".">
+<project name="lamnbnes.makezip" default="cleanup" basedir=".">
+	<property name="version" value="0.0.4"/>
 	<property name="dist.dir" value="./dist"/>
 	<property name="build.dir" value="./bin"/>
+	<property name="make.dir" value="${dist.dir}/lambnes"/>
 	<property name="lib.dir" value="D:/cygwin/home/c617177/library/jars/" />
 	<property name="config.dir" value="./config"/>
-
-	<!--
-	<target name ="dist" description="Create an executable jar for distribution">
-		<jar destfile="${dist}/lambnes.jar">
+	
+	<path id="compile.classpath">     
+		<pathelement location="${make.dir}/config"/>
+		<fileset dir="${make.dir}/lib" includes="**/*.jar"/>		
+	</path>  
+	
+	<target name ="jar-file" description="Create an executable jar for distribution" depends="copy-files">
+		<manifestclasspath property="jar.classpath" jarfile="${make.dir}/lambnes.jar">       
+			<classpath refid="compile.classpath"/>
+		</manifestclasspath>    		
+		<jar destfile="${make.dir}/lambnes.jar">
 			<zipfileset dir="./bin" />
 			<manifest>
 				<attribute name="Main-Class"
 		            value="com.lambelly.lambnes.LambNes"/>
 				<attribute name="Built-By" value="Thomas McCarthy"/>
+		        <attribute name="Class-Path" value="${jar.classpath}"/> 
 			</manifest>
 		</jar>
 	</target>
-	-->
-	<target name="build-jar">
-	    <jar destfile="${dist.dir}/lambnes.jar" compress="true">
-	        <manifest>
-	            <attribute name="Main-Class" value="com.lambelly.lambnes.LambNes"/>
-	        </manifest>
-	        <fileset dir="${build.dir}" includes="**/*.class"/>
-	    	<fileset file="${config.dir}/log4j.xml" />
-	    	<fileset file="${config.dir}/palette.xml" />
-	    	<zipgroupfileset dir="${lib.dir}">
-	            <includesfile name="dependencies.list"/>
-	        </zipgroupfileset>
-	    </jar>
+	
+	<target name ="build-src-tar" description="Create a tar of the source for distribution" depends="build-src-zip">
+		<tar destfile="${dist.dir}/lambnes-${version}-src.tar.gz" compression="gzip" basedir="./src"/>
+	</target>	
+	
+	<target name="build-src-zip" depends="build-binary-tar">
+		<zip destfile="${dist.dir}/lambnes-${version}-src.zip" basedir="./src" />
+	</target>
+	
+	<target name ="build-binary-tar" description="Create a tar of the binary for distribution" depends="build-binary-zip">
+		<tar destfile="${dist.dir}/lambnes-${version}.tar.gz" compression="gzip" basedir="${dist.dir}"/>
+	</target>		
+	
+	<target name="build-binary-zip" depends="jar-file">
+		<zip destfile="${dist.dir}/lambnes-${version}.zip" basedir="${dist.dir}" />
 	</target>
 
+	<target name="clear-dist">
+		<delete includeemptydirs="true">
+			<fileset dir="${dist.dir}" includes="**/*"/>
+		</delete>
+	</target>
+	
+	<target name="cleanup" depends="build-src-tar">
+		<delete includeemptydirs="true">
+			<fileset dir="${dist.dir}" includes="**/*" excludes="*.zip,*.tar.gz" />
+		</delete>
+	</target>	
+	
+	<target name="build-folder" depends="clear-dist">
+		<move todir="${dist.dir}/lambnes">
+			<fileset file="${dist.dir}/lambnes.jar" />
+			<fileset file="roms" />
+		</move>
+	</target>
+	
+	<target name="copy-files" depends="build-folder">
+		<copy todir="${dist.dir}/lambnes/config">
+			<fileset dir="${config.dir}" includes="**/*.xml, **/*.properties" />
+		</copy>
+		<copy todir="${dist.dir}/lambnes/lib/">
+			<fileset dir="${lib.dir}">
+				<includesfile name="dependencies.list"/>
+			</fileset>
+		</copy>
+	</target>
 </project>

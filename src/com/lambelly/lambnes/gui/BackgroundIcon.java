@@ -23,7 +23,7 @@ public class BackgroundIcon implements Icon
     {
     	if (Platform.getPpu() != null)
     	{
-    		if (Platform.getPpu().getPpuControlRegister2().isBackgroundVisibility())
+    		if (Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility())
     		{    			
     			BackgroundTile b = NesTileCache.getBackgroundTile(this.getTileNumber());
     			g.drawImage(b.getBufferedImage(),0,0,null);
