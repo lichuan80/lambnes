@@ -6,6 +6,7 @@ public class PPUSprRamAddressRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2003;
 	public static PPUSprRamAddressRegister register = new PPUSprRamAddressRegister();
+	private static final int CYCLES_PER_EXECUTION = 0;
 	private Integer rawControlByte = null;
 	
 	private PPUSprRamAddressRegister()
@@ -13,7 +14,7 @@ public class PPUSprRamAddressRegister
 		
 	}
 	
-	public void cycle()
+	public int cycle()
 	{	
 		// if greater than 0.
 		if (this.getRawControlByte() != null)
@@ -25,6 +26,7 @@ public class PPUSprRamAddressRegister
 			// clear? I suppose it makes sense.
 			this.clear();
 		}
+		return PPUSprRamAddressRegister.CYCLES_PER_EXECUTION;
 	}
 	
 	public static PPUSprRamAddressRegister getRegister()

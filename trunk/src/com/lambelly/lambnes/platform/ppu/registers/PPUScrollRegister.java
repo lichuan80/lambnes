@@ -5,7 +5,7 @@ import com.lambelly.lambnes.util.BitUtils;
 
 import org.apache.log4j.*;
 
-public class PPUVramAddressRegister1
+public class PPUScrollRegister
 {
 	/*
 	 * ----------------------------------------
@@ -17,18 +17,19 @@ public class PPUVramAddressRegister1
 	 * -----------------------------------------
 	 * */
 	public static final int REGISTER_ADDRESS = 0x2005;
-	private static PPUVramAddressRegister1 register = new PPUVramAddressRegister1();
+	private static PPUScrollRegister register = new PPUScrollRegister();
+	private static final int CYCLES_PER_EXECUTION = 0;
 	private Integer addressLowByte = null;
 	private Integer addressHighByte = null;
 	private Integer rawControlByte = null;
-	private Logger logger = Logger.getLogger(PPUVramAddressRegister1.class);
+	private Logger logger = Logger.getLogger(PPUScrollRegister.class);
 	
-	private PPUVramAddressRegister1()
+	private PPUScrollRegister()
 	{
 		
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
 		if (this.getRawControlByte() != null)
 		{
@@ -36,6 +37,8 @@ public class PPUVramAddressRegister1
 		}
 		
 		this.clear();
+		
+		return PPUScrollRegister.CYCLES_PER_EXECUTION;
 	}
 	
 	private void clear()
@@ -82,7 +85,7 @@ public class PPUVramAddressRegister1
 		this.rawControlByte = rawControlByte;
 	}
 	
-	public static PPUVramAddressRegister1 getRegister()
+	public static PPUScrollRegister getRegister()
 	{
 		return register;
 	}

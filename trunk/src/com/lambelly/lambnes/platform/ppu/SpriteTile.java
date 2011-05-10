@@ -3,7 +3,7 @@ package com.lambelly.lambnes.platform.ppu;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
 import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister1;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.util.NumberConversionUtils;
 import java.awt.image.*;  
@@ -14,13 +14,13 @@ public class SpriteTile
 	private int[] patternA = null;
 	private int[] patternB = null;
 	
-	private SpriteAttribute spriteAttribute = null;
+	private SpriteAttribute spriteAttribute = new SpriteAttribute();
 	private Logger logger = Logger.getLogger(SpriteTile.class);
 	
 	public SpriteTile(int spriteNumber)
 	{
 		this.setSpriteNumber(spriteNumber);
-		this.setSpriteAttributes(new SpriteAttribute(spriteNumber));
+		//this.setSpriteAttributes(new SpriteAttribute(spriteNumber));
 		this.instantiateSprite();
 	}
 	
@@ -31,13 +31,20 @@ public class SpriteTile
 		this.setSpriteAttributes(attribute);
 	}
 	
+	public SpriteTile (SpriteTile tile)
+	{
+		this.setSpriteNumber(tile.getSpriteNumber());
+		this.setPatternA(tile.getPatternA());
+		this.setPatternB(tile.getPatternB());
+	}
+	
 	private void instantiateSprite()
 	{
 		if(logger.isDebugEnabled())
 		{
 			logger.debug("instantiating sprite");
 		}
-		if (Platform.getPpu().getPpuControlRegister1().getSpriteSize() == PPUControlRegister1.SPRITE_SIZE_8X8)
+		if (Platform.getPpu().getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X8)
 		{
 			int[] sprite = this.getSpriteTileByteArray(this.getSpriteNumber());
 			
@@ -64,10 +71,23 @@ public class SpriteTile
 		{
 			if(logger.isDebugEnabled())
 			{
-				logger.debug(Platform.getPpu().getPpuControlRegister1());
+				logger.debug(Platform.getPpu().getPpuControlRegister());
 			}
 			
 		}
+	}
+	
+	public int[] getTileColorRow(int row)
+	{
+		int colorBit[] = new int[8];
+		for (int i = 0; i < 8; i++)
+		{
+			int paletteIndex = this.getPixelSpriteColorPaletteIndex(i, row);
+			int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.SPRITE_PALETTE_ADDRESS + paletteIndex);
+			colorBit[i ^ 0x07] = Platform.getMasterPalette().getColor(masterPaletteIndex).getColorInt();
+		}
+		
+		return colorBit;
 	}
 	
 	public int getPixelSpriteColorPaletteIndex(int column, int row)
@@ -112,7 +132,7 @@ public class SpriteTile
 		int[] sprite = new int[16];
 		
 		// determine address high bit (either in 0x0000 or 0x1000)
-		int highBit = Platform.getPpu().getPpuControlRegister1().getSpritePatternTableAddress();
+		int highBit = Platform.getPpu().getPpuControlRegister().getSpritePatternTableAddress();
 		int address = (spriteNumber * 16) | (highBit * 0x1000);
 		for (int x = 0; x < 16; x++)
 		{

@@ -6,7 +6,7 @@
 package com.lambelly.lambnes;
 
 import java.io.FileNotFoundException;
-
+import java.io.File;
 import org.apache.log4j.*;
 
 import com.lambelly.lambnes.gui.*;
@@ -15,6 +15,7 @@ import com.lambelly.lambnes.cartridge.CartridgeLocator;
 import com.lambelly.lambnes.cartridge.Ines;
 import com.lambelly.lambnes.cartridge.RomLoader;
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.Config;
 
 /**
  *
@@ -23,7 +24,7 @@ import com.lambelly.lambnes.platform.Platform;
 public class LambNes
 {
 	private static Logger logger = Logger.getLogger(LambNes.class);
-	private static final String VERSION = "0.0.1";
+	private static final String VERSION = "0.0.4";
 
 	/**
      * @param args the command line arguments
@@ -41,11 +42,10 @@ public class LambNes
         System.out.println("\nLambNes\nby Tom McCarthy\nversion " + LambNes.VERSION + "\n");
         logger.info("instantiating platform");
         Platform p = Platform.getInstance();
+        Config config = new Config();
         
         // start gui
     	LambNesGui gui = new LambNesGui();
-        //Thread mainwindow = new Thread(gui);
-        //mainwindow.setDaemon(true);
         
         // load default cartridge
     	try
@@ -54,14 +54,21 @@ public class LambNes
     		CartridgeLocator c = null;
     		if (cartridgeLoadPath != null)
     		{
+    			// absolute path provided by command line
     			c = new CartridgeLocator(cartridgeLoadPath);
     		}
     		else
     		{
+    			// path provided from rom chosen from default location 
     			c = new CartridgeLocator();
     		}
     		
-    		cartridgeLoadPath = c.locateCartridge();
+    		File romFile = c.locateCartridge();
+			
+			if (romFile != null)
+    		{
+				cartridgeLoadPath = romFile.getAbsolutePath();
+    		}
     		
     		if (cartridgeLoadPath != null)
     		{
@@ -74,7 +81,6 @@ public class LambNes
 		        gui.setVisible(true);
 		        //mainwindow.start();
 		        Platform.power();
-		        
     		}
     		else
     		{

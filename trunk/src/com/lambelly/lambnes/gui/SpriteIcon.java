@@ -23,7 +23,7 @@ public class SpriteIcon implements Icon
     {
     	if (Platform.getPpu() != null)
     	{
-    		if (Platform.getPpu().getPpuControlRegister2().isSpriteVisibility())
+    		if (Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
     		{
     			if(logger.isDebugEnabled())
     			{

@@ -2,6 +2,8 @@ package com.lambelly.lambnes.platform.ppu;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
+
+import com.lambelly.lambnes.platform.PaletteColor;
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.util.NumberConversionUtils; 
@@ -12,7 +14,6 @@ public class BackgroundTile
 	private int backgroundNumber = 0;
 	private int[] patternA = null;
 	private int[] patternB = null;
-	
 	private BackgroundAttribute backgroundAttribute = new BackgroundAttribute();
 	private Logger logger = Logger.getLogger(BackgroundTile.class);
 	
@@ -32,6 +33,14 @@ public class BackgroundTile
 		this.setBackgroundNumber(backgroundNumber);
 		this.setBackgroundAttributes(new BackgroundAttribute(colorHighBit));
 		this.instantiateBackground();
+	}
+	
+	public BackgroundTile(BackgroundTile tile)
+	{
+		this.setBackgroundNumber(tile.getBackgroundNumber());
+		this.setBackgroundAttributes(new BackgroundAttribute(tile.getBackgroundAttributes().getColorHighBit()));
+		this.setPatternA(tile.getPatternA());
+		this.setPatternB(tile.getPatternB());
 	}
 	
 	private void instantiateBackground()
@@ -58,7 +67,7 @@ public class BackgroundTile
 		int[] background = new int[16];
 		
 		// determine address high bit (either in 0x0000 or 0x1000)
-		int highBit = Platform.getPpu().getPpuControlRegister1().getBackgroundPatternTableAddress();
+		int highBit = Platform.getPpu().getPpuControlRegister().getBackgroundPatternTableAddress();
 		int address = (highBit * 0x1000) | (backgroundNumber * 16);
 		for (int x = 0; x < 16; x++)
 		{
@@ -71,6 +80,19 @@ public class BackgroundTile
 		
 		return background;
 	}	
+	
+	public int[] getTileColorRow(int row)
+	{
+		int colorBit[] = new int[8];
+		for (int i = 0; i < 8; i++)
+		{
+			int paletteIndex = this.getPixelBackgroundColorPaletteIndex(i, row);
+			int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex);
+			colorBit[i ^ 0x07] = Platform.getMasterPalette().getColor(masterPaletteIndex).getColorInt();
+		}
+		
+		return colorBit;
+	}
 	
 	public int getPixelBackgroundColorPaletteIndex(int column, int row)
 	{
@@ -194,10 +216,8 @@ public class BackgroundTile
 		return backgroundAttribute;
 	}
 
-	public void setBackgroundAttributes(BackgroundAttribute backgroundAttributes)
+	public void setBackgroundAttributes(BackgroundAttribute backgroundAttribute)
 	{
-		this.backgroundAttribute = backgroundAttributes;
+		this.backgroundAttribute = backgroundAttribute;
 	}
-	
-	
 }

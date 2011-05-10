@@ -6,6 +6,7 @@ import org.apache.log4j.*;
 public class PPUStatusRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2002;
+	private static final int CYCLES_PER_EXECUTION = 0;
 	private static PPUStatusRegister register = new PPUStatusRegister();
 	private boolean vblank = false;
 	private boolean sprite0Occurance = false;
@@ -19,28 +20,31 @@ public class PPUStatusRegister
 		
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
 		this.setRawControlByte(((this.isVblank()?1:0) << 7) |
 			((this.isSprite0Occurance()?1:0) << 6) |
 			((this.isScanlineSpriteCount()?1:0) << 5) |
 			((this.isVramWriteFlag()?1:0) << 4) |
-			0xFF); // so far as I know, d3-d0 are not used.
+			0xF); // so far as I know, d3-d0 are not used.
 		
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("0x2002: \n" + this.getRawControlByte() +
+			logger.debug("0x2002: " + this.getRawControlByte() + "\n" +
 					"isVblank(): " + this.isVblank() + "\n" +
 					"isSprite0Occurance(): " + this.isSprite0Occurance() + "\n" +
 					"isScanlineSpriteCount(): " + this.isScanlineSpriteCount() + "\n" +
 					"isVramWriteFlag(): " + this.isVramWriteFlag() + "\n");
 		}
+		
+		return PPUStatusRegister.CYCLES_PER_EXECUTION;
 	}
 	
 	public int getRegisterValue()
 	{
 		int rValue = this.getRawControlByte();
 		this.setVblank(false);
+		Platform.getPpu().resetRegisterAddressFlipFlopLatch();
 		return rValue;
 	}
 	
@@ -51,8 +55,6 @@ public class PPUStatusRegister
 	
 	public boolean isVblank()
 	{
-		boolean vblank = this.vblank;
-		this.setVblank(false);
 		return vblank;
 	}
 	public void setVblank(boolean vblank)

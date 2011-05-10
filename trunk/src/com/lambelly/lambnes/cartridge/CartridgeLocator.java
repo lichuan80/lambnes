@@ -2,19 +2,21 @@ package com.lambelly.lambnes.cartridge;
 
 import java.io.*;
 import org.apache.log4j.*;
+
+import com.lambelly.lambnes.platform.Config;
+
 import java.util.Vector;
 import java.util.Scanner;
 import java.util.Iterator;
 
 public class CartridgeLocator
 {
-	private static final String DEFAULT_ROM_LOCATION = "roms/";
-	private Vector<String> roms = new Vector<String>();
+	private Vector<File> roms = new Vector<File>();
 	private Logger logger = Logger.getLogger(CartridgeLocator.class);
 	
 	public CartridgeLocator()
 	{
-		this.generateListOfDefaultRoms(CartridgeLocator.DEFAULT_ROM_LOCATION);
+		this.generateListOfDefaultRoms(Config.getConfig().getString("defaultRomLocation"));
 	}
 	
 	public CartridgeLocator(String secondaryPath)
@@ -22,11 +24,11 @@ public class CartridgeLocator
 		this.generateListOfDefaultRoms(secondaryPath);
 	}
 	
-	public String locateCartridge()
+	public File locateCartridge()
 	{
 		if (this.getRoms().size() > 1)
 		{
-			return CartridgeLocator.DEFAULT_ROM_LOCATION + this.getRoms().get(this.selectRom());
+			return this.getRoms().get(this.selectRom());
 		}
 		else if (this.getRoms().size() == 1)
 		{
@@ -42,11 +44,11 @@ public class CartridgeLocator
 	{
 		System.out.println("multiple cartridges exist in the default location.");
 		System.out.println("please select a cartridge to load: ");
-		Iterator<String> it = this.getRoms().iterator();
+		Iterator<File> it = this.getRoms().iterator();
 		int i = 0;
 		while (it.hasNext())
 		{
-			System.out.println(i + "." + it.next());
+			System.out.println(i + "." + it.next().getName());
 			i++;
 		}
 		
@@ -65,9 +67,10 @@ public class CartridgeLocator
 	private void generateListOfDefaultRoms(String path)
 	{
 		// maybe eventually make a version capable of traversing subdirectories.
+		logger.debug("opening path: " + path);
 		File dir = new File(path);
 		
-		String[] children = dir.list();
+		File[] children = dir.listFiles();
 		if (children == null) 
 		{
 		    // Either dir does not exist or is not a directory
@@ -75,9 +78,9 @@ public class CartridgeLocator
 			{
 				// path was direct to a file
 				logger.debug("loading file directly");
-				if (path.toLowerCase().endsWith(".zip"))
+				if (dir.getName().toLowerCase().endsWith(".zip"))
 				{
-					this.addRom(path);
+					this.addRom(dir);
 				}
 			}
 		} 
@@ -86,32 +89,32 @@ public class CartridgeLocator
 		    for (int i=0; i<children.length; i++) 
 		    {
 		        // Get filename of file or directory
-		        String filename = children[i];
+		        File file = children[i];
 		        
-		        if (filename.toLowerCase().endsWith(".zip"))
+		        if (file.getName().toLowerCase().endsWith(".zip"))
 		        {
-		        	logger.debug("adding rom: " + filename);
-		        	this.addRom(filename);
+		        	logger.debug("adding rom: " + file.getName());
+		        	this.addRom(file);
 		        }
 		        else
 		        {
-		        	logger.debug("not adding file: " + filename);
+		        	logger.debug("not adding file: " + file.getName());
 		        }
 		    }
 		}		
 	}
 	
-	public void addRom(String rom)
+	public void addRom(File rom)
 	{
 		this.roms.add(rom);
 	}
 	
-	public Vector<String> getRoms()
+	public Vector<File> getRoms()
 	{
 		return roms;
 	}
 
-	public void setRoms(Vector<String> roms)
+	public void setRoms(Vector<File> roms)
 	{
 		this.roms = roms;
 	}

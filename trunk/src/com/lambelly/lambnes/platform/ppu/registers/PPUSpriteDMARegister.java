@@ -8,6 +8,7 @@ public class PPUSpriteDMARegister
 {
 	public static final int REGISTER_ADDRESS = 0x4014;
 	private static PPUSpriteDMARegister register = new PPUSpriteDMARegister();
+	private static final int CYCLES_PER_EXECUTION = 513;
 	private Integer rawControlByte = null;
 	private Logger logger = Logger.getLogger(PPUSpriteDMARegister.class);
 	
@@ -16,10 +17,13 @@ public class PPUSpriteDMARegister
 		
 	}
 	
-	public void cycle()
+	public int cycle()
 	{
+		int cyclesPassed = 0;
+		
 		if (this.getRawControlByte() != null)
 		{
+			cyclesPassed = PPUSpriteDMARegister.CYCLES_PER_EXECUTION;
 			int start = (this.getRawControlByte() * 0x100);
 			
 			if(logger.isDebugEnabled())
@@ -43,6 +47,8 @@ public class PPUSpriteDMARegister
 			
 			this.clear();
 		}
+		
+		return cyclesPassed;
 	}
 	
 	private void clear()

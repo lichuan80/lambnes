@@ -48,7 +48,6 @@ public class NesTileCache
 		}
 		
 		SpriteTile s = spriteTileCache[spriteTileNumber];
-		s.refreshAttributes();
 		
 		return spriteTileCache[spriteTileNumber];
 	}

@@ -17,6 +17,11 @@ public class SpriteAttribute
 	public static final int BACKGROUND_PRIORITY_BEHIND = 1;
 	private Logger logger = Logger.getLogger(SpriteAttribute.class);
 	
+	public SpriteAttribute()
+	{
+		
+	}
+	
 	public SpriteAttribute(int spriteNumber)
 	{
 		this.generateSpriteAttributes(spriteNumber);

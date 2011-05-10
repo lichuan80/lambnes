@@ -3,7 +3,7 @@ package com.lambelly.lambnes.platform.ppu.registers;
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.*;
 
-public class PPUControlRegister2
+public class PPUMaskRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2001;
 	public static final int FULL_BACKGROUND_COLOR_NONE = 0;
@@ -16,8 +16,9 @@ public class PPUControlRegister2
 	public static final int COLOR_INTENSITY_RED = 3;
 	public static final int DISPLAY_TYPE_COLOR = 0;
 	public static final int DISPLAY_TYPE_MONOCHROME = 1;
+	private static final int CYCLES_PER_EXECUTION = 0;
 
-	private static PPUControlRegister2 register = new PPUControlRegister2();
+	private static PPUMaskRegister register = new PPUMaskRegister();
 	private Integer rawControlByte = null;
 	private Integer controlByte = null;
 	private int fullBackgroundColor = 0;
@@ -28,12 +29,12 @@ public class PPUControlRegister2
 	private boolean backGroundClipping = false;
 	private int displayType = 0;
 
-	private PPUControlRegister2()
+	private PPUMaskRegister()
 	{
 
 	}
 
-	public void cycle()
+	public int cycle()
 	{
 		if (this.getRawControlByte() != null)
 		{
@@ -88,6 +89,8 @@ public class PPUControlRegister2
 				}
 			}
 		}
+		
+		return PPUMaskRegister.CYCLES_PER_EXECUTION;
 	}
 	
 	public void setRegisterValue(int value)
@@ -175,7 +178,7 @@ public class PPUControlRegister2
 		this.rawControlByte = rawControlByte;
 	}
 	
-	public static PPUControlRegister2 getRegister()
+	public static PPUMaskRegister getRegister()
 	{
 		return register;
 	}
