@@ -67,8 +67,9 @@ public class Platform
     		if(logger.isDebugEnabled())
     		{
     			logger.debug("pattern tiles head:");
+    			ArrayUtils.head(Platform.getCartridge().getPatternTiles(), 16);
     		}
-    		ArrayUtils.head(Platform.getCartridge().getPatternTiles(), 16);
+    		
     		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
     	}
     	else

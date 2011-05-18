@@ -21,7 +21,7 @@ public class Screen extends javax.swing.JPanel
     	}
     	this.setBounds(0, 0, Screen.SCREEN_HORIZONTAL_RESOLUTION, Screen.SCREEN_VERTICAL_RESOLUTION);
     	this.setPreferredSize(new Dimension(Screen.SCREEN_HORIZONTAL_RESOLUTION, Screen.SCREEN_VERTICAL_RESOLUTION));
-    	t = new PanelThread(this);
+    	t = new PanelThread(this, 100);
     	new Thread(t).start();
     }            
     

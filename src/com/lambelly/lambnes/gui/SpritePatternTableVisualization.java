@@ -29,7 +29,7 @@ public class SpritePatternTableVisualization extends JPanel
 			this.add(new SpriteLabel(x));
 		}
 		
-		t = new PanelThread(this);
+		t = new PanelThread(this, 1000);
     	new Thread(t).start();
 	}
 }

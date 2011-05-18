@@ -6,8 +6,9 @@ import javax.swing.SwingUtilities;
 public class PanelThread implements Runnable
 {
 	private JPanel panel;   
-	  
-	public PanelThread(JPanel p)
+	private int sleepTime = 50;
+	
+	public PanelThread(JPanel p, int sleepTime)
 	{   
 		panel = p;   
 	}   
@@ -18,7 +19,7 @@ public class PanelThread implements Runnable
 		{   
 			while(true)
 			{   
-				Thread.sleep(50);   
+				Thread.sleep(this.getSleepTime());   
 	  
 				SwingUtilities.invokeLater
 				(   
@@ -36,6 +37,16 @@ public class PanelThread implements Runnable
 		{   
 			e.printStackTrace();   
 		}      
+	}
+
+	public int getSleepTime()
+	{
+		return sleepTime;
+	}
+
+	public void setSleepTime(int sleepTime)
+	{
+		this.sleepTime = sleepTime;
 	}  
 
 }

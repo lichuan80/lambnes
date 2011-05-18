@@ -30,7 +30,7 @@ public class PaletteVisualization extends JPanel
 			this.add(new PaletteLabel(this.getPaletteMemoryBaseAddress() + x));
 		}
 		
-		t = new PanelThread(this);
+		t = new PanelThread(this, 1000);
     	new Thread(t).start();
 	}
 

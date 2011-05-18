@@ -15,7 +15,10 @@ public class PPUNameTable
 	
 	public void setMemoryFromHexAddress(int address, int value)
 	{
-		logger.debug("setting value " + value + " to address: 0x" + Integer.toHexString(address));
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("setting value " + value + " to address: 0x" + Integer.toHexString(address));
+		}
 		int index = address & PPUNameTable.BASE_ADDRESS_MASK;
 		
 		if (index >= 0 && index < 960)
@@ -43,13 +46,17 @@ public class PPUNameTable
 			int colorMSB = 0;
 			
 			// determine row and column in nametable for address
-			int nameTableRow = address % 30; // each nameTable has 30 rows
-			int nameTableCol = address % 32; // each nameTable has 32 columns
+			int nameTableRow = index >> 5; // column is essentially the first 5 bits of the number -- throw out for row
+			int nameTableCol = index & 31; // column is essentially the first 5 bits of the number -- exclude for column
 			
 			colorMSB = this.getColorMSB(nameTableRow, nameTableCol);
 			
 			BackgroundTile bTile = new BackgroundTile(NesTileCache.getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB));
-			logger.info("using background tile MSBs: " + colorMSB + " for tile " + bTile.getBackgroundNumber() + " at nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
+			
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("using background tile MSBs: " + colorMSB + " for tile " + bTile.getBackgroundNumber() + " at address " + address + " and nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
+			}
 			return (bTile);
 		}
 		else
@@ -81,16 +88,21 @@ public class PPUNameTable
 		// determine which attribute applies to this particular row and column
 		// nameTableRow ought to be a value between 0-31
 		// nameTableCol ought to be a value between 0-29
-		int attributeIndex = (nameTableCol >> 2) | (nameTableRow);
+		int attributeTableCol = (nameTableCol / 4) & 7;
+		int attributeTableRow = (nameTableRow / 4) & 7;
+		int attributeIndex = (attributeTableRow << 3) | (attributeTableCol);
+		int attributeValue = this.getAttributeTable()[attributeIndex];
 		
-		// determine which bit applies to this particular col / row
         int bit1 = nameTableCol & 0x2;
         int bit2 =  nameTableRow & 0x2;
         int shift = bit1 | (bit2 << 1);
         
-		logger.info("looking up row: " + nameTableRow + " col: " + nameTableCol + " attributeIndex: " + attributeIndex + " shift " + shift);
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("looking up background attribute row: " + nameTableRow + " col: " + nameTableCol + " attributeIndex: " + attributeIndex + " attributeValue: " + attributeValue + " shift " + shift);
+        }
         
-        return (this.getAttributeTable()[attributeIndex] >> shift) & 0x3;
+        return (attributeValue >> shift) & 0x3;
 	}    
 	
 	public int[] getNameTable()

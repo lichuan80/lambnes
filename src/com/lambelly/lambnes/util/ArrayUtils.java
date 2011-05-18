@@ -50,7 +50,7 @@ public class ArrayUtils
      */
     public static void head(int[] a, int headSize)
     {
-        for (int i=0;i < headSize;i++)
+        for (int i=0;i < headSize && i < a.length;i++)
         {
             logger.debug("head " + i + ":" + a[i]);
         }
