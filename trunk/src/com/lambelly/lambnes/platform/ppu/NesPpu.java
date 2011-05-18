@@ -58,6 +58,7 @@ public class NesPpu implements PictureProcessingUnit
     			// vblank
     			Platform.getPpu().getPpuStatusRegister().setVblank(true);
     			
+    			
     			// request interrupt (assumed it happens once per vBlank.
     			if (getScanlineCount() == NesPpu.VBLANK_SCANLINE_START)
     			{
@@ -72,7 +73,9 @@ public class NesPpu implements PictureProcessingUnit
     		else if (getScanlineCount() >= NesPpu.VBLANK_SCANLINE_END)
     		{
     			// reset scanlineCount (new frame)
-    			Platform.getPpu().getPpuStatusRegister().setVblank(false);
+    			logger.info("setting sprite0 false at " + this.getScanlineCount());
+    			Platform.getPpu().getPpuStatusRegister().setSprite0Occurance(false);
+    			this.getPpuStatusRegister().setVblank(false);
     			setScanlineCount(0); 
     		}
     		else
@@ -87,40 +90,13 @@ public class NesPpu implements PictureProcessingUnit
 	
 	private void drawScanline(int scanline)
 	{			
-		// iterate one line in name table
-		for (int nameTableEntry = 0; nameTableEntry < NesPpu.NUM_HORIZONTAL_TILES; nameTableEntry++)
+		// draw background
+		if (this.getPpuMaskRegister().isBackgroundVisibility())
 		{
-			//essentially creates an integer that represents the offset from start of name table (0x2000).
-			int nameTableAddress = 0x2000 + this.getHorizontalPerTileCount() | (this.getVerticalPerTileCount() << 5) | (this.getHorizontalNameCount() << 10) | (this.getVerticalNameCount() << 11);
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("horizontalPerTileCount: " + this.getHorizontalPerTileCount());
-				logger.debug("verticalPerTileCount: " + this.getVerticalPerTileCount());
-				logger.debug("horizontalNameCount: " + this.getHorizontalNameCount());
-				logger.debug("verticalNameCount: " + this.getVerticalNameCount());
-				logger.debug("scanline: " + this.getScanlineCount());
-				logger.debug("looking at address: 0x" + Integer.toHexString(nameTableAddress));
-				logger.debug("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
-			} 
-			
-			if (this.getPpuMaskRegister().isBackgroundVisibility())
-			{
-				drawBackgroundTile(nameTableAddress, this.getHorizontalPerPixelCount(), scanline);
-			}
-			
-			this.setHorizontalPerPixelCount(this.getHorizontalPerPixelCount() + 8);
-
-			this.incrementHorizontalPerTileCount();
-
-			if (this.getHorizontalPerTileCount() == 32) // reached end of line, essentially
-			{
-				this.setHorizontalPerPixelCount(0);
-				//this.flipHorizontalNameCount();
-				this.setHorizontalPerTileCount(0);
-			}
+			this.drawBackground(scanline);
 		}
 		
-        // for 64 sprites  
+        // update and draw sprite buffer 
         if (this.getPpuMaskRegister().isSpriteVisibility())
         {
         	// use sprites currently in buffer
@@ -163,6 +139,7 @@ public class NesPpu implements PictureProcessingUnit
                 if (drawSpriteTileLine(sprite,verticalPerPixelCount) && 
                     (!this.getPpuStatusRegister().isSprite0Occurance()))
                 {
+                	logger.info("sprite0 true: " + this.getScanlineCount());
                     this.getPpuStatusRegister().setSprite0Occurance(true);                        
                 }
             }
@@ -171,18 +148,14 @@ public class NesPpu implements PictureProcessingUnit
 	
 	private boolean drawSpriteTileLine(SpriteTile sprite, int verticalPerPixelCount)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("drawing sprite " + sprite.getSpriteNumber() + " at " + verticalPerPixelCount);
-		}
-		
 		boolean sprite0Triggered = false;
         int spriteLine = verticalPerPixelCount - sprite.getSpriteAttributes().getyCoordinate();
         
-        if (logger.isDebugEnabled())
+        //if (logger.isDebugEnabled())
         {
-        	logger.debug("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + verticalPerPixelCount + " y coord: " + sprite.getSpriteAttributes());
-        	logger.debug("sprite attributes for sprite: " + sprite.getSpriteAttributes().getTileIndex() + "\n" + sprite.getSpriteAttributes());
+        	logger.info("drawing sprite " + sprite.getSpriteNumber() + " at " + verticalPerPixelCount);
+        	logger.info("spriteLine: " + spriteLine + " sprite: " + sprite.getSpriteNumber() + " scanline: " + verticalPerPixelCount + " y coord: " + sprite.getSpriteAttributes());
+        	logger.info("sprite attributes for sprite: " + sprite.getSpriteAttributes().getTileIndex() + "\n" + sprite.getSpriteAttributes());
         }
         
         //TODO -- 8x16 logics
@@ -220,19 +193,54 @@ public class NesPpu implements PictureProcessingUnit
         }
 		*/
         
+        // get one sprite line and draw it pixel by pixel
         spriteLine = spriteLine & 7; // if more than the index, roll over
-
+        int spriteXOffset = 0;
         int spriteXPosition = sprite.getSpriteAttributes().getxCoordinate();
+    	int sprite0Number = Platform.getPpuMemory().getSprRam()[1];
         
         // TODO -- should this be the way that transparentColor is determined? It probably should be part of an object so it can be reused.
-        int transparentColor = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS);
+        PixelColor spriteTransparentColor = new PixelColor(0, PixelColor.PALETTE_TYPE_SPRITE);
+        PixelColor backgroundTransparentColor =  new PixelColor(0, PixelColor.PALETTE_TYPE_BACKGROUND);
+        
+        for (PixelColor pixel : sprite.getTileColorRow(spriteLine))
+        {
+        	logger.info("sprite 0 logic: sprite 0 number: " + sprite0Number + " sprite number: " + sprite.getSpriteNumber() + " sprite pixel color: " + LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) + " sprite pixel transparent color: " + spriteTransparentColor.getMasterPaletteColor().getColorInt() + " background pixel color: " + LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) + " background pixel transparent color: " + backgroundTransparentColor.getMasterPaletteColor().getColorInt() + " sprite0Triggered: " + sprite0Triggered);
+        	
+        	// check sprite visibility
+        	if (pixel.getPaletteIndex() != spriteTransparentColor.getPaletteIndex())                  
+	        {   
+        		logger.info("sprite 0 logic: sprite visible");
+        		// check background visibility
+        		if (LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) != backgroundTransparentColor.getMasterPaletteColor().getColorInt())
+        		{
+        			logger.info("sprite 0 logic: background visible");
+	        	     // sprite 0 logic
+		        	if (sprite.getSpriteNumber() == sprite0Number)                   
+		        	{                          
+		        		sprite0Triggered = true;
+		        		logger.info("sprite 0 logic: sprite0Triggered: " + sprite0Triggered + " spriteNumber: " + sprite.getSpriteNumber() + " sprite0 number: " + sprite0Number);
+		        	}
+	        	}   
+        		else
+        		{
+        			// background invisible
+        		}
+	        }
+	        
+        	// draw pixel
+        	if (spriteXPosition >= 8 || this.getPpuMaskRegister().isSpriteVisibility())                      
+        	{                          
+        		this.getScreenBuffer().setScreenBufferPixel(spriteXPosition + spriteXOffset,verticalPerPixelCount,pixel.getMasterPaletteColor().getColorInt());                      
+        	}		        	
+        	
+	        spriteXOffset++;
+        }
         
         //if (logger.isDebugEnabled())
         {
-        	logger.info("drawing line " + spriteLine + " of sprite number: " + sprite.getSpriteNumber() +  " index: " + sprite.getSpriteAttributes().getTileIndex() + " at y: " + verticalPerPixelCount + "x: " + spriteXPosition);
+        	logger.info("drawing line " + spriteLine + " of sprite number: " + sprite.getSpriteNumber() +  " index: " + sprite.getSpriteAttributes().getTileIndex() + " at y: " + verticalPerPixelCount + "x: " + spriteXPosition + " sprite0: " + this.getPpuStatusRegister().isSprite0Occurance());
         }
-        
-		this.getScreenBuffer().setScreenBufferTileRow(spriteXPosition, verticalPerPixelCount, sprite.getTileColorRow(spriteLine));
 
         return sprite0Triggered;		
 	}
@@ -259,9 +267,9 @@ public class NesPpu implements PictureProcessingUnit
             
             if ((diff >= 0 && diff <= 7) || ((this.getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X16) && (diff >= 0 && diff <= 15)))
             {
-            	if (logger.isDebugEnabled())
+            	//if (logger.isDebugEnabled())
             	{
-            		logger.debug("adding sprite to buffer: scanline: " + verticalPerPixelCount + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate() + " diff: " + diff + " spritecount: " + spriteCount);
+            		logger.info("adding sprite to buffer: scanline: " + verticalPerPixelCount + " tileIndex: " + spriteAttribute.getTileIndex() + " spriteYcoordinate: " + spriteAttribute.getyCoordinate() + " diff: " + diff + " spritecount: " + spriteCount);
             	}
             	SpriteTile currentSprite = new SpriteTile(NesTileCache.getSpriteTile(spriteAttribute.getTileIndex()));
             	currentSprite.setSpriteAttributes(spriteAttribute);
@@ -280,7 +288,41 @@ public class NesPpu implements PictureProcessingUnit
                 }
             }
         }   
-    }	
+    }
+    
+    private void drawBackground(int verticalPerPixelCount)
+    {
+		// iterate one line in name table
+		for (int nameTableEntry = 0; nameTableEntry < NesPpu.NUM_HORIZONTAL_TILES; nameTableEntry++)
+		{
+			//essentially creates an integer that represents the offset from start of name table (0x2000).
+			int nameTableAddress = 0x2000 + this.getHorizontalPerTileCount() | (this.getVerticalPerTileCount() << 5) | (this.getHorizontalNameCount() << 10) | (this.getVerticalNameCount() << 11);
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("horizontalPerTileCount: " + this.getHorizontalPerTileCount());
+				logger.debug("verticalPerTileCount: " + this.getVerticalPerTileCount());
+				logger.debug("horizontalNameCount: " + this.getHorizontalNameCount());
+				logger.debug("verticalNameCount: " + this.getVerticalNameCount());
+				logger.debug("scanline: " + this.getScanlineCount());
+				logger.debug("looking at address: 0x" + Integer.toHexString(nameTableAddress));
+				logger.debug("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
+			} 
+		
+			drawBackgroundTile(nameTableAddress, this.getHorizontalPerPixelCount(), verticalPerPixelCount);
+			
+			this.setHorizontalPerPixelCount(this.getHorizontalPerPixelCount() + 8);
+
+			this.incrementHorizontalPerTileCount();
+
+			if (this.getHorizontalPerTileCount() == 32) // reached end of line, essentially
+			{
+				this.setHorizontalPerPixelCount(0);
+				//this.flipHorizontalNameCount();
+				this.setHorizontalPerTileCount(0);
+			}
+		}
+    	
+    }
 	
 	private void drawBackgroundTile(int nameTableAddress, int horizontalPixel, int verticalPerPixelCount)
 	{
@@ -289,7 +331,10 @@ public class NesPpu implements PictureProcessingUnit
 			// select tile to write.
 			BackgroundTile bg = Platform.getPpuMemory().getNameTableFromHexAddress(nameTableAddress).getTileFromHexAddress(nameTableAddress);
 
-			logger.info("drawing background tile: nameTableAddress: " + nameTableAddress + " background tile number: " + bg.getBackgroundNumber() + " horizontalPixel: " + horizontalPixel + " scanline: " + verticalPerPixelCount + " color high bit: " + bg.getBackgroundAttributes().getColorHighBit());
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("drawing background tile: nameTableAddress: " + nameTableAddress + " background tile number: " + bg.getBackgroundNumber() + " horizontalPixel: " + horizontalPixel + " scanline: " + verticalPerPixelCount + " color high bit: " + bg.getBackgroundAttributes().getColorHighBit());
+			}
 			
 			int tileYindex = verticalPerPixelCount & 7; // find out tile y index.
 			

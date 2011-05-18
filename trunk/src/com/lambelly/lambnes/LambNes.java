@@ -79,7 +79,6 @@ public class LambNes
 		        
 		        // start
 		        gui.setVisible(true);
-		        //mainwindow.start();
 		        Platform.power();
     		}
     		else

@@ -81,14 +81,13 @@ public class BackgroundTile
 		return background;
 	}	
 	
-	public int[] getTileColorRow(int row)
+	public PixelColor[] getTileColorRow(int row)
 	{
-		int colorBit[] = new int[8];
+		PixelColor colorBit[] = new PixelColor[8];
 		for (int i = 0; i < 8; i++)
 		{
-			int paletteIndex = this.getPixelBackgroundColorPaletteIndex(i, row);
-			int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex);
-			colorBit[i ^ 0x07] = Platform.getMasterPalette().getColor(masterPaletteIndex).getColorInt();
+			PixelColor pixel = new PixelColor(this.getPixelBackgroundColorPaletteIndex(i, row), PixelColor.PALETTE_TYPE_BACKGROUND);
+			colorBit[i ^ 0x07] = pixel;
 		}
 		
 		return colorBit;

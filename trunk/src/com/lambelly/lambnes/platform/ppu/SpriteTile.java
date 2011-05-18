@@ -77,14 +77,13 @@ public class SpriteTile
 		}
 	}
 	
-	public int[] getTileColorRow(int row)
+	public PixelColor[] getTileColorRow(int row)
 	{
-		int colorBit[] = new int[8];
+		PixelColor colorBit[] = new PixelColor[8];
 		for (int i = 0; i < 8; i++)
 		{
-			int paletteIndex = this.getPixelSpriteColorPaletteIndex(i, row);
-			int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.SPRITE_PALETTE_ADDRESS + paletteIndex);
-			colorBit[i ^ 0x07] = Platform.getMasterPalette().getColor(masterPaletteIndex).getColorInt();
+			PixelColor pixel = new PixelColor(this.getPixelSpriteColorPaletteIndex(i, row),PixelColor.PALETTE_TYPE_SPRITE);
+			colorBit[i ^ 0x07] = pixel;
 		}
 		
 		return colorBit;

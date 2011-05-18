@@ -28,7 +28,7 @@ public class MasterPaletteVisualization extends JPanel
 			this.add(new MasterPaletteLabel(x));
 		}
 		
-		t = new PanelThread(this);
+		t = new PanelThread(this, 1000);
 		new Thread(t).start();
 	}
 }

@@ -30,14 +30,23 @@ public class ScreenBuffer
         return image;
     }
     
+    public void setScreenBufferPixel(int arrayIndex, int color)
+    {
+    	this.screenBuffer[arrayIndex] = color;
+    }
+    
     public void setScreenBufferPixel(int horizontal, int vertical, int color)
 	{
 		this.screenBuffer[this.coordinatesToArrayIndex(horizontal, vertical)] = color;
 	}
     
-    public void setScreenBufferTileRow(int horizontal, int vertical, int[] tileRow)
+    public void setScreenBufferTileRow(int horizontal, int vertical, PixelColor[] tileRow)
     {
-    	System.arraycopy(tileRow, 0, this.getScreenBuffer(), this.coordinatesToArrayIndex(horizontal, vertical), 8);
+    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontal, vertical);
+    	for (int tileRowOffset = 0; tileRowOffset < tileRow.length; tileRowOffset++)
+    	{
+    		this.setScreenBufferPixel(bufferIndexStart + tileRowOffset, tileRow[tileRowOffset].getMasterPaletteColor().getColorInt());
+    	}
     }
 	
     private int coordinatesToArrayIndex(int horizontal, int vertical)

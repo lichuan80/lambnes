@@ -30,7 +30,7 @@ public class BackgroundPatternTableVisualization extends JPanel
 			this.add(new BackgroundLabel(x));
 		}
 		
-		t = new PanelThread(this);
+		t = new PanelThread(this, 1000);
     	new Thread(t).start();
 	}
 }

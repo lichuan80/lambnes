@@ -4,9 +4,9 @@ import java.awt.Color;
 
 public class PaletteColor
 {
-	int red = 0;
-	int green = 0;
-	int blue = 0;
+	private int red = 0;
+	private int green = 0;
+	private int blue = 0;
 	
 	public PaletteColor(int red,int blue,int green)
 	{
