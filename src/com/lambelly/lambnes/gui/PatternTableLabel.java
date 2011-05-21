@@ -3,16 +3,16 @@ package com.lambelly.lambnes.gui;
 import javax.swing.*;
 import javax.swing.border.*;
 
-public class SpriteLabel extends JLabel
+public class PatternTableLabel extends JLabel
 {
 	private int spriteNumber = 0;
 	
-	public SpriteLabel(int spriteNumber)
+	public PatternTableLabel(int spriteNumber, PatternTableIcon icon)
 	{
 		this.setSpriteNumber(spriteNumber);
 		this.setHorizontalTextPosition(JLabel.CENTER);
 		this.setVerticalTextPosition(JLabel.BOTTOM);
-		this.setIcon(new SpriteIcon(this.getSpriteNumber()));
+		this.setIcon(icon);
 		this.setBorder(LineBorder.createGrayLineBorder());
 	}
 

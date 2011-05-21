@@ -1,9 +1,9 @@
 package com.lambelly.lambnes.platform.ppu;
 
 import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.platform.PaletteColor;
+import com.lambelly.lambnes.platform.NesMasterColor;
 
-public class PixelColor
+public class PaletteColor
 {
 	private int paletteIndex = 0;
 	private int masterPaletteIndex = 0;
@@ -12,13 +12,13 @@ public class PixelColor
 	public static final int PALETTE_TYPE_SPRITE = 0;
 	public static final int PALETTE_TYPE_BACKGROUND = 1;
 	
-	public PixelColor(int paletteIndex, int paletteType)
+	public PaletteColor(int paletteIndex, int paletteType)
 	{
 		this.setPaletteType(paletteType);
 		this.setPaletteIndex(paletteIndex);
 		
 		// determine master palette index
-		if (paletteType == PixelColor.PALETTE_TYPE_BACKGROUND)
+		if (paletteType == PaletteColor.PALETTE_TYPE_BACKGROUND)
 		{
 			this.setMasterPaletteIndex(Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex));
 		}
@@ -28,7 +28,7 @@ public class PixelColor
 		}
 	}
 	
-	public PaletteColor getMasterPaletteColor()
+	public NesMasterColor getMasterPaletteColor()
 	{
 		return Platform.getMasterPalette().getColor(masterPaletteIndex);
 	}

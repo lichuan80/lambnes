@@ -195,24 +195,21 @@ public class NesPpu implements PictureProcessingUnit
         
         // get one sprite line and draw it pixel by pixel
         spriteLine = spriteLine & 7; // if more than the index, roll over
-        int spriteXOffset = 0;
         int spriteXPosition = sprite.getSpriteAttributes().getxCoordinate();
     	int sprite0Number = Platform.getPpuMemory().getSprRam()[1];
         
         // TODO -- should this be the way that transparentColor is determined? It probably should be part of an object so it can be reused.
-        PixelColor spriteTransparentColor = new PixelColor(0, PixelColor.PALETTE_TYPE_SPRITE);
-        PixelColor backgroundTransparentColor =  new PixelColor(0, PixelColor.PALETTE_TYPE_BACKGROUND);
+        PaletteColor spriteTransparentColor = new PaletteColor(0, PaletteColor.PALETTE_TYPE_SPRITE);
+        PaletteColor backgroundTransparentColor =  new PaletteColor(0, PaletteColor.PALETTE_TYPE_BACKGROUND);
         
-        for (PixelColor pixel : sprite.getTileColorRow(spriteLine))
-        {
-        	logger.info("sprite 0 logic: sprite 0 number: " + sprite0Number + " sprite number: " + sprite.getSpriteNumber() + " sprite pixel color: " + LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) + " sprite pixel transparent color: " + spriteTransparentColor.getMasterPaletteColor().getColorInt() + " background pixel color: " + LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) + " background pixel transparent color: " + backgroundTransparentColor.getMasterPaletteColor().getColorInt() + " sprite0Triggered: " + sprite0Triggered);
-        	
+        for (PaletteColor pixel : sprite.getTileColorRow(spriteLine))
+        {	
         	// check sprite visibility
         	if (pixel.getPaletteIndex() != spriteTransparentColor.getPaletteIndex())                  
 	        {   
         		logger.info("sprite 0 logic: sprite visible");
         		// check background visibility
-        		if (LambNesGui.getScreen().getImage().getRGB(spriteXPosition + spriteXOffset, verticalPerPixelCount) != backgroundTransparentColor.getMasterPaletteColor().getColorInt())
+        		if (LambNesGui.getScreen().getImage().getRGB((spriteXPosition & Platform.EIGHT_BIT_MASK), verticalPerPixelCount) != backgroundTransparentColor.getMasterPaletteColor().getColorInt())
         		{
         			logger.info("sprite 0 logic: background visible");
 	        	     // sprite 0 logic
@@ -231,15 +228,15 @@ public class NesPpu implements PictureProcessingUnit
         	// draw pixel
         	if (spriteXPosition >= 8 || this.getPpuMaskRegister().isSpriteVisibility())                      
         	{                          
-        		this.getScreenBuffer().setScreenBufferPixel(spriteXPosition + spriteXOffset,verticalPerPixelCount,pixel.getMasterPaletteColor().getColorInt());                      
+        		this.getScreenBuffer().setScreenBufferPixel((spriteXPosition & Platform.EIGHT_BIT_MASK),verticalPerPixelCount,pixel.getMasterPaletteColor().getColorInt());                      
         	}		        	
         	
-	        spriteXOffset++;
+	        spriteXPosition++;
         }
         
         //if (logger.isDebugEnabled())
         {
-        	logger.info("drawing line " + spriteLine + " of sprite number: " + sprite.getSpriteNumber() +  " index: " + sprite.getSpriteAttributes().getTileIndex() + " at y: " + verticalPerPixelCount + "x: " + spriteXPosition + " sprite0: " + this.getPpuStatusRegister().isSprite0Occurance());
+        	logger.info("drawing line " + spriteLine + " of sprite number: " + sprite.getSpriteNumber() +  " index: " + sprite.getSpriteAttributes().getTileIndex() + " at y: " + verticalPerPixelCount + "x: " + (spriteXPosition & Platform.EIGHT_BIT_MASK) + " sprite0: " + this.getPpuStatusRegister().isSprite0Occurance());
         }
 
         return sprite0Triggered;		

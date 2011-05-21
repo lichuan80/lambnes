@@ -8,6 +8,7 @@ package com.lambelly.lambnes;
 import java.io.FileNotFoundException;
 import java.io.File;
 import org.apache.log4j.*;
+import javax.swing.SwingUtilities;
 
 import com.lambelly.lambnes.gui.*;
 import com.lambelly.lambnes.cartridge.Cartridge;
@@ -44,9 +45,6 @@ public class LambNes
         Platform p = Platform.getInstance();
         Config config = new Config();
         
-        // start gui
-    	LambNesGui gui = new LambNesGui();
-        
         // load default cartridge
     	try
     	{
@@ -78,7 +76,18 @@ public class LambNes
 		        Platform.setCartridge(cart);
 		        
 		        // start
-		        gui.setVisible(true);
+		        SwingUtilities.invokeLater(new Runnable() 
+		        {
+		            public void run() 
+		            {
+		            	LambNesGui gui = new LambNesGui();
+		            	gui.setVisible(true);
+		            	Thread t = new Thread(gui);
+		            	t.start();
+		            }
+		        });
+
+		        
 		        Platform.power();
     		}
     		else

@@ -77,12 +77,12 @@ public class SpriteTile
 		}
 	}
 	
-	public PixelColor[] getTileColorRow(int row)
+	public PaletteColor[] getTileColorRow(int row)
 	{
-		PixelColor colorBit[] = new PixelColor[8];
+		PaletteColor colorBit[] = new PaletteColor[8];
 		for (int i = 0; i < 8; i++)
 		{
-			PixelColor pixel = new PixelColor(this.getPixelSpriteColorPaletteIndex(i, row),PixelColor.PALETTE_TYPE_SPRITE);
+			PaletteColor pixel = new PaletteColor(this.getPixelSpriteColorPaletteIndex(i, row),PaletteColor.PALETTE_TYPE_SPRITE);
 			colorBit[i ^ 0x07] = pixel;
 		}
 		

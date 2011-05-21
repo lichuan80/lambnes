@@ -59,7 +59,7 @@ public class TileTestImageViewer extends JFrame implements ActionListener, KeyLi
         
         Container content = getContentPane();
         content.add(new TestScreen(this.getImage()));
-        content.add(new BackgroundPatternTableVisualization());
+        content.add(new PatternTableVisualization("test"));
         
         this.pack();
         this.setVisible(true);        
