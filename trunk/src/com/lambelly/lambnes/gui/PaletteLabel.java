@@ -5,40 +5,38 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import com.lambelly.lambnes.platform.*;
+import com.lambelly.lambnes.platform.NesMasterColor;
 
 public class PaletteLabel extends JLabel
 {
-	private int paletteMemoryAddress = 0;
+	private NesMasterColor backgroundColor = null;
 	
-	public PaletteLabel(int paletteMemoryAddress)
+	public PaletteLabel(NesMasterColor color)
 	{
-		this.setPaletteMemoryAddress(paletteMemoryAddress);
+		this.setBackgroundColor(color);
 		this.setHorizontalTextPosition(JLabel.CENTER);
 		this.setVerticalTextPosition(JLabel.BOTTOM);
 		//this.setText(Integer.toString(spritePaletteColorNumber)); 
 		this.setOpaque(true);
 		this.setBorder(LineBorder.createGrayLineBorder());
+		this.setToolTipText("r" + this.getBackgroundColor().getRed() + "b" + this.getBackgroundColor().getBlue() + "g" + this.getBackgroundColor().getGreen());
+		this.setBackground(new Color(this.getBackgroundColor().getColorInt()));
 	}
 	
-	public void paint(Graphics g)
+	public void refreshBackground(NesMasterColor color)
 	{
-		super.paint(g);
-		int palcol = Platform.getPpuMemory().getMemoryFromHexAddress(this.getPaletteMemoryAddress());
-		PaletteColor pc = Platform.getMasterPalette().getColor(palcol);
-		this.setToolTipText(palcol + ": r" + pc.getRed() + "b" + pc.getBlue() + "g" + pc.getGreen());
-		this.setBackground(new Color(pc.getColorInt()));
+		this.setBackgroundColor(color);
+		this.setToolTipText("r" + this.getBackgroundColor().getRed() + "b" + this.getBackgroundColor().getBlue() + "g" + this.getBackgroundColor().getGreen());
+		this.setBackground(new Color(this.getBackgroundColor().getColorInt()));
 	}
 
-	public int getPaletteMemoryAddress()
+	public NesMasterColor getBackgroundColor()
 	{
-		return paletteMemoryAddress;
+		return backgroundColor;
 	}
 
-	public void setPaletteMemoryAddress(int paletteMemoryAddress)
+	public void setBackgroundColor(NesMasterColor color)
 	{
-		this.paletteMemoryAddress = paletteMemoryAddress;
+		backgroundColor = color;
 	}
-
-
 }

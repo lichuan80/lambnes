@@ -3,7 +3,7 @@ package com.lambelly.lambnes.platform.ppu;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
 
-import com.lambelly.lambnes.platform.PaletteColor;
+import com.lambelly.lambnes.platform.NesMasterColor;
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.util.NumberConversionUtils; 
@@ -81,12 +81,12 @@ public class BackgroundTile
 		return background;
 	}	
 	
-	public PixelColor[] getTileColorRow(int row)
+	public PaletteColor[] getTileColorRow(int row)
 	{
-		PixelColor colorBit[] = new PixelColor[8];
+		PaletteColor colorBit[] = new PaletteColor[8];
 		for (int i = 0; i < 8; i++)
 		{
-			PixelColor pixel = new PixelColor(this.getPixelBackgroundColorPaletteIndex(i, row), PixelColor.PALETTE_TYPE_BACKGROUND);
+			PaletteColor pixel = new PaletteColor(this.getPixelBackgroundColorPaletteIndex(i, row), PaletteColor.PALETTE_TYPE_BACKGROUND);
 			colorBit[i ^ 0x07] = pixel;
 		}
 		

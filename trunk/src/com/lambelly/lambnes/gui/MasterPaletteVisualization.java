@@ -5,10 +5,12 @@ import javax.swing.*;
 
 import org.apache.log4j.*;
 
+import com.lambelly.lambnes.platform.NesMasterColor;
+import com.lambelly.lambnes.platform.Platform;
+
 public class MasterPaletteVisualization extends JPanel
 {
 	private Logger logger = Logger.getLogger(MasterPaletteVisualization.class);
-	PanelThread t = null;
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
 	
@@ -25,10 +27,7 @@ public class MasterPaletteVisualization extends JPanel
     	
 		for (int x=0;x<64;x++)
 		{
-			this.add(new MasterPaletteLabel(x));
+			this.add(new PaletteLabel(Platform.getMasterPalette().getColor(x)));
 		}
-		
-		t = new PanelThread(this, 1000);
-		new Thread(t).start();
 	}
 }

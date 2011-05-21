@@ -2,20 +2,20 @@ package com.lambelly.lambnes.platform;
 
 import java.awt.Color;
 
-public class PaletteColor
+public class NesMasterColor
 {
 	private int red = 0;
 	private int green = 0;
 	private int blue = 0;
 	
-	public PaletteColor(int red,int blue,int green)
+	public NesMasterColor(int red,int blue,int green)
 	{
 		this.setRed(red);
 		this.setBlue(blue);
 		this.setGreen(green);
 	}
 	
-	public PaletteColor(String red,String blue,String green)
+	public NesMasterColor(String red,String blue,String green)
 	{
 		this.setRed(red);
 		this.setBlue(blue);

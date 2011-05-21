@@ -8,7 +8,7 @@ import java.util.List;
 public class Palette
 {
 	private Logger logger = Logger.getLogger(Palette.class);
-	private PaletteColor[] paletteColors = new PaletteColor[64];
+	private NesMasterColor[] paletteColors = new NesMasterColor[64];
 	
 	
 	public Palette() throws ConfigurationException
@@ -26,7 +26,7 @@ public class Palette
 		    	{
 		    		logger.debug("setting color[" + i + "] with " + reds.get(i));
 		    	}
-		    	this.setColor(i, new PaletteColor(reds.get(i), blues.get(i), greens.get(i)));		    	
+		    	this.setColor(i, new NesMasterColor(reds.get(i), blues.get(i), greens.get(i)));		    	
 		    }
 		    
 		}
@@ -47,17 +47,17 @@ public class Palette
 		return returnString;
 	}
 	
-	private PaletteColor[] getPaletteColors()
+	private NesMasterColor[] getPaletteColors()
 	{
 		return paletteColors;
 	}
 	
-	private void setPaletteColors(PaletteColor[] colors)
+	private void setPaletteColors(NesMasterColor[] colors)
 	{
 		this.paletteColors = colors;
 	}
 	
-	public PaletteColor getColor(int index)
+	public NesMasterColor getColor(int index)
 	{
 		if (!Config.getConfig().getBoolean("colorScreen"))
 		{
@@ -67,7 +67,7 @@ public class Palette
 		return this.getPaletteColors()[index];	
 	}
 	
-	public void setColor(int index, PaletteColor color)
+	public void setColor(int index, NesMasterColor color)
 	{
 		this.getPaletteColors()[index] = color;
 	}

@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 public class Screen extends javax.swing.JPanel 
 {
     private BufferedImage image = new BufferedImage(Screen.SCREEN_HORIZONTAL_RESOLUTION, Screen.SCREEN_VERTICAL_RESOLUTION, BufferedImage.TYPE_INT_ARGB);
-    private PanelThread t = null;
     private Logger logger = Logger.getLogger(Screen.class);
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
@@ -21,11 +20,7 @@ public class Screen extends javax.swing.JPanel
     	}
     	this.setBounds(0, 0, Screen.SCREEN_HORIZONTAL_RESOLUTION, Screen.SCREEN_VERTICAL_RESOLUTION);
     	this.setPreferredSize(new Dimension(Screen.SCREEN_HORIZONTAL_RESOLUTION, Screen.SCREEN_VERTICAL_RESOLUTION));
-    	t = new PanelThread(this, 100);
-    	new Thread(t).start();
     }            
-    
-    
     
     @Override          
     public void paint(Graphics g) 

@@ -1,20 +1,22 @@
 package com.lambelly.lambnes.gui;
 
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.ppu.*;
 import java.awt.*;
 import org.apache.log4j.*;
 
-public class SpriteIcon implements Icon
+public class PatternTableIcon implements Icon
 {
 	public int spriteNumber = 0;
 	public int getIconWidth() { return 8; }
     public int getIconHeight() { return 8; }
-    private Logger logger = Logger.getLogger(SpriteIcon.class);    
+    private BufferedImage icon = new BufferedImage(this.getIconWidth(), this.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+    private Logger logger = Logger.getLogger(PatternTableIcon.class);    
     
-    public SpriteIcon(int spriteNumber)
+    public PatternTableIcon(int spriteNumber)
     {
     	this.setSpriteNumber(spriteNumber);
     }
@@ -29,7 +31,7 @@ public class SpriteIcon implements Icon
     			{
     				logger.debug("drawing icon");
     			}
-    			g.drawImage(NesTileCache.getSpriteTile(this.getSpriteNumber()).getBufferedImage(),0,0,null);
+    			g.drawImage(this.getIcon(),0,0,null);
     		}
     	}
     }
@@ -40,5 +42,13 @@ public class SpriteIcon implements Icon
 	public void setSpriteNumber(int spriteNumber)
 	{
 		this.spriteNumber = spriteNumber;
+	}
+	public BufferedImage getIcon()
+	{
+		return icon;
+	}
+	public void setIcon(BufferedImage icon)
+	{
+		this.icon = icon;
 	}
 }

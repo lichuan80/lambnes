@@ -8,13 +8,23 @@ import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
 
-public class LambNesGui extends JFrame //implements Runnable 
+public class LambNesGui extends JFrame implements Runnable 
 {
 	private static Screen screen = new Screen();
 	private static Container content = null;
 	private static boolean run = true;
+	private PatternTableWorker spriteTableWorker = null;
+	private PatternTableWorker backgroundTableWorker = null;
+	private PaletteVisualization bpv = new PaletteVisualization(0x3F00, 16);
+	private PaletteVisualization spv = new PaletteVisualization(0x3F10, 16);
+	private Timer workertimer = null;
 	private Logger logger = Logger.getLogger(LambNesGui.class);
+	public static final int SLEEP_TIME = 125;
+	public static final int WORKER_INTIAL_DELAY = 10000;
+	public static final int WORKER_PAUSE = 5000;
 	public static final String SCREEN_TITLE = "LambNes"; 
+	public static final String SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT = "Sprite Pattern Table";
+	public static final String BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT = "Background Pattern Table";
 	private static final boolean SPRITE_PATTERN_TABLE_VISUALIZATION = true;
 	private static final boolean BACKGROUND_PATTERN_TABLE_VISUALIZATION = true;
 	private static final boolean SPRITE_PALETTE_VISUALIZATION = true;
@@ -140,20 +150,57 @@ public class LambNesGui extends JFrame //implements Runnable
 			}
         });
         
+        // add panels to content pane
         setContent(getContentPane());
         getContent().setLayout(new GridLayout(2,3));
-        PaletteVisualization spv = new PaletteVisualization(0x3F10);
-        content.add(spv);
+        getContent().add(spv);
         MasterPaletteVisualization mpv = new MasterPaletteVisualization();
-        content.add(mpv);
-        PaletteVisualization bpv = new PaletteVisualization(0x3F00);
-        content.add(bpv);
-        SpritePatternTableVisualization sptv = new SpritePatternTableVisualization();
-        content.add(sptv);
+        getContent().add(mpv);
+        getContent().add(bpv);
+        PatternTableVisualization sptv = new PatternTableVisualization(LambNesGui.SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT);
+        getContent().add(sptv);
         getContent().add(LambNesGui.getScreen());
-        BackgroundPatternTableVisualization bptv = new BackgroundPatternTableVisualization();
-        content.add(bptv);
+        PatternTableVisualization bptv = new PatternTableVisualization(LambNesGui.BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT);
+        getContent().add(bptv);
         this.pack();    
+        
+        // set up worker threads that update the visualizations
+        PatternTableWorker sptw = new PatternTableWorker(sptv);
+        spriteTableWorker = sptw;
+        PatternTableWorker bptw = new PatternTableWorker(bptv);
+        backgroundTableWorker = bptw;
+        
+        ActionListener workerActionListener = new ActionListener() 
+        {
+            public void actionPerformed(ActionEvent actionEvent) 
+            {
+				getSpriteTableWorker().execute();
+				getBackgroundTableWorker().execute();
+				getBpv().refreshPalette();
+				getSpv().refreshPalette();
+				getWorkertimer().restart();
+            }
+        };
+        
+        setWorkertimer(new Timer(LambNesGui.WORKER_PAUSE, workerActionListener));
+        getWorkertimer().setInitialDelay(LambNesGui.WORKER_INTIAL_DELAY);
+        getWorkertimer().start(); 
+	}
+	
+	public void  run()
+	{   
+		try
+		{   
+			while(LambNesGui.isRun())
+			{   
+				Thread.sleep(LambNesGui.SLEEP_TIME);   
+				content.repaint();    
+			}   
+		}   
+		catch(InterruptedException e)
+		{   
+			e.printStackTrace();   
+		}      
 	}
 
 	public static Screen getScreen()
@@ -211,5 +258,55 @@ public class LambNesGui extends JFrame //implements Runnable
 	public static void setContent(Container content)
 	{
 		LambNesGui.content = content;
+	}
+
+	public PatternTableWorker getSpriteTableWorker()
+	{
+		return spriteTableWorker;
+	}
+
+	public void setSpriteTableWorker(PatternTableWorker spriteTableWorker)
+	{
+		this.spriteTableWorker = spriteTableWorker;
+	}
+
+	public PatternTableWorker getBackgroundTableWorker()
+	{
+		return backgroundTableWorker;
+	}
+
+	public void setBackgroundTableWorker(PatternTableWorker backgroundTableWorker)
+	{
+		this.backgroundTableWorker = backgroundTableWorker;
+	}
+
+	public PaletteVisualization getBpv()
+	{
+		return bpv;
+	}
+
+	public void setBpv(PaletteVisualization bpv)
+	{
+		this.bpv = bpv;
+	}
+
+	public PaletteVisualization getSpv()
+	{
+		return spv;
+	}
+
+	public void setSpv(PaletteVisualization spv)
+	{
+		this.spv = spv;
+	}
+
+	public Timer getWorkertimer()
+	{
+		return workertimer;
+	}
+
+	public void setWorkertimer(Timer workertimer)
+	{
+		this.workertimer = workertimer;
 	}   
 }
