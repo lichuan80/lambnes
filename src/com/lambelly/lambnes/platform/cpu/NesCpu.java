@@ -31,7 +31,7 @@ public class NesCpu implements CentralProcessingUnit
 
     }
 
-    public void processNextInstruction()
+    public int processNextInstruction()
     {
         Instruction instruction = Instruction.get(Platform.getCpuMemory().getNextPrgRomByte());
         
@@ -1142,6 +1142,8 @@ public class NesCpu implements CentralProcessingUnit
             	break;
             
         }
+        
+        return instruction.getCycles();
     }
     
     private void doADC(int value)

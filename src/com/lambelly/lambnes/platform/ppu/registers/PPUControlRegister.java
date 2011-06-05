@@ -53,7 +53,6 @@ public class PPUControlRegister
 			logger.debug("setting background pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
 			logger.debug("setting sprite pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 3)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
 			this.setBackgroundPatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000);
-			//this.setBackgroundPatternTableAddress(1);
 			this.setSpritePatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 3)?SPRITE_PATTERN_TABLE_ADDRESS_1000:SPRITE_PATTERN_TABLE_ADDRESS_0000);
 			this.setPpuAddressIncrement(BitUtils.isBitSet(this.getRawControlByte(), 2)?PPU_ADDRESS_INCREMENT_32:PPU_ADDRESS_INCREMENT_1);
 			
@@ -80,6 +79,18 @@ public class PPUControlRegister
 		}
 		
 		return PPUControlRegister.CYCLES_PER_EXECUTION;
+	}
+	
+	public String toString()
+	{
+		if (this.getRawControlByte() != null)
+		{
+			return "0x" + REGISTER_ADDRESS + ": " + Integer.toBinaryString(this.getRawControlByte());
+		}
+		else
+		{
+			return "0x" + REGISTER_ADDRESS + ": 0";
+		}
 	}
 	
 	private void clear()

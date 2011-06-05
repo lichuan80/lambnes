@@ -93,6 +93,19 @@ public class PPUMaskRegister
 		return PPUMaskRegister.CYCLES_PER_EXECUTION;
 	}
 	
+	public String toString()
+	{
+		if (this.getRawControlByte() != null)
+		{
+			return "0x" + REGISTER_ADDRESS + ": " + Integer.toBinaryString(this.getRawControlByte());
+		}
+		else
+		{
+			return "0x" + REGISTER_ADDRESS + ": 0";
+		}
+	}
+	
+	
 	public void setRegisterValue(int value)
 	{
 		this.setRawControlByte(value);

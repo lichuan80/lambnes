@@ -50,7 +50,7 @@ public class NesPpuMemory
 			this.setNameTable1(nameTableA);
 			this.setNameTable2(nameTableB);
 			this.setNameTable3(nameTableB);
-		}
+		} 
 		else if (Platform.getCartridge().getHeader().isVerticalMirroring())
 		{
 			this.setNameTable0(nameTableA);

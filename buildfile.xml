@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="lamnbnes.makezip" default="cleanup" basedir=".">
-	<property name="version" value="0.0.4"/>
+	<property name="version" value="0.0.5"/>
 	<property name="dist.dir" value="./dist"/>
 	<property name="build.dir" value="./bin"/>
 	<property name="make.dir" value="${dist.dir}/lambnes"/>

@@ -11,7 +11,7 @@ package com.lambelly.lambnes.platform.cpu;
  */
 public interface CentralProcessingUnit
 {
-	public void processNextInstruction();
+	public int processNextInstruction();
 	public int getAccumulator();
 	public void setAccumulator(int accumulator);
 	public int getX();
