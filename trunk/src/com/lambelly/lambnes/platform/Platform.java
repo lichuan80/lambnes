@@ -53,23 +53,10 @@ public class Platform
     
     public static void power()
     {
-    	// power up initialization
-    	if(logger.isDebugEnabled())
-    	{
-	    	logger.debug("power up initialization");
-	    	logger.debug("loading cartridge");
-    	}
-    	
     	if (Platform.getCartridge() != null)
     	{
     		Platform.getPpuMemory().establishMirroring();
     		Platform.getCpuMemory().setProgramInstructions(Platform.getCartridge().getProgramInstructions());
-    		if(logger.isDebugEnabled())
-    		{
-    			logger.debug("pattern tiles head:");
-    			ArrayUtils.head(Platform.getCartridge().getPatternTiles(), 16);
-    		}
-    		
     		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
     	}
     	else
@@ -87,18 +74,11 @@ public class Platform
         {
         	while (cycleCount < Platform.CPU_FREQUENCY && isRun())
         	{
-        		if(logger.isDebugEnabled())
-        		{
-	        		logger.debug("\nCycle Count: " + cycleCount);
-		        	logger.debug("\n" + Platform.getCpu().getFlags());
-		        	logger.debug("\n" + Platform.getCpu());
-        		}
-	        	
 	        	// 1. cpu cycle
-	        	Platform.getCpu().processNextInstruction();
+	        	cycleCount += Platform.getCpu().processNextInstruction();
 	        	
 	        	// 2. Execute Interrupts.
-	        	Platform.getNesInterrupts().cycle();
+	        	cycleCount += Platform.getNesInterrupts().cycle();
 	        	
 	        	// 3. ppu cycle
 	        	Platform.getPpu().cycle(cycleCount); 

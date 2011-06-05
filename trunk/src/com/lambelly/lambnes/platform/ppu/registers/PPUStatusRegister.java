@@ -31,6 +31,7 @@ public class PPUStatusRegister
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("0x2002: " + this.getRawControlByte() + "\n" +
+					"raw bits: " + Integer.toBinaryString(this.getRawControlByte()) + "\n" +
 					"isVblank(): " + this.isVblank() + "\n" +
 					"isSprite0Occurance(): " + this.isSprite0Occurance() + "\n" +
 					"isScanlineSpriteCount(): " + this.isScanlineSpriteCount() + "\n" +
@@ -46,6 +47,11 @@ public class PPUStatusRegister
 		this.setVblank(false);
 		Platform.getPpu().resetRegisterAddressFlipFlopLatch();
 		return rValue;
+	}
+	
+	public String toString()
+	{
+		return "0x" + REGISTER_ADDRESS + ": " + Integer.toBinaryString(this.getRawControlByte());
 	}
 	
 	public void setRegisterValue(int value)

@@ -33,10 +33,35 @@ public class PPUScrollRegister
 	{
 		if (this.getRawControlByte() != null)
 		{
-			logger.warn("write to register 0x2005: " + this.getRawControlByte());
+			//if (logger.isDebugEnabled())
+			{
+				logger.info("write to register 0x2005: " + this.getRawControlByte());
+			}
+			
+			if (Platform.getPpu().getRegisterAddressFlipFlopLatch() == 0)
+			{
+				//if (logger.isDebugEnabled())
+				{
+					logger.info("flipflop is 0");
+					logger.info("loopyT is: " + Platform.getPpu().getLoopyT());
+					logger.info("setting loopyT to: " + (Platform.getPpu().getLoopyT() | ((this.getRawControlByte() & 0xF8) >> 3)));
+				}
+				Platform.getPpu().setLoopyX(this.getRawControlByte() & 7);
+				Platform.getPpu().setLoopyT(((this.getRawControlByte() & 0xF8) >> 3));
+				this.setRawControlByte(null);
+			}
+			else
+			{
+				//if (logger.isDebugEnabled())
+				{
+					logger.info("flipflop is 1");
+					logger.info("loopyT is: " + Platform.getPpu().getLoopyT());
+					logger.info("setting loopyT to: " + (Platform.getPpu().getLoopyT() | ((this.getRawControlByte() & 7) << 12) | ((this.getRawControlByte() & 0xF8) << 5) ));
+				}
+				Platform.getPpu().setLoopyT(Platform.getPpu().getLoopyT() | (((this.getRawControlByte() & 7) << 12) | ((this.getRawControlByte() & 0xF8) << 5)) );
+				this.clear();
+			}
 		}
-		
-		this.clear();
 		
 		return PPUScrollRegister.CYCLES_PER_EXECUTION;
 	}
@@ -48,7 +73,17 @@ public class PPUScrollRegister
 		this.setRawControlByte(null);
 	}
 	
-
+	public String toString()
+	{
+		if (this.getRawControlByte() != null)
+		{
+			return "0x" + REGISTER_ADDRESS + ": " + Integer.toBinaryString(this.getRawControlByte());
+		}
+		else
+		{
+			return "0x" + REGISTER_ADDRESS + ": 0";
+		}
+	}
 	
 	public void setRegisterValue(int value)
 	{

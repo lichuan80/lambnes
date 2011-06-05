@@ -26,5 +26,8 @@ public interface PictureProcessingUnit
 	public int getRegisterAddressFlipFlopLatch();
 	public void resetRegisterAddressFlipFlopLatch();
 	
+	public void setLoopyX(int loopyX);
+	public void setLoopyT(int loopyT);
+	public int getLoopyT();
 	public void cycle(int cycleCount);
 }

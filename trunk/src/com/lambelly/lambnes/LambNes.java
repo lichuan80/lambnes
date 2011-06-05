@@ -25,7 +25,7 @@ import com.lambelly.lambnes.platform.Config;
 public class LambNes
 {
 	private static Logger logger = Logger.getLogger(LambNes.class);
-	private static final String VERSION = "0.0.4";
+	private static final String VERSION = "0.0.5";
 
 	/**
      * @param args the command line arguments

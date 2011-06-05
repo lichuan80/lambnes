@@ -40,9 +40,7 @@ public class PPUVramAddressRegister
 				logger.debug("sprite visibility: " + Platform.getPpu().getPpuMaskRegister().isSpriteVisibility());
 			}
 			 
-			// TODO -- this causes issues due to timing problems.
-			//if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
-			if(true)
+			if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
 			{
 				// do memory access on vblank.
 				if (Platform.getPpu().getRegisterAddressFlipFlopLatch() == 1)
@@ -77,7 +75,7 @@ public class PPUVramAddressRegister
 			}
 			else
 			{
-				logger.error("byte sent to 0x2006 during rendering: " + this.getRawControlByte());
+				logger.warn("byte sent to 0x2006 during rendering: " + this.getRawControlByte());
 				this.setRawControlByte(null);
 			}
 		}

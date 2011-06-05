@@ -50,9 +50,9 @@ public class NesInterrupts
 			// check NMI interrupt
 			if (ir.getInterruptType() == InterruptRequest.interruptTypeNMI)
 			{
-				//if(logger.isDebugEnabled())
+				if(logger.isDebugEnabled())
 				{
-					logger.info("NMI Interrupt: leaving " + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " and going to " + Integer.toHexString(this.getNmiInterruptJumpAddress()));
+					logger.debug("NMI Interrupt: leaving " + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " and going to " + Integer.toHexString(this.getNmiInterruptJumpAddress()));
 				}
 				// execute the interrupt handling routine
 	        	Platform.getCpuMemory().setProgramCounter(getNmiInterruptJumpAddress());

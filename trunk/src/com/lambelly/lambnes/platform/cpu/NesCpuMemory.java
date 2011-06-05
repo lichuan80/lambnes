@@ -61,13 +61,13 @@ public class NesCpuMemory
 	private int programCounter = 0x8000; // starts at start of lower bank
 
 	private int[] memory = new int[65536];
-	private PPUControlRegister ppuControlRegister1 = PPUControlRegister.getRegister(); // 2000
-	private PPUMaskRegister ppuControlRegister2 = PPUMaskRegister.getRegister(); // 2001
+	private PPUControlRegister ppuControlRegister = PPUControlRegister.getRegister(); // 2000
+	private PPUMaskRegister ppuMaskRegister = PPUMaskRegister.getRegister(); // 2001
 	private PPUStatusRegister ppuStatusRegister = PPUStatusRegister.getRegister(); //2002
 	private PPUSprRamAddressRegister ppuSprRamAddressRegister = PPUSprRamAddressRegister.getRegister(); // 2003
 	private PPUSprRamIORegister ppuSprRamIORegister = PPUSprRamIORegister.getRegister(); // 2004
-	private PPUScrollRegister ppuVramAddressRegister1 = PPUScrollRegister.getRegister(); // 2005
-	private PPUVramAddressRegister ppuVramAddressRegister2 = PPUVramAddressRegister.getRegister(); // 2006
+	private PPUScrollRegister ppuScrollRegister = PPUScrollRegister.getRegister(); // 2005
+	private PPUVramAddressRegister ppuVramAddressRegister = PPUVramAddressRegister.getRegister(); // 2006
 	private PPUVramIORegister ppuVramIORegister = PPUVramIORegister.getRegister(); // 2007
 	private PPUSpriteDMARegister ppuDMARegister = PPUSpriteDMARegister.getRegister(); // $4014
 	private ControlRegister1 joypadControlRegister1 = ControlRegister1.getRegister(); // $4016
@@ -485,11 +485,11 @@ public class NesCpuMemory
 			// Input/Output registers
 			if (address == PPUControlRegister.REGISTER_ADDRESS)
 			{
-				this.getPpuControlRegister1().setRegisterValue(value);
+				this.getPpuControlRegister().setRegisterValue(value);
 			}
 			else if (address == PPUMaskRegister.REGISTER_ADDRESS)
 			{
-				this.getPpuControlRegister2().setRegisterValue(value);
+				this.getPpuMaskRegister().setRegisterValue(value);
 			}
 			else if (address == PPUSprRamAddressRegister.REGISTER_ADDRESS)
 			{
@@ -505,11 +505,12 @@ public class NesCpuMemory
 			}
 			else if (address == PPUScrollRegister.REGISTER_ADDRESS)
 			{
-				this.getPpuVramAddressRegister1().setRegisterValue(value);
+				logger.debug("setting 0x2005 to " + value);
+				this.getPpuScrollRegister().setRegisterValue(value);
 			}
 			else if (address == PPUVramAddressRegister.REGISTER_ADDRESS)
 			{
-				this.getPpuVramAddressRegister2().setRegisterValue(value);
+				this.getPpuVramAddressRegister().setRegisterValue(value);
 			}
 			else if (address == PPUVramIORegister.REGISTER_ADDRESS)
 			{
@@ -541,9 +542,9 @@ public class NesCpuMemory
 	{
 		if (programInstructions.length > 16384)
 		{
-			//if(logger.isDebugEnabled())
+			if(logger.isDebugEnabled())
 			{
-				logger.info("program instructions length: " + programInstructions.length);
+				logger.debug("program instructions length: " + programInstructions.length);
 			}
 
 			System.arraycopy(programInstructions, 0, this.getMemory(), NesCpuMemory.PRG_ROM_BASE, programInstructions.length);
@@ -672,24 +673,24 @@ public class NesCpuMemory
 		return ppuVramIORegister;
 	}
 
-	public PPUControlRegister getPpuControlRegister1()
+	public PPUControlRegister getPpuControlRegister()
 	{
-		return ppuControlRegister1;
+		return ppuControlRegister;
 	}
 
-	public void setPpuControlRegister1(PPUControlRegister ppuControlRegister1)
+	public void setPpuControlRegister(PPUControlRegister ppuControlRegister)
 	{
-		this.ppuControlRegister1 = ppuControlRegister1;
+		this.ppuControlRegister = ppuControlRegister;
 	}
 
-	public PPUMaskRegister getPpuControlRegister2()
+	public PPUMaskRegister getPpuMaskRegister()
 	{
-		return ppuControlRegister2;
+		return ppuMaskRegister;
 	}
 
-	public void setPpuControlRegister2(PPUMaskRegister ppuControlRegister2)
+	public void setPpuMaskRegister(PPUMaskRegister ppuMaskRegister)
 	{
-		this.ppuControlRegister2 = ppuControlRegister2;
+		this.ppuMaskRegister = ppuMaskRegister;
 	}
 
 	public PPUStatusRegister getPpuStatusRegister()
@@ -723,15 +724,15 @@ public class NesCpuMemory
 		this.ppuSprRamIORegister = ppuSprRamIORegister;
 	}
 
-	public PPUVramAddressRegister getPpuVramAddressRegister2()
+	public PPUVramAddressRegister getPpuVramAddressRegister()
 	{
-		return ppuVramAddressRegister2;
+		return ppuVramAddressRegister;
 	}
 
-	public void setPpuVramAddressRegister2(
+	public void setPpuVramAddressRegister(
 			PPUVramAddressRegister ppuVramAddressRegister)
 	{
-		this.ppuVramAddressRegister2 = ppuVramAddressRegister;
+		this.ppuVramAddressRegister = ppuVramAddressRegister;
 	}
 
 	public void setPpuVramIORegister(PPUVramIORegister ppuVramIORegister)
@@ -749,15 +750,15 @@ public class NesCpuMemory
 		this.ppuDMARegister = ppuDMARegister;
 	}
 
-	public PPUScrollRegister getPpuVramAddressRegister1()
+	public PPUScrollRegister getPpuScrollRegister()
 	{
-		return ppuVramAddressRegister1;
+		return ppuScrollRegister;
 	}
 
-	public void setPpuVramAddressRegister1(
+	public void setPpuVramAddressRegister(
 			PPUScrollRegister ppuVramAddressRegister1)
 	{
-		this.ppuVramAddressRegister1 = ppuVramAddressRegister1;
+		this.ppuScrollRegister = ppuVramAddressRegister1;
 	}
 
 	public ControlRegister1 getJoypadControlRegister1()
