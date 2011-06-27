@@ -55,25 +55,13 @@ public class PPUControlRegister
 			this.setBackgroundPatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000);
 			this.setSpritePatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 3)?SPRITE_PATTERN_TABLE_ADDRESS_1000:SPRITE_PATTERN_TABLE_ADDRESS_0000);
 			this.setPpuAddressIncrement(BitUtils.isBitSet(this.getRawControlByte(), 2)?PPU_ADDRESS_INCREMENT_32:PPU_ADDRESS_INCREMENT_1);
-			
-			int nameTableControlbit = (this.getRawControlByte() & 3); 
-			
-			if (nameTableControlbit == 0)
-			{
-				this.setNameTableAddress(NAME_TABLE_ADDRESS_2000);
-			}
-			else if (nameTableControlbit == 1)
-			{
-				this.setNameTableAddress(NAME_TABLE_ADDRESS_2400);
-			}
-			else if (nameTableControlbit == 2)
-			{
-				this.setNameTableAddress(NAME_TABLE_ADDRESS_2800);
-			}
-			else if (nameTableControlbit == 3)
-			{
-				this.setNameTableAddress(NAME_TABLE_ADDRESS_2C00);
-			}
+
+			// base name table logic
+			int nameTableControlBit = (this.getRawControlByte() & 3); 
+			this.setNameTableAddress(nameTableControlBit);
+			int loopyT = (Platform.getPpu().getLoopyT() & 0x1FF) | (nameTableControlBit << 9);
+			logger.info("rawControlByte was: " + this.getRawControlByte() + " loopyT was: " + Platform.getPpu().getLoopyT() + " setting loopyT to: " + loopyT);
+			Platform.getPpu().setLoopyT(loopyT);
 			
 			this.clear();
 		}

@@ -40,6 +40,11 @@ public class ScreenBuffer
 		this.screenBuffer[this.coordinatesToArrayIndex(horizontal, vertical)] = color;
 	}
     
+    public void setScreenBufferPixel(int horizontal, int vertical, PaletteColor color)
+    {
+    	this.setScreenBufferPixel(horizontal, vertical, color.getMasterPaletteColor().getColorInt());
+    }
+    
     public void setScreenBufferTileRow(int horizontal, int vertical, PaletteColor[] tileRow)
     {
     	int bufferIndexStart = this.coordinatesToArrayIndex(horizontal, vertical);

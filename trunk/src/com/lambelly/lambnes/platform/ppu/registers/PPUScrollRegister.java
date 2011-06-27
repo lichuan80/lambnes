@@ -7,15 +7,6 @@ import org.apache.log4j.*;
 
 public class PPUScrollRegister
 {
-	/*
-	 * ----------------------------------------
-	 * OOO.NN.YYYYY.XXXXX
-	 * X is denoted as the X scroll counter.
-	 * Y is denoted as the Y scroll counter.
-	 * N is denoted the nametable select bits.
-	 * O is the Y scroll offset
-	 * -----------------------------------------
-	 * */
 	public static final int REGISTER_ADDRESS = 0x2005;
 	private static PPUScrollRegister register = new PPUScrollRegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
@@ -35,7 +26,7 @@ public class PPUScrollRegister
 		{
 			//if (logger.isDebugEnabled())
 			{
-				logger.info("write to register 0x2005: " + this.getRawControlByte());
+				logger.info("write to register 0x2005: " + this.getRawControlByte() + " at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
 			}
 			
 			if (Platform.getPpu().getRegisterAddressFlipFlopLatch() == 0)
@@ -47,7 +38,7 @@ public class PPUScrollRegister
 					logger.info("setting loopyT to: " + (Platform.getPpu().getLoopyT() | ((this.getRawControlByte() & 0xF8) >> 3)));
 				}
 				Platform.getPpu().setLoopyX(this.getRawControlByte() & 7);
-				Platform.getPpu().setLoopyT(((this.getRawControlByte() & 0xF8) >> 3));
+				Platform.getPpu().setLoopyT(((Platform.getPpu().getLoopyT() & 0x7FE0)| (this.getRawControlByte() & 0xF8) >> 3));
 				this.setRawControlByte(null);
 			}
 			else

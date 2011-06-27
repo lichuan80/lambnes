@@ -30,7 +30,8 @@ public class Platform
 	public static final int CPU_FREQUENCY = ((Double)(1.789 * 1000000)).intValue();
     public static final int EIGHT_BIT_MASK = 0xFF;
     public static final int SIXTEEN_BIT_MASK = 0xFFFF;
-
+    private static long cycleCount = 0;
+    
     protected Platform()
     {
     	try
@@ -65,31 +66,33 @@ public class Platform
     		throw new IllegalStateException("no cartridge inserted");
     	}
     	
-    	int cycleCount = 0;
     	Platform.setNesInterrupts(new NesInterrupts());
     	Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeReset));
     	Platform.getNesInterrupts().cycle();
     	
         while (isRun())
         {
-        	while (cycleCount < Platform.CPU_FREQUENCY && isRun())
-        	{
+        	//while (cycleCount < Platform.CPU_FREQUENCY)
+        	//{
+        		int cyclesPassed = 0;
+        		
 	        	// 1. cpu cycle
-	        	cycleCount += Platform.getCpu().processNextInstruction();
+	        	cyclesPassed += Platform.getCpu().processNextInstruction();
 	        	
 	        	// 2. Execute Interrupts.
-	        	cycleCount += Platform.getNesInterrupts().cycle();
+	        	cyclesPassed += Platform.getNesInterrupts().cycle();
 	        	
 	        	// 3. ppu cycle
-	        	Platform.getPpu().cycle(cycleCount); 
+	        	Platform.getPpu().cycle(cyclesPassed); 
 
 	        	// 4. controller cycle 
 	        	Platform.getControllerPorts().cycle();
 	        	
-	        	cycleCount++;
-        	}
+	        	addToCycleCount(cyclesPassed);
+	        	incrementCycleCount();
+        	//}
         	
-        	cycleCount = 0;
+        	//cycleCount = 0;
         }
         
         // shutdown
@@ -217,5 +220,25 @@ public class Platform
 	public static void setControllerPorts(NesControllerPorts controllerPorts)
 	{
 		Platform.controllerPorts = controllerPorts;
+	}
+
+	public static long getCycleCount()
+	{
+		return cycleCount;
+	}
+
+	private static void setCycleCount(long cycleCount)
+	{
+		Platform.cycleCount = cycleCount;
+	}
+	
+	private static void addToCycleCount(int cycleCount)
+	{
+		Platform.cycleCount += cycleCount;
+	}
+	
+	private static void incrementCycleCount()
+	{
+		Platform.cycleCount++;
 	}
 }

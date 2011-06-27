@@ -97,22 +97,18 @@ public class LambNes
     	}
     	catch(IllegalStateException ex)
     	{
-    		//mainwindow.interrupt();
     		logger.error("illegal state",ex);
     	}
     	catch(FileNotFoundException ex)
     	{
-    		//mainwindow.interrupt();
     		logger.error("unable to load default cartridge: " + cartridgeLoadPath,ex);
     	}
     	catch(NullPointerException ex)
     	{
-    		//mainwindow.interrupt();
     		logger.error("null pointer", ex);
     	}
     	catch(Exception e)
     	{
-    		//mainwindow.interrupt();
     		logger.error("unhandled exception",e);
     	}        
     }

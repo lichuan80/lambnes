@@ -7,15 +7,6 @@ import org.apache.log4j.*;
 
 public class PPUVramAddressRegister
 {
-	/*
-	 * ----------------------------------------
-	 * OOO.NN.YYYYY.XXXXX
-	 * X is denoted as the X scroll counter.
-	 * Y is denoted as the Y scroll counter.
-	 * N is denoted the nametable select bits.
-	 * O is the Y scroll offset
-	 * -----------------------------------------
-	 * */
 	public static final int REGISTER_ADDRESS = 0x2006;
 	private static PPUVramAddressRegister register = new PPUVramAddressRegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
