@@ -45,7 +45,7 @@
     </logger>    
 
     <logger name="com.lambelly.lambnes.test">
-        <level value="info"/>
+        <level value="fatal"/>
         <appender-ref ref="console"/>
     </logger>    
 

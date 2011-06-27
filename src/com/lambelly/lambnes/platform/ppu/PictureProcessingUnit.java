@@ -25,6 +25,8 @@ public interface PictureProcessingUnit
 	public PPUSprRamIORegister getPpuSprRamIORegister();
 	public int getRegisterAddressFlipFlopLatch();
 	public void resetRegisterAddressFlipFlopLatch();
+	public int getScanlineCount();
+	public long getScreenCount();
 	
 	public void setLoopyX(int loopyX);
 	public void setLoopyT(int loopyT);

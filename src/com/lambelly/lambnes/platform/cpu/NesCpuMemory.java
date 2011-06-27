@@ -517,7 +517,7 @@ public class NesCpuMemory
 				this.getPpuVramIORegister().setRegisterValue(value);
 			}
 			
-			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));			
+			logger.info("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));			
 		}
 		else if (address >= 0x4000 && address <= 0x401F)
 		{

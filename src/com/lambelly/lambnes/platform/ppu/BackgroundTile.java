@@ -81,6 +81,11 @@ public class BackgroundTile
 		return background;
 	}	
 	
+	public PaletteColor getTileColorRowPixel(int row, int column)
+	{
+		return this.getTileColorRow(row)[column];
+	}
+	
 	public PaletteColor[] getTileColorRow(int row)
 	{
 		PaletteColor colorBit[] = new PaletteColor[8];
