@@ -54,13 +54,13 @@ public class NesPpu implements PictureProcessingUnit
 	
 	public void cycle(int cpuCycleCount)
 	{	
-		Platform.getPpu().doRegisterReadsWrites();
+		this.doRegisterReadsWrites();
 		
 		// timing
 		this.subtractFromPpuCyclesUntilEndOfFrame(cpuCycleCount * 3);
 		this.subtractFromPpuCyclesUntilEndOfLine(cpuCycleCount * 3);
 		
-		// logger.info("total cpu cycles " + Platform.getCycleCount() + " cpu cycles passed: " + cpuCycleCount + " cycles until end of Frame: " + this.getPpuCyclesUntilEndOfFrame() + " | end of line: " + this.getPpuCyclesUntilEndOfLine());
+		//logger.info("total cpu cycles " + Platform.getCycleCount() + " cpu cycles passed: " + cpuCycleCount + " cycles until end of Frame: " + this.getPpuCyclesUntilEndOfFrame() + " | end of line: " + this.getPpuCyclesUntilEndOfLine());
 		
     	if (this.getPpuCyclesUntilEndOfLine() <= 0)
     	{
@@ -253,11 +253,12 @@ public class NesPpu implements PictureProcessingUnit
         			}
 	        	     // sprite 0 logic
 		        	if (sprite.getSpriteNumber() == sprite0Number)                   
-		        	{                          
+		        	{                     
 		        		sprite0Triggered = true;
-		        		if (logger.isDebugEnabled())
+		        		//if (logger.isDebugEnabled())
 		        		{
-		        			logger.debug("sprite 0 logic: sprite0Triggered: " + sprite0Triggered + " spriteNumber: " + sprite.getSpriteNumber() + " sprite0 number: " + sprite0Number);
+		        			logger.info("sprite0 logic: sprite0Triggered: " + sprite0Triggered + " spriteNumber: " + sprite.getSpriteNumber() + " sprite0 number: " + sprite0Number + " verticalPerPixelCount: " + verticalPerPixelCount + " vcoord: " + sprite.getSpriteAttributes().getyCoordinate() + " xcoord: " + sprite.getSpriteAttributes().getxCoordinate());
+		        			logger.info("using sprite0: " + sprite);
 		        		}
 		        	}
 	        	}   
@@ -337,12 +338,15 @@ public class NesPpu implements PictureProcessingUnit
     	 * -----------------------------------------
     	 * */
     	
+    	logger.info("name table control: " + Platform.getPpu().getPpuControlRegister().getNameTableAddress() + " coarseX: " + (this.getLoopyT() & 0x1F) + " finex: " + (this.getLoopyX() & 0x07) + " loopyT: " + this.getLoopyT() + " loopyV: " + this.getLoopyV() + " at scanline " + this.getScanlineCount() + " and frame " + this.getScreenCount());
+    	
 		// iterate one line in name table
 		for (int horizontalPerTileCount = 0; horizontalPerTileCount < NesPpu.NUM_HORIZONTAL_TILES; horizontalPerTileCount++)
 		{
-			int hCoarseScrollOffset = (this.getLoopyV() & 0x1F);
-			int offsetHorizontalPerTileCount = horizontalPerTileCount + hCoarseScrollOffset;			
-			int offsetHorizontalPerPixelCount = (this.getLoopyX() & 0x07);
+			int hCoarseScrollOffset = (this.getLoopyT() & 0x1F);
+			int offsetHorizontalPerTileCount = horizontalPerTileCount + hCoarseScrollOffset; // coarse x			
+			int offsetHorizontalPerPixelCount = (this.getLoopyX() & 0x07); // fine x
+			this.setHorizontalNameCount(Platform.getPpu().getPpuControlRegister().getNameTableAddress());
 			
 			// see if hscroll is outside nametable, if so flip horiz
 			if (offsetHorizontalPerTileCount >= NesPpu.NUM_HORIZONTAL_TILES)
@@ -371,7 +375,7 @@ public class NesPpu implements PictureProcessingUnit
 				//logger.info("horizontalNameCount: " + this.getHorizontalNameCount());
 				//logger.info("verticalNameCount: " + this.getVerticalNameCount());
 				//logger.info("scanline: " + this.getScanlineCount() + " for screen " + this.getScreenCount());
-				//logger.info("looking at address: 0x" + Integer.toHexString(nameTableAddress));
+				logger.info("looking at address: 0x" + Integer.toHexString(nameTableAddress) + " horizontalPerTileCount: " + horizontalPerTileCount + " scanline: " + this.getScanlineCount() + " for screen " + this.getScreenCount());
 				//logger.info("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
 			} 
 		
@@ -417,7 +421,7 @@ public class NesPpu implements PictureProcessingUnit
 		}
 	}
 	
-	public void doRegisterReadsWrites()
+	private void doRegisterReadsWrites()
 	{
 		this.getPpuControlRegister().cycle();
 		this.getPpuMaskRegister().cycle();

@@ -5,8 +5,8 @@ import com.lambelly.lambnes.cartridge.*;
 import com.lambelly.lambnes.platform.interrupts.InterruptRequest;
 import com.lambelly.lambnes.platform.interrupts.NesInterrupts;
 import com.lambelly.lambnes.platform.ppu.*;
+import com.lambelly.lambnes.platform.apu.*;
 import com.lambelly.lambnes.platform.controllers.*;
-import com.lambelly.lambnes.util.ArrayUtils;
 
 import org.apache.log4j.*;
 
@@ -21,6 +21,7 @@ public class Platform
     private static NesPpuMemory ppuMemory = null;
     private static CentralProcessingUnit cpu = null;
     private static PictureProcessingUnit ppu = null;
+    private static AudioProcessingUnit apu = null;
     private static NesInterrupts nesInterrupts = null;
     private static NesControllerPorts controllerPorts = null;
     private static Platform instance = null;
@@ -39,6 +40,7 @@ public class Platform
 	    	Platform.setCpuMemory(new NesCpuMemory());
 	        Platform.setCpu(new NesCpu());
 	        Platform.setPpu(new NesPpu());
+	        Platform.setApu(new NesApu());
 	        Platform.setControllerPorts(new NesControllerPorts());
 	        Platform.setPpuMemory(new NesPpuMemory());
 	        Platform.setMasterPalette(new Palette());
@@ -52,7 +54,7 @@ public class Platform
     	}
     }
     
-    public static void power()
+    public static void init()
     {
     	if (Platform.getCartridge() != null)
     	{
@@ -69,11 +71,14 @@ public class Platform
     	Platform.setNesInterrupts(new NesInterrupts());
     	Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeReset));
     	Platform.getNesInterrupts().cycle();
+    }
+    
+    public static void power()
+    {
+    	Platform.init();
     	
         while (isRun())
         {
-        	//while (cycleCount < Platform.CPU_FREQUENCY)
-        	//{
         		int cyclesPassed = 0;
         		
 	        	// 1. cpu cycle
@@ -85,14 +90,13 @@ public class Platform
 	        	// 3. ppu cycle
 	        	Platform.getPpu().cycle(cyclesPassed); 
 
-	        	// 4. controller cycle 
+	        	// 4 apu cycle
+	        	Platform.getApu().cycle();
+	        	
+	        	// 5. controller cycle 
 	        	Platform.getControllerPorts().cycle();
 	        	
 	        	addToCycleCount(cyclesPassed);
-	        	incrementCycleCount();
-        	//}
-        	
-        	//cycleCount = 0;
         }
         
         // shutdown
@@ -240,5 +244,15 @@ public class Platform
 	private static void incrementCycleCount()
 	{
 		Platform.cycleCount++;
+	}
+
+	public static AudioProcessingUnit getApu()
+	{
+		return apu;
+	}
+
+	public static void setApu(AudioProcessingUnit apu)
+	{
+		Platform.apu = apu;
 	}
 }

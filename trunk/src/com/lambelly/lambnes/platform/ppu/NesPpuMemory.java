@@ -433,8 +433,7 @@ public class NesPpuMemory
 	{
 		this.sprRam[address] = value;
 	}	
-	
-
+	 
 	public int[] getImagePalette()
 	{
 		return imagePalette;

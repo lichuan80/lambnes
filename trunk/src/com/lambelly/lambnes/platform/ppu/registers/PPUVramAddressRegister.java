@@ -24,11 +24,9 @@ public class PPUVramAddressRegister
 	{
 		if (this.getRawControlByte() != null)
 		{
-			if(logger.isDebugEnabled())
+			//if (logger.isDebugEnabled())
 			{
-				logger.debug("raw control byte sent to PPU VRAM Register: " + this.getRawControlByte());
-				logger.debug("background visibility: " + Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility());
-				logger.debug("sprite visibility: " + Platform.getPpu().getPpuMaskRegister().isSpriteVisibility());
+				logger.info("write to register 0x2006: " + this.getRawControlByte() + " at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
 			}
 			 
 			if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
@@ -45,6 +43,7 @@ public class PPUVramAddressRegister
 	
 					// both are set, so set 0x2007
 					Platform.getPpu().getPpuVramIORegister().setIoAddress(BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
+					Platform.getPpu().setLoopyV(Platform.getPpu().getLoopyT());
 					if(logger.isDebugEnabled())
 					{
 						logger.debug("io address: " + BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
