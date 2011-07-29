@@ -17,7 +17,6 @@ import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister;
  */
 public interface PictureProcessingUnit
 {
-	public void doRegisterReadsWrites();
 	public PPUControlRegister getPpuControlRegister();
 	public PPUMaskRegister getPpuMaskRegister();
 	public PPUStatusRegister getPpuStatusRegister();
@@ -30,6 +29,7 @@ public interface PictureProcessingUnit
 	
 	public void setLoopyX(int loopyX);
 	public void setLoopyT(int loopyT);
+	public void setLoopyV(int loopyV);
 	public int getLoopyT();
 	public void cycle(int cycleCount);
 }

@@ -55,7 +55,7 @@ public enum Instruction
 	CPX_ABSOLUTE(0xEC, 3, 4),
 	CPY_IMMEDIATE(0xC0, 2, 2),
 	CPY_ZERO_PAGE(0xC4, 2, 3),
-	CPY_ABSOLURE(0xCC, 3, 4),                
+	CPY_ABSOLUTE(0xCC, 3, 4),                
 	DEC_ZERO_PAGE(0xC6, 2, 5),
 	DEC_ZERO_PAGE_X(0xD6, 2, 6),
 	DEC_ABSOLUTE(0xCE, 3, 6),

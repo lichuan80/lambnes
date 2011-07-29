@@ -8,6 +8,7 @@ package com.lambelly.lambnes.platform.cpu;
 import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.apu.registers.APUControlRegister;
 import com.lambelly.lambnes.platform.controllers.ControlRegister1;
 import com.lambelly.lambnes.platform.controllers.ControlRegister2;
 import com.lambelly.lambnes.platform.controllers.NesJoypad;
@@ -70,6 +71,7 @@ public class NesCpuMemory
 	private PPUVramAddressRegister ppuVramAddressRegister = PPUVramAddressRegister.getRegister(); // 2006
 	private PPUVramIORegister ppuVramIORegister = PPUVramIORegister.getRegister(); // 2007
 	private PPUSpriteDMARegister ppuDMARegister = PPUSpriteDMARegister.getRegister(); // $4014
+	private APUControlRegister apuControlRegister = APUControlRegister.getRegister(); // $4015
 	private ControlRegister1 joypadControlRegister1 = ControlRegister1.getRegister(); // $4016
 	private ControlRegister2 joypadControlRegister2 = ControlRegister2.getRegister(); // $4017
 
@@ -526,6 +528,10 @@ public class NesCpuMemory
 			{
 				this.getPpuDMARegister().setRegisterValue(value);
 			}
+			else if (address == APUControlRegister.REGISTER_ADDRESS)
+			{
+				this.getApuControlRegister().setRegisterValue(value);
+			}
 			else if (address == ControlRegister1.REGISTER_ADDRESS)
 			{
 				this.getJoypadControlRegister1().setRegisterValue(value);
@@ -534,7 +540,7 @@ public class NesCpuMemory
 			{
 				this.getJoypadControlRegister2().setRegisterValue(value);
 			}
-			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));
+			logger.info("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));
 		}
 	}	
 	
@@ -789,5 +795,15 @@ public class NesCpuMemory
 	public void setMemory(int[] memory)
 	{
 		this.memory = memory;
+	}
+
+	public APUControlRegister getApuControlRegister()
+	{
+		return apuControlRegister;
+	}
+
+	public void setApuControlRegister(APUControlRegister apuControlRegister)
+	{
+		this.apuControlRegister = apuControlRegister;
 	}
 }
