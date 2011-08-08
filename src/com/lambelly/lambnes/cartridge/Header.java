@@ -16,18 +16,20 @@ public class Header
     private boolean Nes = false;
     private int programInstructionByte = 0;
     private int patternTileByte = 0;
+    private int mapperID = 0;
     private boolean horizontalMirroring = false;
 	private boolean verticalMirroring = false;
     private boolean sramEnabled = false;
     private boolean trainerPresent = false;
     private boolean fourScreenMirroring = false;
-
+    
     public Header(int[] rawData)
     {
         this.setNes(true);
         this.setProgramInstructionByte(rawData[4]);
         this.setPatternTileByte(rawData[5]);
         this.parseControlByte1(rawData[6]);
+        this.setMapperID(this.parseMapper(rawData[6], rawData[7]));
     }
     
     private void parseControlByte1(int control)
@@ -46,6 +48,11 @@ public class Header
     	this.setFourScreenMirroring(BitUtils.isBitSet(control, 3));
     }
 
+    private int parseMapper(int controlBit1, int controlBit2)
+    {
+    	return (((controlBit1 & 0xF0) >> 4) | (controlBit2 & 0xF0));
+    }
+    
     /**
      * @return the Nes
      */
@@ -142,5 +149,15 @@ public class Header
 	public void setFourScreenMirroring(boolean fourScreenMirroring)
 	{
 		this.fourScreenMirroring = fourScreenMirroring;
+	}
+
+	public int getMapperID()
+	{
+		return mapperID;
+	}
+
+	public void setMapperID(int mapperID)
+	{
+		this.mapperID = mapperID;
 	}    
 }

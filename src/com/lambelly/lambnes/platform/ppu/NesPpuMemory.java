@@ -39,9 +39,9 @@ public class NesPpuMemory
 		PPUNameTable nameTableA = new PPUNameTable();
 		PPUNameTable nameTableB = new PPUNameTable();
 		
-		if(logger.isDebugEnabled())
+		//if(logger.isDebugEnabled())
 		{
-			logger.debug("applying mirroring: " + (Platform.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
+			logger.info("applying mirroring: " + (Platform.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
 		}
 		// set up name tables -- establishes how mirroring is being done. 
 		if (Platform.getCartridge().getHeader().isHorizontalMirroring())

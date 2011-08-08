@@ -71,9 +71,10 @@ public class BackgroundTile
 		int address = (highBit * 0x1000) | (backgroundNumber * 16);
 		for (int x = 0; x < 16; x++)
 		{
-			if(logger.isDebugEnabled())
+			//if(logger.isDebugEnabled())
 			{
-				logger.debug("getting memory from " + Integer.toHexString(address + x) + " for background " + backgroundNumber + " with base address " + address + " and high bit " + highBit);
+				logger.info("backgroundPatternTableAddress: " + Platform.getPpu().getPpuControlRegister().getBackgroundPatternTableAddress());
+				logger.info("getting memory from " + Integer.toHexString(address + x) + " for background " + backgroundNumber + " with base address " + address + " and high bit " + highBit);
 			}
 			background[x] = Platform.getPpuMemory().getMemoryFromHexAddress(address + x);
 		}

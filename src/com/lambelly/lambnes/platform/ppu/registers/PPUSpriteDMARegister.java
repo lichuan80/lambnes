@@ -24,7 +24,7 @@ public class PPUSpriteDMARegister
 		if (this.getRawControlByte() != null)
 		{
 			cyclesPassed = PPUSpriteDMARegister.CYCLES_PER_EXECUTION;
-			int start = (this.getRawControlByte() * 0x100);
+			int start = ((this.getRawControlByte() << 8) | Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte());
 			
 			if(logger.isDebugEnabled())
 			{

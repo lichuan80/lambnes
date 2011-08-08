@@ -8,6 +8,7 @@ package com.lambelly.lambnes.platform.ppu;
 import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUStatusRegister;
+import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamAddressRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUVramIORegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister;
 
@@ -20,6 +21,7 @@ public interface PictureProcessingUnit
 	public PPUControlRegister getPpuControlRegister();
 	public PPUMaskRegister getPpuMaskRegister();
 	public PPUStatusRegister getPpuStatusRegister();
+	public PPUSprRamAddressRegister getPpuSprRamAddressRegister();
 	public PPUVramIORegister getPpuVramIORegister();
 	public PPUSprRamIORegister getPpuSprRamIORegister();
 	public int getRegisterAddressFlipFlopLatch();
