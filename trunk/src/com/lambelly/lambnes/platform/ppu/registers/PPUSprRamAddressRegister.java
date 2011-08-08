@@ -16,16 +16,17 @@ public class PPUSprRamAddressRegister
 	
 	public int cycle()
 	{	
-		// if greater than 0.
+		// if not null.
+		/*
 		if (this.getRawControlByte() != null)
 		{
 			// set 0x2004
 			Platform.getPpu().getPpuSprRamIORegister().setIoAddress(this.getRawControlByte());
-			Platform.getCpuMemory().setMemoryFromHexAddress(0x2004, this.getRawControlByte());
 				
 			// clear? I suppose it makes sense.
 			this.clear();
 		}
+		*/
 		return PPUSprRamAddressRegister.CYCLES_PER_EXECUTION;
 	}
 	
@@ -44,7 +45,7 @@ public class PPUSprRamAddressRegister
 		this.setRawControlByte(null);
 	}
 	
-	private Integer getRawControlByte()
+	public Integer getRawControlByte()
 	{
 		return rawControlByte;
 	}

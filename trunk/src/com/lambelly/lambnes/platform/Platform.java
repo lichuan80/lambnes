@@ -58,6 +58,7 @@ public class Platform
     {
     	if (Platform.getCartridge() != null)
     	{
+    		logger.info("using mapper: " + Platform.getCartridge().getHeader().getMapperID());
     		Platform.getPpuMemory().establishMirroring();
     		Platform.getCpuMemory().setProgramInstructions(Platform.getCartridge().getProgramInstructions());
     		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
@@ -79,24 +80,24 @@ public class Platform
     	
         while (isRun())
         {
-        		int cyclesPassed = 0;
-        		
-	        	// 1. cpu cycle
-	        	cyclesPassed += Platform.getCpu().processNextInstruction();
-	        	
-	        	// 2. Execute Interrupts.
-	        	cyclesPassed += Platform.getNesInterrupts().cycle();
-	        	
-	        	// 3. ppu cycle
-	        	Platform.getPpu().cycle(cyclesPassed); 
+    		int cyclesPassed = 0;
+    		
+        	// 1. cpu cycle
+        	cyclesPassed += Platform.getCpu().processNextInstruction();
+        	
+        	// 2. Execute Interrupts.
+        	cyclesPassed += Platform.getNesInterrupts().cycle();
+        	
+        	// 3. ppu cycle
+        	Platform.getPpu().cycle(cyclesPassed); 
 
-	        	// 4 apu cycle
-	        	Platform.getApu().cycle();
-	        	
-	        	// 5. controller cycle 
-	        	Platform.getControllerPorts().cycle();
-	        	
-	        	addToCycleCount(cyclesPassed);
+        	// 4 apu cycle
+        	Platform.getApu().cycle();
+        	
+        	// 5. controller cycle 
+        	Platform.getControllerPorts().cycle();
+        	
+        	addToCycleCount(cyclesPassed);
         }
         
         // shutdown

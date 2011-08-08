@@ -35,24 +35,31 @@ public class Disassembler
 			Instruction curInst = Instruction.get(Platform.getCpuMemory().getNextPrgRomByte());
 			int address = 0;
 			
-			// get the requisite number of bytes
-			if (curInst.getBytes() == 1)
+			if (curInst != null)
 			{
-				// get 0 bytes for address -- byte 1 is instruction byte
+				// get the requisite number of bytes
+				if (curInst.getBytes() == 1)
+				{
+					// get 0 bytes for address -- byte 1 is instruction byte
+				}
+				else if (curInst.getBytes() == 2)
+				{
+					// get 1 bytes for address
+					address = Platform.getCpuMemory().getNextPrgRomByte();
+				}
+				else if (curInst.getBytes() == 3)
+				{
+					// get 2 bytes for address
+					address = Platform.getCpuMemory().getNextPrgRomShort();
+				}
+				
+				DisassembledLine line = new DisassembledLine(curInst, address);
+				System.out.println("0x" + Integer.toHexString(instAddress) + " -- " + line);
 			}
-			else if (curInst.getBytes() == 2)
+			else
 			{
-				// get 1 bytes for address
-				address = Platform.getCpuMemory().getNextPrgRomByte();
+				System.out.println("0x" + Integer.toHexString(instAddress) + " -- UNDEFINED");
 			}
-			else if (curInst.getBytes() == 3)
-			{
-				// get 2 bytes for address
-				address = Platform.getCpuMemory().getNextPrgRomShort();
-			}
-			
-			DisassembledLine line = new DisassembledLine(curInst, address);
-			System.out.println("0x" + Integer.toHexString(instAddress) + " -- " + line);
 		}
 	}
 	

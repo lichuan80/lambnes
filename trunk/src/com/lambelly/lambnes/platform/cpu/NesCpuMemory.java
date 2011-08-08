@@ -406,19 +406,19 @@ public class NesCpuMemory
 			// Input/Output registers
 			if (address == PPUControlRegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
 			}
 			else if (address == PPUMaskRegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
 			}
 			else if (address == PPUSprRamAddressRegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
 			}
 			else if (address == PPUSprRamIORegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				value = this.getPpuSprRamIORegister().getRegisterValue();
 			}
 			else if (address == PPUStatusRegister.REGISTER_ADDRESS)
 			{
@@ -426,11 +426,11 @@ public class NesCpuMemory
 			}
 			else if (address == PPUScrollRegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
 			}
 			else if (address == PPUVramAddressRegister.REGISTER_ADDRESS)
 			{
-				throw new IllegalStateException("reading from write only register");
+				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
 			}
 			else if (address == PPUVramIORegister.REGISTER_ADDRESS)
 			{

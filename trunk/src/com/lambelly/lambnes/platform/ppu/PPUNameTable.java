@@ -11,6 +11,7 @@ public class PPUNameTable
 	
 	public PPUNameTable()
 	{
+		
 	}
 	
 	public void setMemoryFromHexAddress(int address, int value)

@@ -28,9 +28,21 @@ public class CartridgeTest
     public void initialize() throws FileNotFoundException
     {
     	logger.debug("loading file");
-        this.setRl(new RomLoader("./roms/rom.zip"));
+        this.setRl(new RomLoader("./roms/Wrecking Crew.zip"));
         logger.debug("creating ines");
         this.setCart(new Ines(getRl().getRomData()));
+    }
+    
+    @Test
+    public void headerControl() throws FileNotFoundException
+    {
+    	int controlBit1 = 0x10;
+    	int controlBit2 = 0;
+    	
+    	logger.debug("controlBit1 & 0xF0: " + (controlBit1 & 0xF0));
+    	
+    	
+    	assertEquals(1,((controlBit1 & 0xF0) >> 4) | (controlBit2 & 0xF0));
     }
 
     @Test

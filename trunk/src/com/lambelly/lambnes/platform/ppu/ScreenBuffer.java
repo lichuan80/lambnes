@@ -45,12 +45,18 @@ public class ScreenBuffer
     	this.setScreenBufferPixel(horizontal, vertical, color.getMasterPaletteColor().getColorInt());
     }
     
-    public void setScreenBufferTileRow(int horizontal, int vertical, PaletteColor[] tileRow)
+    public void setScreenBufferTileRow(int horizontalCoord, int verticalCoord, int hFineScrollOffset, int vFineScrollOffset, PaletteColor[] tileRow)
     {
-    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontal, vertical);
-    	for (int tileRowOffset = 0; tileRowOffset < tileRow.length; tileRowOffset++)
+    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontalCoord, verticalCoord);
+    	
+    	for (int tileRowIndex = 0; tileRowIndex < tileRow.length; tileRowIndex++)
     	{
-    		this.setScreenBufferPixel(bufferIndexStart + tileRowOffset, tileRow[tileRowOffset].getMasterPaletteColor().getColorInt());
+        	// deal with fine scroll -- if at start of line or end of line, truncate icon. If otherwise, offset icon.
+    		if ((horizontalCoord - hFineScrollOffset >= 0 && horizontalCoord - hFineScrollOffset < Screen.SCREEN_HORIZONTAL_RESOLUTION) &&
+    				(verticalCoord - vFineScrollOffset >= 0 && verticalCoord - vFineScrollOffset < Screen.SCREEN_VERTICAL_RESOLUTION))	
+    		{
+    			this.setScreenBufferPixel((bufferIndexStart + tileRowIndex) - hFineScrollOffset, tileRow[tileRowIndex].getMasterPaletteColor().getColorInt());
+    		}
     	}
     }
 	
