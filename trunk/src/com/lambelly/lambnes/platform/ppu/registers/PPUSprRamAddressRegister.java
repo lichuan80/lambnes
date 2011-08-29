@@ -1,6 +1,7 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import org.apache.log4j.*;
 
 public class PPUSprRamAddressRegister
 {
@@ -8,25 +9,15 @@ public class PPUSprRamAddressRegister
 	public static PPUSprRamAddressRegister register = new PPUSprRamAddressRegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
 	private Integer rawControlByte = null;
+	private Logger logger = Logger.getLogger(PPUSprRamAddressRegister.class);
 	
 	private PPUSprRamAddressRegister()
 	{
-		
+
 	}
 	
 	public int cycle()
 	{	
-		// if not null.
-		/*
-		if (this.getRawControlByte() != null)
-		{
-			// set 0x2004
-			Platform.getPpu().getPpuSprRamIORegister().setIoAddress(this.getRawControlByte());
-				
-			// clear? I suppose it makes sense.
-			this.clear();
-		}
-		*/
 		return PPUSprRamAddressRegister.CYCLES_PER_EXECUTION;
 	}
 	
@@ -38,11 +29,6 @@ public class PPUSprRamAddressRegister
 	public void setRegisterValue(int value)
 	{
 		this.setRawControlByte(value);
-	}
-	
-	private void clear()
-	{
-		this.setRawControlByte(null);
 	}
 	
 	public Integer getRawControlByte()

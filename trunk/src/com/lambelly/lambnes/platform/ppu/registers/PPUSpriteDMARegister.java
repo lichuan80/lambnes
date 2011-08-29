@@ -24,18 +24,28 @@ public class PPUSpriteDMARegister
 		if (this.getRawControlByte() != null)
 		{
 			cyclesPassed = PPUSpriteDMARegister.CYCLES_PER_EXECUTION;
-			int start = ((this.getRawControlByte() << 8) | Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte());
+			int dmaFromStart = this.getRawControlByte() << 8;
+			int dmaToStart = Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte();
 			
-			if(logger.isDebugEnabled())
+			//if(logger.isDebugEnabled())
 			{
-				logger.debug("reading from memory: " + Integer.toHexString(this.getRawControlByte()));
-				logger.debug("start: " + start);
-				logger.debug("pulling dma from: " + Integer.toHexString(start));
-				logger.debug("pulling dma to: " + Integer.toHexString(start + 0xFF));
-				logger.debug("memory at start: " + Platform.getCpuMemory().getMemoryFromHexAddress(start));
+				logger.info("raw control bytes: 0x4014: " + this.getRawControlByte() + " 0x2003: " + Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte());
+				logger.info("reading from memory: " + Integer.toHexString(this.getRawControlByte()));
+				logger.info("start: " + dmaFromStart);
+				logger.info("pulling dma from: " + Integer.toHexString(dmaFromStart));
+				logger.info("pulling dma to: " + Integer.toHexString(dmaFromStart + 0xFF));
+				logger.info("memory at start: " + Platform.getCpuMemory().getMemoryFromHexAddress(dmaFromStart));
 			}
 
-			System.arraycopy(Platform.getCpuMemory().getMemory(), start, Platform.getPpuMemory().getSprRam(), 0, 256);
+			//System.arraycopy(Platform.getCpuMemory().getMemory(), start, Platform.getPpuMemory().getSprRam(), 0, 256);
+			for (int x = 0; x < 256; x++)
+			{
+				int value = Platform.getCpuMemory().getMemoryFromHexAddress(dmaFromStart + x);
+				int address = (dmaToStart + x) & 0xFF;
+				logger.info("setting: " + x + " to " + value);
+				Platform.getPpuMemory().setSprRamFromHexAddress(address, value);
+			} 
+			
 			
 			if(logger.isDebugEnabled())
 			{

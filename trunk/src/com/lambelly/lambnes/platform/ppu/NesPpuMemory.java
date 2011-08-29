@@ -39,9 +39,9 @@ public class NesPpuMemory
 		PPUNameTable nameTableA = new PPUNameTable();
 		PPUNameTable nameTableB = new PPUNameTable();
 		
-		//if(logger.isDebugEnabled())
+		if(logger.isDebugEnabled())
 		{
-			logger.info("applying mirroring: " + (Platform.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
+			logger.debug("applying mirroring: " + (Platform.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
 		}
 		// set up name tables -- establishes how mirroring is being done. 
 		if (Platform.getCartridge().getHeader().isHorizontalMirroring())
@@ -115,7 +115,7 @@ public class NesPpuMemory
 			// mirror of name table 2
 			return this.getNameTable2();	
 		}
-		else if (address >= 0x3C00 && address <= 0x3EFF)
+		else if (address >= 0x3C00 && address <= 0x3FFF)
 		{
 			// mirror of name table 3
 			return this.getNameTable3();	
@@ -273,93 +273,57 @@ public class NesPpuMemory
 			int arrayIndex = address - 0x01000;
 			this.getPatternTable1()[arrayIndex] = value;
 		}
-		else if (address >= 0x2000 && address <= 0x23BF)
+		else if (address >= 0x2000 && address <= 0x23FF)
 		{
 			// name table 0
 			this.getNameTable0().setMemoryFromHexAddress(address, value);	
 		}
-		else if (address >= 0x23C0 && address <= 0x23FF)
-		{
-			// attribute table 0
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x2400 && address <= 0x27BF)
+		else if (address >= 0x2400 && address <= 0x27FF)
 		{
 			// name table 1
 			this.getNameTable1().setMemoryFromHexAddress(address, value);
 		}
-		else if (address >= 0x27C0 && address <= 0x27FF)
-		{
-			// attribute table 1
-			this.getNameTable1().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x2800 && address <= 0x2BBF)
+		else if (address >= 0x2800 && address <= 0x2BFF)
 		{
 			// name table 2
 			this.getNameTable2().setMemoryFromHexAddress(address, value);
 		}
-		else if (address >= 0x2BC0 && address <= 0x2BFF)
-		{
-			// attribute table 2
-			this.getNameTable2().setMemoryFromHexAddress(address, value);
-		}
-		
-		else if (address >= 0x2C00 && address <= 0x2FBF)
+		else if (address >= 0x2C00 && address <= 0x2FFF)
 		{
 			// name table 3
 			this.getNameTable3().setMemoryFromHexAddress(address, value);
 		}
-		else if (address >= 0x2FC0 && address <= 0x2FFF)
-		{
-			// attribute table 3
-			this.getNameTable3().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x3000 && address <= 0x33BF)
+		else if (address >= 0x3000 && address <= 0x33FF)
 		{
 			// mirror of name table 0
 			this.getNameTable0().setMemoryFromHexAddress(address, value);			
 		}
-		else if (address >= 0x33C0 && address <= 0x33FF)
-		{
-			// mirror of attribute table 0
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x3400 && address <= 0x37BF)
+		else if (address >= 0x3400 && address <= 0x37FF)
 		{
 			// mirror of name table 1
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
+			this.getNameTable1().setMemoryFromHexAddress(address, value);
 		}
-		else if (address >= 0x37C0 && address <= 0x37FF)
-		{
-			// mirror of attribute table 1
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x3800 && address <= 0x3BBF)
+		else if (address >= 0x3800 && address <= 0x3BFF)
 		{
 			// mirror of name table 2
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
-		}
-		else if (address >= 0x3BC0 && address <= 0x3BFF)
-		{
-			// mirror of attribute table 2
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
+			this.getNameTable2().setMemoryFromHexAddress(address, value);
 		}
 		else if (address >= 0x3C00 && address <= 0x3EFF)
 		{
 			// mirror of name table 3
-			this.getNameTable0().setMemoryFromHexAddress(address, value);
+			this.getNameTable3().setMemoryFromHexAddress(address, value);
 		}
 		else if (address >= 0x3F00 && address <= 0x3FFF)
 		{
 			logger.debug("setting address: " + Integer.toHexString(address) + " to value: " + value);
 			// don't much care about high byte.
-			int lowbyte = address & 0x00FF;
+			int lsb = address & 0x00FF;
 			
 			// first half of low byte determines which palette, 2nd half determines index
-			int palette = (lowbyte & 0xF0) / 0xF;
-			int index = lowbyte & 0x0F;
+			int palette = ((lsb & 0xF0) / 0xF) % 2;
+			int index = lsb & 0x0F;
 			
-			if (palette % 2 == 0)
+			if (palette == 0)
 			{
 				// even, so image palette
 				this.setImagePaletteValue(index, value);				
@@ -368,6 +332,21 @@ public class NesPpuMemory
 			{
 				// odd, so sprite palette
 				this.setSpritePaletteValue(index, value);
+			}
+			
+			// mirroring
+			if ((index == 0x0) || (index == 0x4) || (index == 0x8) || (index == 0xC))
+			{
+				// flop palette affected by palette bit for mirroring
+				if (palette == 0)
+				{
+					this.setSpritePaletteValue(index,value);
+				}
+				else
+				{
+					this.setImagePaletteValue(index, value);
+				}
+				
 			}
 		}
 		else if (address >= 0x4000 && address <= 0x7FFF)

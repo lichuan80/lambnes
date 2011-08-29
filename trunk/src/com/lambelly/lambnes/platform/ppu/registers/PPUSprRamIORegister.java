@@ -19,11 +19,7 @@ public class PPUSprRamIORegister
 	}
 	
 	public int cycle()
-	{
-		// get raw control byte
-		logger.debug("0x2004 raw control byte: " + this.getRawControlByte());
-		logger.debug("0x2004 IO address: " + Platform.getPpu().getPpuSprRamAddressRegister());
-		
+	{	
 		if (Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() != null)
 		{
 			this.setSramBuffer(Platform.getPpuMemory().getSprRamFromHexAddress(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte()));
@@ -34,9 +30,11 @@ public class PPUSprRamIORegister
 			if (Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() != null)
 			{			
 				// write control byte to ioAddress
-				if(logger.isDebugEnabled())
+				//if(logger.isDebugEnabled())
 				{
-					logger.debug("0x2004 writing " + this.getRawControlByte() + " to ioAddress: " + Integer.toHexString(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte()));
+					logger.info("0x2004 raw control byte: " + this.getRawControlByte());
+					logger.info("0x2004 IO address: " + Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte());
+					logger.info("0x2004 writing " + this.getRawControlByte() + " to ioAddress: " + Integer.toHexString(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte()));
 				}
 				Platform.getPpuMemory().setSprRamFromHexAddress(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte(), this.getRawControlByte());
 				this.incrementIoAddress();
@@ -49,7 +47,7 @@ public class PPUSprRamIORegister
 	
 	public void incrementIoAddress()
 	{
-		Platform.getPpu().getPpuSprRamAddressRegister().setRegisterValue(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() + 1);
+		Platform.getPpu().getPpuSprRamAddressRegister().setRegisterValue((Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() + 1) & 0xFF);
 	}
 	
 	public void setRegisterValue(int value)

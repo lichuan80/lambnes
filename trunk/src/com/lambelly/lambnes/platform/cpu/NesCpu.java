@@ -40,9 +40,9 @@ public class NesCpu implements CentralProcessingUnit
     	int x = 0;
     	int y = 0;
     	
-    	//if (logger.isDebugEnabled())
+    	if (logger.isDebugEnabled())
         {
-        	//logger.info("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction.getOpCode()) + "\t|\t" + instruction.name() + "\t|\taddress: " + Integer.toHexString(address) + "\t|\tvalue: " + value + "\t|\tA: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getAccumulator(),2).toUpperCase() + "\t|\tX: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getX(),2).toUpperCase() + "\t|\tY: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getY(),2).toUpperCase() + "\t|\tP: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getStatus(false),2).toUpperCase());
+        	logger.info("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction.getOpCode()) + "\t|\t" + instruction.name() + "\t|\taddress: " + Integer.toHexString(address) + "\t|\tvalue: " + value + "\t|\tA: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getAccumulator(),2).toUpperCase() + "\t|\tX: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getX(),2).toUpperCase() + "\t|\tY: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getY(),2).toUpperCase() + "\t|\tP: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getStatus(false),2).toUpperCase());
         }
     	
         switch (instruction.getOpCode())
