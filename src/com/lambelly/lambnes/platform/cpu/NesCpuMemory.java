@@ -116,7 +116,7 @@ public class NesCpuMemory
 
 		// upper bank
 		b = this.getMemoryFromHexAddress(this.getProgramCounter());
-
+		
 		// increment counter
 		this.incrementProgramCounter();
 
@@ -160,6 +160,7 @@ public class NesCpuMemory
 	public int getAbsoluteIndexedXValue()
 	{
 		int address = this.getAbsoluteIndexedXAddress();
+		logger.info ("address: " + address);
 		return this.getMemoryFromHexAddress(address);
 	}
 
@@ -462,9 +463,9 @@ public class NesCpuMemory
 
 	public void setMemoryFromHexAddress(int address, int value) throws IllegalStateException
 	{
-		if(logger.isDebugEnabled())
+		//if(logger.isDebugEnabled())
 		{
-			logger.debug("setting memory to address: 0x" + Integer.toHexString(address) + ": 0x" + Integer.toHexString(value));
+			logger.info("setting memory to address: 0x" + Integer.toHexString(address) + ": 0x" + Integer.toHexString(value));
 		}
 		
 		// set memory
@@ -519,7 +520,7 @@ public class NesCpuMemory
 				this.getPpuVramIORegister().setRegisterValue(value);
 			}
 			
-			logger.info("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));			
+			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value) + " at cpu cycle " + Platform.getCycleCount());			
 		}
 		else if (address >= 0x4000 && address <= 0x401F)
 		{

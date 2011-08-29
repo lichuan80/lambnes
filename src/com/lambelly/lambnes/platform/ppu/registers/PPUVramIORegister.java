@@ -8,8 +8,6 @@ public class PPUVramIORegister
 	public static final int REGISTER_ADDRESS = 0x2007;
 	private static PPUVramIORegister register = new PPUVramIORegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
-	private boolean readAccess = false;
-	private boolean writeAccess = false;
 	private Integer ioAddress = null;
 	private Integer rawControlByte = null;
 	private int vramBuffer = 0; 
@@ -25,23 +23,18 @@ public class PPUVramIORegister
 		{	
 			logger.debug("raw control byte: " + this.getRawControlByte());
 			logger.debug("ioAddress: " + this.getIoAddress());
+			logger.debug("buffer value: " + this.getVramBuffer());
 		}
 		
-		// wait until address is set as well as have something to write.
-		if (this.isReadAccess())
+		if (this.getIoAddress() != null)
 		{
-			this.setReadAccess(false);
-			this.incrementIoAddress();
-
-			this.setVramBuffer(Platform.getPpuMemory().getMemoryFromHexAddress(this.getIoAddress()));
-		}
-		
-		if (this.isWriteAccess())
-		{
-			this.setWriteAccess(false);
-			Platform.getPpuMemory().setMemoryFromHexAddress(this.getIoAddress(), this.getRawControlByte());
-			this.incrementIoAddress();			
-		}
+			// write functions
+			if (this.getRawControlByte() != null)
+			{
+				Platform.getPpuMemory().setMemoryFromHexAddress(this.getIoAddress(), this.getRawControlByte());
+				this.incrementIoAddress();
+			}
+		}	
 		
 		this.clear();
 		
@@ -55,13 +48,41 @@ public class PPUVramIORegister
 	
 	public int getRegisterValue()
 	{
-		this.setReadAccess(true);
-		return this.getVramBuffer();
+		int value = 0;
+		
+		int bufferedValue = this.getVramBuffer();
+		
+		// getMemoryFromHexAddress of fails for buffer read. Buffer read ought to be able to access nametable memory hidden by palette.
+		if (this.getIoAddress() >= 0x3F00 && this.getIoAddress() <= 0x3FFF)
+		{
+			this.setVramBuffer(Platform.getPpuMemory().getNameTable3().getMemoryFromHexAddress(this.getIoAddress()));
+		}
+		else
+		{
+			this.setVramBuffer(Platform.getPpuMemory().getMemoryFromHexAddress(this.getIoAddress()));
+		}
+		
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("pulling information from register: buffer was: " + bufferedValue + " buffer is now: " + this.getVramBuffer());
+		}
+		
+		if (this.getIoAddress() >= 0x3F00 && this.getIoAddress() <= 0x3FFF)
+		{
+			value = Platform.getPpuMemory().getMemoryFromHexAddress(this.getIoAddress());
+		}
+		else
+		{
+			value = bufferedValue;
+		}
+		
+		this.incrementIoAddress();
+		
+		return value;
 	}
 	
 	public void setRegisterValue(int value)
 	{
-		this.setWriteAccess(true);
 		this.setRawControlByte(value);
 	}
 	
@@ -72,6 +93,7 @@ public class PPUVramIORegister
 
 	protected void setIoAddress(Integer ioAddress)
 	{
+		logger.debug("vram address: " + ioAddress);
 		this.ioAddress = ioAddress;
 	}
 	
@@ -97,27 +119,8 @@ public class PPUVramIORegister
 
 	public void setVramBuffer(int buffer)
 	{
+		logger.debug("setting buffer to: " + buffer);
 		this.vramBuffer = buffer;
-	}
-
-	public boolean isReadAccess()
-	{
-		return readAccess;
-	}
-
-	public void setReadAccess(boolean access)
-	{
-		this.readAccess = access;
-	}
-
-	public boolean isWriteAccess()
-	{
-		return writeAccess;
-	}
-
-	public void setWriteAccess(boolean writeAccess)
-	{
-		this.writeAccess = writeAccess;
 	}
 
 	public static PPUVramIORegister getRegister()

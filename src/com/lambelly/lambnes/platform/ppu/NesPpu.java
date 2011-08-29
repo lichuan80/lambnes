@@ -19,8 +19,10 @@ import org.apache.log4j.*;
 
 public class NesPpu implements PictureProcessingUnit
 {
-	private static final int VBLANK_SCANLINE_START = 240;
-	private static final int VBLANK_SCANLINE_END = 262;
+	private static final int SCANLINE_IDLE= 240;
+	private static final int SCANLINE_261=261;
+	private static final int VBLANK_SCANLINE_START = 241;
+	private static final int VBLANK_SCANLINE_END = 260;
 	private static final int REFRESH_RATE = 60;
 	private static final int NUM_SCANLINES_PER_FRAME = 262;
 	private static final int NUM_HORIZONTAL_TILES = 32;
@@ -48,12 +50,14 @@ public class NesPpu implements PictureProcessingUnit
 	private int loopyX = 0;
     private int ppuCyclesUntilEndOfFrame = NesPpu.PPU_CYCLES_PER_FRAME;
     private int ppuCyclesUntilEndOfLine = NesPpu.PPU_CYCLES_PER_LINE;
+    private long vblankInterval = 0;
     private ScreenBuffer screenBuffer = new ScreenBuffer();
     private long screenCount = 0;
 	private Logger logger = Logger.getLogger(NesPpu.class);
 	
 	public void cycle(int cpuCycleCount)
 	{	
+		logger.info("scanline " + this.getScanlineCount() + " at cpu " + Platform.getCycleCount());
 		this.doRegisterReadsWrites();
 		
 		// timing
@@ -62,38 +66,46 @@ public class NesPpu implements PictureProcessingUnit
 		
     	if (this.getPpuCyclesUntilEndOfLine() <= 0)
     	{	
-    		// during vblank
     		if (getScanlineCount() >= NesPpu.VBLANK_SCANLINE_START && getScanlineCount() <= NesPpu.VBLANK_SCANLINE_END)
     		{
     			// vblank
     			this.setLoopyV(this.getLoopyT());
     			
-    			// vblank start
     			if (getScanlineCount() == NesPpu.VBLANK_SCANLINE_START)
     			{
-        			// vblank
+        			// vblank start
+    				logger.info("entering vblank at cycle " + Platform.getCycleCount() + " and scanline " + this.getScanlineCount());
         			Platform.getPpu().getPpuStatusRegister().setVblank(true);
+        			this.vblankInterval = Platform.getCycleCount();
         			
         			if (this.getPpuControlRegister().isExecuteNMIOnVBlank())
         			{
         				Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeNMI));
         			}
-        			
     			}
-    			
-    			incrementScanlineCount();
-    			
         		// vblank end
-        		if (getScanlineCount() == NesPpu.VBLANK_SCANLINE_END)
+    			else if (getScanlineCount() == NesPpu.VBLANK_SCANLINE_END)
         		{
+        			logger.info("resetting vblank at cycle " + Platform.getCycleCount() + " and scanline " + this.getScanlineCount() + " vblank interval: " + (Platform.getCycleCount() - this.vblankInterval));
         			// reset scanlineCount (new frame)
         			this.getPpuStatusRegister().setSprite0Occurance(false);
         			this.getPpuStatusRegister().setVblank(false);
         			this.getPpuStatusRegister().setScanlineSpriteCount(false);
-        			setScanlineCount(0);
         			this.setLoopyV(this.getLoopyT());
         		}
-    		}    		
+    			
+    			incrementScanlineCount();
+    		}
+    		else if (getScanlineCount() == NesPpu.SCANLINE_IDLE)
+    		{
+    			// idle
+    			incrementScanlineCount();
+    		}
+    		else if (getScanlineCount() == NesPpu.SCANLINE_261)
+    		{
+    			// not exactly idle. This is probably inaccurate right now.
+    			setScanlineCount(0);
+    		}
     		else
     		{
     			// draw scanline
@@ -336,7 +348,7 @@ public class NesPpu implements PictureProcessingUnit
     	 * -----------------------------------------
     	 * */
     	
-    	logger.info("name table control: " + Platform.getPpu().getPpuControlRegister().getNameTableAddress() + " coarseX: " + (this.getLoopyT() & 0x1F) + " finex: " + (this.getLoopyX() & 0x07) + " coarseY: " + ((this.getLoopyT() & 0x3E0) >> 5) + " fineY: " + ((this.getLoopyT() & 0x7000) >> 12) + " loopyT: " + this.getLoopyT() + " loopyV: " + this.getLoopyV() + " at scanline " + this.getScanlineCount() + " and frame " + this.getScreenCount());
+    	//logger.info("name table control: " + Platform.getPpu().getPpuControlRegister().getNameTableAddress() + " coarseX: " + (this.getLoopyT() & 0x1F) + " finex: " + (this.getLoopyX() & 0x07) + " coarseY: " + ((this.getLoopyT() & 0x3E0) >> 5) + " fineY: " + ((this.getLoopyT() & 0x7000) >> 12) + " loopyT: " + this.getLoopyT() + " loopyV: " + this.getLoopyV() + " at scanline " + this.getScanlineCount() + " and frame " + this.getScreenCount());
     	
 		// iterate one line in name table
 		for (int horizontalPerTileCount = 0; horizontalPerTileCount < NesPpu.NUM_HORIZONTAL_TILES; horizontalPerTileCount++)
@@ -377,7 +389,7 @@ public class NesPpu implements PictureProcessingUnit
 			int nameTableAddress = 0x2000 + offsetHorizontalPerTileCount | (this.getVerticalPerTileCount() << 5) | (this.getHorizontalNameCount() << 10) | (this.getVerticalNameCount() << 11); 
 			
 			//if (logger.isDebugEnabled())
-			{
+			//{
 				//logger.info("name table control: " + Platform.getPpu().getPpuControlRegister().getNameTableAddress());
 				//logger.info("hscroll offset: " + hCoarseScrollOffset);
 				//logger.info("offsetHorizontalPerTileCount: " + offsetHorizontalPerTileCount);
@@ -386,9 +398,9 @@ public class NesPpu implements PictureProcessingUnit
 				//logger.info("horizontalNameCount: " + this.getHorizontalNameCount());
 				//logger.info("verticalNameCount: " + this.getVerticalNameCount());
 				//logger.info("scanline: " + this.getScanlineCount() + " for screen " + this.getScreenCount());
-				//logger.info("looking at address: 0x" + Integer.toHexString(nameTableAddress) + " horizontalPerTileCount: " + horizontalPerTileCount + " scanline: " + this.getScanlineCount() + " for screen " + this.getScreenCount());
+				//logger.info("looking at address: 0x" + Integer.toHexString(nameTableAddress) + " horizontalPerTileCount: " + horizontalPerTileCount + " vOffset: " + offsetVerticalPerTileCount + " scanline: " + this.getScanlineCount() + " for screen " + this.getScreenCount());
 				//logger.info("pulled from name table: 0x" + Integer.toHexString(Platform.getPpuMemory().getMemoryFromHexAddress(nameTableAddress)));
-			} 
+			//} 
 		
 			drawBackgroundTile(nameTableAddress, horizontalPerTileCount, hFineScrollOffset, verticalPerPixelCount, vFineScrollOffset);
 			
@@ -408,7 +420,8 @@ public class NesPpu implements PictureProcessingUnit
 			BackgroundTile bg = Platform.getPpuMemory().getNameTableFromHexAddress(nameTableAddress).getTileFromHexAddress(nameTableAddress);
 			System.arraycopy(bg.getTileColorRow(tileYindex), 0, tile, 0, (tile.length));
 			
-			//logger.info("drawing bg tile: " + bg.getBackgroundNumber() + " at position " + horizontalPerTileCount + " on scanline " + this.getScanlineCount() + " on screen " + this.getScreenCount());
+			logger.info("drawing bg tile: " + bg.getBackgroundNumber() + " at position " + horizontalPerTileCount + " on scanline " + this.getScanlineCount() + " on screen " + this.getScreenCount());
+			logger.info("drawing bg tile: " + bg);
 			
 			this.getScreenBuffer().setScreenBufferTileRow((horizontalPerTileCount * 8), verticalPerPixelCount, hFineScrollOffset, vFineScrollOffset, tile); 
 		}
