@@ -6,3 +6,5 @@
 ||0.0.1||initial release||
 ||0.0.2||fixed command line rom loading issues. I think.||
 ||0.0.3||improved ppu functioning. Sprite flickering fixed. Working toward accurate ppu timing||
+||0.0.4||ppu timing improved. Some issues with sprites and background images corrected.||
+||0.0.5||scrolling implemented. DMA improved. Some commands on the CPU fixed. Sound stubbed in a little bit.||
