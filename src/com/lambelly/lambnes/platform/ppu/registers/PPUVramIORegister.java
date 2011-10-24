@@ -31,6 +31,7 @@ public class PPUVramIORegister
 			// write functions
 			if (this.getRawControlByte() != null)
 			{
+				//logger.info("VRAM IO register writing value " + Integer.toHexString(this.getRawControlByte()) + " to " + Integer.toHexString(this.getIoAddress()) + " with X: " + Integer.toHexString(Platform.getCpu().getX()) + " and Y: " + Integer.toHexString(Platform.getCpu().getY()));
 				Platform.getPpuMemory().setMemoryFromHexAddress(this.getIoAddress(), this.getRawControlByte());
 				this.incrementIoAddress();
 			}

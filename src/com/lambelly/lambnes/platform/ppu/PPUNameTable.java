@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 
 public class PPUNameTable
 {
-	private int[] nameTable = new int[960]; // 0x2000 - 0x23C0
-	private int[] attributeTable = new int [64]; // 0x23C1 - 2400
+	private int[] nameTable = new int[960]; // 0x2000 - 0x23BF
+	private int[] attributeTable = new int [64]; // 0x23C0 - 23FF
 	private static final int BASE_ADDRESS_MASK = 0x3FF; // max array index. masks to find array index from address provided.
 	private Logger logger = Logger.getLogger(PPUNameTable.class);
 	
@@ -56,7 +56,7 @@ public class PPUNameTable
 			
 			if (logger.isDebugEnabled())
 			{
-				logger.debug("using background tile MSBs: " + colorMSB + " for tile " + bTile.getBackgroundNumber() + " at address " + address + " and nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
+				logger.debug("using background tile MSBs: " + colorMSB + " for tile " + bTile.getTileNumber() + " at address " + address + " and nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
 			}
 			return (bTile);
 		}

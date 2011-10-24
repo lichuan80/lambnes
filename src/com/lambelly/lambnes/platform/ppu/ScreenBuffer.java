@@ -6,10 +6,12 @@ import java.awt.image.WritableRaster;
 
 import com.lambelly.lambnes.gui.LambNesGui;
 import com.lambelly.lambnes.gui.Screen;
+import org.apache.log4j.*;
 
 public class ScreenBuffer
 {
 	private int[] screenBuffer = new int[Screen.SCREEN_HORIZONTAL_RESOLUTION * Screen.SCREEN_VERTICAL_RESOLUTION];
+	private Logger logger = Logger.getLogger(ScreenBuffer.class);
 	
 	public ScreenBuffer()
 	{
@@ -47,13 +49,13 @@ public class ScreenBuffer
     
     public void setScreenBufferTileRow(int horizontalCoord, int verticalCoord, int hFineScrollOffset, int vFineScrollOffset, PaletteColor[] tileRow)
     {
-    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontalCoord, verticalCoord);
+    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontalCoord, verticalCoord - vFineScrollOffset);
     	
     	for (int tileRowIndex = 0; tileRowIndex < tileRow.length; tileRowIndex++)
     	{
         	// deal with fine scroll -- if at start of line or end of line, truncate icon. If otherwise, offset icon.
     		if ((horizontalCoord - hFineScrollOffset >= 0 && horizontalCoord - hFineScrollOffset < Screen.SCREEN_HORIZONTAL_RESOLUTION) &&
-    				(verticalCoord - vFineScrollOffset >= 0 && verticalCoord - vFineScrollOffset < Screen.SCREEN_VERTICAL_RESOLUTION))	
+    			(verticalCoord - vFineScrollOffset >= 0 && verticalCoord - vFineScrollOffset < Screen.SCREEN_VERTICAL_RESOLUTION))
     		{
     			this.setScreenBufferPixel((bufferIndexStart + tileRowIndex) - hFineScrollOffset, tileRow[tileRowIndex].getMasterPaletteColor().getColorInt());
     		}

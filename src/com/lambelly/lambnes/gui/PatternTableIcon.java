@@ -10,7 +10,7 @@ import org.apache.log4j.*;
 
 public class PatternTableIcon implements Icon
 {
-	public int spriteNumber = 0;
+	public int tileNumber = 0;
 	public int getIconWidth() { return 8; }
     public int getIconHeight() { return 8; }
     private BufferedImage icon = new BufferedImage(this.getIconWidth(), this.getIconHeight(), BufferedImage.TYPE_INT_RGB);
@@ -18,7 +18,7 @@ public class PatternTableIcon implements Icon
     
     public PatternTableIcon(int spriteNumber)
     {
-    	this.setSpriteNumber(spriteNumber);
+    	this.setTileNumber(spriteNumber);
     }
     
     public void paintIcon(Component c, Graphics g, int x, int y) 
@@ -35,13 +35,13 @@ public class PatternTableIcon implements Icon
     		}
     	}
     }
-	public int getSpriteNumber()
+	public int getTileNumber()
 	{
-		return spriteNumber;
+		return tileNumber;
 	}
-	public void setSpriteNumber(int spriteNumber)
+	public void setTileNumber(int tileNumber)
 	{
-		this.spriteNumber = spriteNumber;
+		this.tileNumber = tileNumber;
 	}
 	public BufferedImage getIcon()
 	{
