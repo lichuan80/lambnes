@@ -160,7 +160,6 @@ public class NesCpuMemory
 	public int getAbsoluteIndexedXValue()
 	{
 		int address = this.getAbsoluteIndexedXAddress();
-		logger.info ("address: " + address);
 		return this.getMemoryFromHexAddress(address);
 	}
 
@@ -184,10 +183,6 @@ public class NesCpuMemory
 	public int getZeroPageValue()
 	{
 		int address = this.getZeroPageAddress();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug(address);
-		}
 		return this.getMemoryFromHexAddress(address);
 	}
 	
@@ -262,9 +257,9 @@ public class NesCpuMemory
 		lsbAddressLsb = lsbAddressLsb & 0x00FF;
 		int msb = this.getMemoryFromHexAddress(lsbAddressMsb | lsbAddressLsb);
 		
-		logger.debug("lsbAddress: " + Integer.toHexString(lsbAddress));
-		logger.debug("lsb: " + Integer.toHexString(lsb));
-		logger.debug("msb: " + Integer.toHexString(msb));
+		//logger.debug("lsbAddress: " + Integer.toHexString(lsbAddress));
+		//logger.debug("lsb: " + Integer.toHexString(lsb));
+		//logger.debug("msb: " + Integer.toHexString(msb));
 	
 		return BitUtils.unsplitAddress(msb, lsb);
 	}
@@ -272,11 +267,6 @@ public class NesCpuMemory
 	public int getAbsoluteIndexedXAddress()
 	{
 		int address = this.getNextPrgRomShort();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("initial address: " + address);
-			logger.debug("X: " + Platform.getCpu().getX());
-		}
 		address += Platform.getCpu().getX();
 		return address & Platform.SIXTEEN_BIT_MASK;
 	}
@@ -303,24 +293,13 @@ public class NesCpuMemory
 	{
 		// get initial address
 		int address = this.getNextPrgRomByte();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("initial address: " + Integer.toHexString(address));
-		}
 		
 		// add address to x register
 		address += Platform.getCpu().getX();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("X: " + Integer.toHexString(Platform.getCpu().getX()));
-			logger.debug("address: " + Integer.toHexString(address));
-		}
+
 		// if address is > FF it wraps around.
 		address = address & Platform.EIGHT_BIT_MASK;
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("address: " + Integer.toHexString(address));
-		}
+
 		return address;
 	}
 	
@@ -328,24 +307,13 @@ public class NesCpuMemory
 	{
 		// get initial address
 		int address = this.getNextPrgRomByte();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("initial address: " + Integer.toHexString(address));
-		}
 		
 		// add address to Y register
 		address += Platform.getCpu().getY();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("Y: " + Integer.toHexString(Platform.getCpu().getY()));
-			logger.debug("address: " + Integer.toHexString(address));
-		}
+		
 		// if address is > FF it wraps around.
 		address = address & Platform.EIGHT_BIT_MASK;
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("address: " + Integer.toHexString(address));
-		}
+
 		return address;
 	}	
 	
@@ -353,9 +321,6 @@ public class NesCpuMemory
 	{ 
 		int lowByteAddress = Platform.getCpuMemory().getNextPrgRomByte() + Platform.getCpu().getX() & Platform.EIGHT_BIT_MASK;
 		int highByteAddress =  lowByteAddress + 1 & Platform.EIGHT_BIT_MASK;
-
-		logger.debug("lowByteAddress: " + lowByteAddress);
-		logger.debug("highByteAddress: " + highByteAddress);
 		
 		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
 	}
@@ -463,7 +428,7 @@ public class NesCpuMemory
 
 	public void setMemoryFromHexAddress(int address, int value) throws IllegalStateException
 	{
-		//if(logger.isDebugEnabled())
+		if(logger.isDebugEnabled())
 		{
 			logger.info("setting memory to address: 0x" + Integer.toHexString(address) + ": 0x" + Integer.toHexString(value));
 		}
@@ -508,7 +473,6 @@ public class NesCpuMemory
 			}
 			else if (address == PPUScrollRegister.REGISTER_ADDRESS)
 			{
-				logger.debug("setting 0x2005 to " + value);
 				this.getPpuScrollRegister().setRegisterValue(value);
 			}
 			else if (address == PPUVramAddressRegister.REGISTER_ADDRESS)
@@ -524,6 +488,7 @@ public class NesCpuMemory
 		}
 		else if (address >= 0x4000 && address <= 0x401F)
 		{
+			logger.info("write to one register " + Integer.toHexString(address) + ": " + value);
 			// Input/Output registers
 			if (address == PPUSpriteDMARegister.REGISTER_ADDRESS)
 			{
@@ -541,7 +506,6 @@ public class NesCpuMemory
 			{
 				this.getJoypadControlRegister2().setRegisterValue(value);
 			}
-			logger.info("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value));
 		}
 	}	
 	

@@ -23,16 +23,15 @@ public class PPUVramAddressRegister
 	public int cycle()
 	{
 		if (this.getRawControlByte() != null)
-		{
-			//if (logger.isDebugEnabled())
+		{			 
+			//if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
 			{
-				logger.info("write to register 0x2006: " + this.getRawControlByte() + " at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
-			}
-			 
-			if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
-			{
+				int flipflop = Platform.getPpu().getRegisterAddressFlipFlopLatch();
+				int loopyT = Platform.getPpu().getLoopyT();
+				int setLoopyT = 0;
+					
 				// do memory access on vblank.
-				if (Platform.getPpu().getRegisterAddressFlipFlopLatch() == 1)
+				if (flipflop == 1)
 				{
 					if(logger.isDebugEnabled())
 					{
@@ -43,14 +42,16 @@ public class PPUVramAddressRegister
 	
 					// both are set, so set 0x2007
 					Platform.getPpu().getPpuVramIORegister().setIoAddress(BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
+					
+					// perform loopyT changes
+					setLoopyT = (loopyT & 0xFF00) | (this.getRawControlByte());
+					Platform.getPpu().setLoopyT(setLoopyT);
 					Platform.getPpu().setLoopyV(Platform.getPpu().getLoopyT());
+					
 					if(logger.isDebugEnabled())
 					{
 						logger.debug("io address: " + BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
 					}
-					
-					// clear? I suppose it makes sense.
-					this.clear();
 				}
 				else
 				{
@@ -59,15 +60,38 @@ public class PPUVramAddressRegister
 					{
 						logger.debug("setting high bit: " + this.getRawControlByte());
 					}
+					
+					// perform loopyT changes
+					setLoopyT = loopyT & 0xBFFF; // clear D14
+					setLoopyT = (loopyT & 0xC0FF) | (this.getRawControlByte() & 0x3F);
+					Platform.getPpu().setLoopyT(setLoopyT);
+				}
+				
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("write to register 0x2006: " + this.getRawControlByte() + "\n" +
+							"flipflop is " + flipflop + "\n" + 
+							"loopyT is: " + loopyT + "\n" +
+							"setting loopyT to: " + setLoopyT + "\n" +
+							"at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
+				}
+				
+				if (flipflop == 1)
+				{
+					// clear? I suppose it makes sense.
+					this.clear();					
+				}
+				else
+				{
 					this.setAddressHighByte(this.getRawControlByte());
 					this.setRawControlByte(null);
 				}
 			}
-			else
-			{
-				logger.warn("byte sent to 0x2006 during rendering: " + this.getRawControlByte());
-				this.setRawControlByte(null);
-			}
+			//else
+			//{
+				//logger.warn("byte sent to 0x2006 during rendering: " + this.getRawControlByte());
+				//this.setRawControlByte(null);
+			//}
 		}
 		
 		return PPUVramAddressRegister.CYCLES_PER_EXECUTION;

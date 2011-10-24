@@ -46,12 +46,12 @@ public class PPUControlRegister
 			if (logger.isDebugEnabled())
 			{
 				logger.debug("rawControlByte: " + rawControlByte);
+				logger.debug("setting background pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
+				logger.debug("setting sprite pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 3)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
 			}
 			this.setExecuteNMIOnVBlank(BitUtils.isBitSet(this.getRawControlByte(), 7));
 			this.setMasterSlaveSelection(BitUtils.isBitSet(this.getRawControlByte(), 6)?MASTER_SLAVE_SELECTION_SLAVE:MASTER_SLAVE_SELECTION_MASTER);
 			this.setSpriteSize(BitUtils.isBitSet(this.getRawControlByte(), 5)?SPRITE_SIZE_8X16:SPRITE_SIZE_8X8);
-			logger.info("setting background pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
-			logger.debug("setting sprite pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 3)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
 			this.setBackgroundPatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000);
 			this.setSpritePatternTableAddress(BitUtils.isBitSet(this.getRawControlByte(), 3)?SPRITE_PATTERN_TABLE_ADDRESS_1000:SPRITE_PATTERN_TABLE_ADDRESS_0000);
 			this.setPpuAddressIncrement(BitUtils.isBitSet(this.getRawControlByte(), 2)?PPU_ADDRESS_INCREMENT_32:PPU_ADDRESS_INCREMENT_1);
@@ -59,8 +59,9 @@ public class PPUControlRegister
 			// base name table logic
 			int nameTableControlBit = (this.getRawControlByte() & 3); 
 			this.setNameTableAddress(nameTableControlBit);
-			int loopyT = (Platform.getPpu().getLoopyT() & 0x1FF) | (nameTableControlBit << 9);
-			logger.info("rawControlByte was: " + this.getRawControlByte() + " loopyT was: " + Platform.getPpu().getLoopyT() + " setting loopyT to: " + loopyT);
+			int loopyT = (Platform.getPpu().getLoopyT() & 0x73FF) | (nameTableControlBit << 10);
+			//logger.debug("rawControlByte was: " + this.getRawControlByte() + " loopyT was: " + Platform.getPpu().getLoopyT() + " setting loopyT to: " + loopyT);
+
 			Platform.getPpu().setLoopyT(loopyT);
 			
 			this.clear();

@@ -24,32 +24,39 @@ public class PPUScrollRegister
 	{
 		if (this.getRawControlByte() != null)
 		{
-			//if (logger.isDebugEnabled())
+			int flipflop = Platform.getPpu().getRegisterAddressFlipFlopLatch();
+			int loopyT = Platform.getPpu().getLoopyT();
+			int setLoopyT = 0;
+			
+			if (flipflop == 0)
 			{
-				logger.info("write to register 0x2005: " + this.getRawControlByte() + " at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
+				setLoopyT = ((loopyT & 0x7FE0) | ((this.getRawControlByte() & 0xF8) >> 3));
+			}
+			else
+			{
+				setLoopyT = (Platform.getPpu().getLoopyT() & 0x8C1F) | 
+					(((this.getRawControlByte() & 7) << 12) | 
+					((this.getRawControlByte() & 0xF8) << 2));
 			}
 			
-			if (Platform.getPpu().getRegisterAddressFlipFlopLatch() == 0)
+			if (logger.isDebugEnabled())
 			{
-				//if (logger.isDebugEnabled())
-				{
-					logger.info("flipflop is 0");
-					logger.info("loopyT is: " + Platform.getPpu().getLoopyT());
-					logger.info("setting loopyT to: " + ((Platform.getPpu().getLoopyT() & 0x7FE0) | ((this.getRawControlByte() & 0xF8) >> 3)));
-				}
+				logger.debug("write to register 0x2005: " + this.getRawControlByte() + "\n" +
+						"flipflop is " + flipflop + "\n" + 
+						"loopyT is: " + loopyT + "\n" +
+						"setting loopyT to: " + setLoopyT + "\n" +
+						"at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
+			}
+			
+			if (flipflop == 0)
+			{				
 				Platform.getPpu().setLoopyX(this.getRawControlByte() & 7);
-				Platform.getPpu().setLoopyT(((Platform.getPpu().getLoopyT() & 0x7FE0)| (this.getRawControlByte() & 0xF8) >> 3));
+				Platform.getPpu().setLoopyT(setLoopyT);
 				this.setRawControlByte(null);
 			}
 			else
 			{
-				//if (logger.isDebugEnabled())
-				{
-					logger.info("flipflop is 1");
-					logger.info("loopyT is: " + Platform.getPpu().getLoopyT());
-					logger.info("setting loopyT to: " + (Platform.getPpu().getLoopyT() | (((this.getRawControlByte() & 7) << 12) | ((this.getRawControlByte() & 0xF8) << 5)) ) );
-				}
-				Platform.getPpu().setLoopyT( (Platform.getPpu().getLoopyT() & 0x8C1F) | (((this.getRawControlByte() & 7) << 12) | ((this.getRawControlByte() & 0xF8) << 5)) );
+				Platform.getPpu().setLoopyT(setLoopyT);
 				this.clear();
 			}
 		}

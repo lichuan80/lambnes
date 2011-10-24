@@ -259,7 +259,7 @@ public class NesPpuMemory
 	{
 		if(logger.isDebugEnabled())
 		{
-			logger.debug("setting value " + value + " to ppu address: 0x" + Integer.toHexString(address));
+			logger.info("setting value " + value + " to ppu address: 0x" + Integer.toHexString(address));
 		}
 		
 		if (address >= 0x0000 && address <= 0xFFF)
@@ -315,7 +315,7 @@ public class NesPpuMemory
 		}
 		else if (address >= 0x3F00 && address <= 0x3FFF)
 		{
-			logger.debug("setting address: " + Integer.toHexString(address) + " to value: " + value);
+			//logger.info("setting address: " + Integer.toHexString(address) + " to value: " + value);
 			// don't much care about high byte.
 			int lsb = address & 0x00FF;
 			

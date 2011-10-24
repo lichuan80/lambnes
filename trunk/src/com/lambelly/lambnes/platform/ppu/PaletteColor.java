@@ -28,6 +28,11 @@ public class PaletteColor
 		}
 	}
 	
+	public String toString()
+	{
+		return Integer.toString(this.getMasterPaletteIndex());
+	}
+	
 	public NesMasterColor getMasterPaletteColor()
 	{
 		return Platform.getMasterPalette().getColor(masterPaletteIndex);

@@ -9,10 +9,13 @@ public class PatternTableVisualization extends JPanel
 {
 	private Logger logger = Logger.getLogger(PatternTableVisualization.class);
 	private PatternTableIcon[] patternTableIcons = new PatternTableIcon[256];
+	private int patternTableVisualizationType = 0;
+	public static final int PATTERN_TABLE_VISUALIZATION_SPRITE = 0;
+	public static final int PATTERN_TABLE_VISUALIZATION_IMAGE = 1;
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
 	
-	public PatternTableVisualization(String toolTipText)
+	public PatternTableVisualization(String toolTipText, int patternTableVisualizationSelect)
 	{
 		super(new GridLayout(16,16));
 		if(logger.isDebugEnabled())
@@ -22,6 +25,7 @@ public class PatternTableVisualization extends JPanel
     	this.setBounds(0, 0, PatternTableVisualization.SCREEN_HORIZONTAL_RESOLUTION, PatternTableVisualization.SCREEN_VERTICAL_RESOLUTION);
     	this.setPreferredSize(new Dimension(PatternTableVisualization.SCREEN_HORIZONTAL_RESOLUTION, PatternTableVisualization.SCREEN_VERTICAL_RESOLUTION));
     	this.setToolTipText(toolTipText);
+    	this.setPatternTableVisualizationType(patternTableVisualizationSelect);
     	
     	//initial initialization of icons
 		for (int x=0;x<256;x++)
@@ -50,5 +54,15 @@ public class PatternTableVisualization extends JPanel
 	public void setPatternTableIcon(int index, PatternTableIcon icon)
 	{
 		this.patternTableIcons[index] = icon;
+	}
+
+	public int getPatternTableVisualizationType()
+	{
+		return patternTableVisualizationType;
+	}
+
+	public void setPatternTableVisualizationType(int patternTableVisualizationType)
+	{
+		this.patternTableVisualizationType = patternTableVisualizationType;
 	}
 }

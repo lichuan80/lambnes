@@ -38,22 +38,26 @@ public class Ines implements Cartridge
         this.setHeader(new Header (ArrayUtils.subarray(rawRomData, 0, 16)));
 
         // determine other lengths
-        int programLength = this.determineProgramInstructionLength(this.getHeader().getProgramInstructionByte());
-        logger.debug("byte 4 (programLength): " + programLength);
+        int programLength = this.determineProgramInstructionLength(this.getHeader().getProgramInstructionByte());        
         int patternTileLength = this.determinePatternTileInstructionLength(this.getHeader().getPatternTileByte());
 
         // the program length is determined by byte 4 of the header
         this.setProgramInstructions(ArrayUtils.subarray(rawRomData, 16, programLength + 16));
-        logger.info("getting pattern from: " + (16 + programLength));
-        logger.info("getting pattern to: " + rawRomData.length);
         int[] patternTiles = ArrayUtils.subarray(rawRomData,(16 + programLength), rawRomData.length);
-        logger.info("pattern tile length: " + patternTiles.length);
+        
         this.setPatternTiles(patternTiles);
 
-        logger.info("program pages: " + this.getHeader().getProgramInstructionByte());
-        logger.info("chr-rom pages: " + this.getHeader().getPatternTileByte());
-        logger.info("program array length: " + this.getProgramInstructions().length);
-        logger.info("pattern array length: " + this.getPatternTiles().length);
+        if (logger.isDebugEnabled())
+        {
+	        logger.debug("byte 4 (programLength): " + programLength);
+	        logger.debug("getting pattern from: " + (16 + programLength));
+	        logger.debug("getting pattern to: " + rawRomData.length);
+	        logger.debug("pattern tile length: " + patternTiles.length);
+	        logger.debug("program pages: " + this.getHeader().getProgramInstructionByte());
+	        logger.debug("chr-rom pages: " + this.getHeader().getPatternTileByte());
+	        logger.debug("program array length: " + this.getProgramInstructions().length);
+	        logger.debug("pattern array length: " + this.getPatternTiles().length);
+        }
     }
 
     /**

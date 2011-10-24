@@ -58,7 +58,10 @@ public class Platform
     {
     	if (Platform.getCartridge() != null)
     	{
-    		logger.info("using mapper: " + Platform.getCartridge().getHeader().getMapperID());
+    		if (logger.isDebugEnabled())
+    		{
+    			logger.debug("using mapper: " + Platform.getCartridge().getHeader().getMapperID());
+    		}
     		Platform.getPpuMemory().establishMirroring();
     		Platform.getCpuMemory().setProgramInstructions(Platform.getCartridge().getProgramInstructions());
     		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());

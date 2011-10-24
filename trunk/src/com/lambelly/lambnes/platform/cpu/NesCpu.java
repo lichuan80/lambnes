@@ -33,7 +33,13 @@ public class NesCpu implements CentralProcessingUnit
 
     public int processNextInstruction()
     {
-        Instruction instruction = Instruction.get(Platform.getCpuMemory().getNextPrgRomByte());
+    	int instCode = Platform.getCpuMemory().getNextPrgRomByte();
+        Instruction instruction = Instruction.get(instCode);
+        
+        if (instruction == null)
+    	{
+    		logger.warn("no instruction found for code: " + instCode);
+    	}
         
         int value = 0;
     	int address = 0;

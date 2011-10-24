@@ -13,15 +13,15 @@ public class LambNesGui extends JFrame implements Runnable
 	private static Screen screen = new Screen();
 	private static Container content = null;
 	private static boolean run = true;
-	private PatternTableWorker spriteTableWorker = null;
-	private PatternTableWorker backgroundTableWorker = null;
+	private PatternTableVisualization sptv = new PatternTableVisualization(LambNesGui.SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_SPRITE);
+	private PatternTableVisualization bptv = new PatternTableVisualization(LambNesGui.BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_IMAGE);
 	private PaletteVisualization bpv = new PaletteVisualization(0x3F00, 16);
 	private PaletteVisualization spv = new PaletteVisualization(0x3F10, 16);
 	private Timer workertimer = null;
 	private Logger logger = Logger.getLogger(LambNesGui.class);
 	public static final int SLEEP_TIME = 125;
 	public static final int WORKER_INTIAL_DELAY = 10000;
-	public static final int WORKER_PAUSE = 5000;
+	public static final int WORKER_PAUSE = 100000;
 	public static final String SCREEN_TITLE = "LambNes"; 
 	public static final String SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT = "Sprite Pattern Table";
 	public static final String BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT = "Background Pattern Table";
@@ -153,29 +153,24 @@ public class LambNesGui extends JFrame implements Runnable
         // add panels to content pane
         setContent(getContentPane());
         getContent().setLayout(new GridLayout(2,3));
-        getContent().add(spv);
+        getContent().add(getSpv());
         MasterPaletteVisualization mpv = new MasterPaletteVisualization();
         getContent().add(mpv);
-        getContent().add(bpv);
-        PatternTableVisualization sptv = new PatternTableVisualization(LambNesGui.SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT);
-        getContent().add(sptv);
+        getContent().add(getBpv());
+        getContent().add(getSptv());
         getContent().add(LambNesGui.getScreen());
-        PatternTableVisualization bptv = new PatternTableVisualization(LambNesGui.BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT);
-        getContent().add(bptv);
+        getContent().add(getBptv());
         this.pack();    
         
         // set up worker threads that update the visualizations
-        PatternTableWorker sptw = new PatternTableWorker(sptv);
-        spriteTableWorker = sptw;
-        PatternTableWorker bptw = new PatternTableWorker(bptv);
-        backgroundTableWorker = bptw;
-        
         ActionListener workerActionListener = new ActionListener() 
         {
             public void actionPerformed(ActionEvent actionEvent) 
             {
-				getSpriteTableWorker().execute();
-				getBackgroundTableWorker().execute();
+                PatternTableWorker sptw = new PatternTableWorker(sptv);
+                sptw.execute();
+                PatternTableWorker bptw = new PatternTableWorker(bptv);
+                bptw.execute();
 				getBpv().refreshPalette();
 				getSpv().refreshPalette();
 				getWorkertimer().restart();
@@ -260,26 +255,6 @@ public class LambNesGui extends JFrame implements Runnable
 		LambNesGui.content = content;
 	}
 
-	public PatternTableWorker getSpriteTableWorker()
-	{
-		return spriteTableWorker;
-	}
-
-	public void setSpriteTableWorker(PatternTableWorker spriteTableWorker)
-	{
-		this.spriteTableWorker = spriteTableWorker;
-	}
-
-	public PatternTableWorker getBackgroundTableWorker()
-	{
-		return backgroundTableWorker;
-	}
-
-	public void setBackgroundTableWorker(PatternTableWorker backgroundTableWorker)
-	{
-		this.backgroundTableWorker = backgroundTableWorker;
-	}
-
 	public PaletteVisualization getBpv()
 	{
 		return bpv;
@@ -308,5 +283,25 @@ public class LambNesGui extends JFrame implements Runnable
 	public void setWorkertimer(Timer workertimer)
 	{
 		this.workertimer = workertimer;
+	}
+
+	public PatternTableVisualization getSptv()
+	{
+		return sptv;
+	}
+
+	public void setSptv(PatternTableVisualization sptv)
+	{
+		this.sptv = sptv;
+	}
+
+	public PatternTableVisualization getBptv()
+	{
+		return bptv;
+	}
+
+	public void setBptv(PatternTableVisualization bptv)
+	{
+		this.bptv = bptv;
 	}   
 }

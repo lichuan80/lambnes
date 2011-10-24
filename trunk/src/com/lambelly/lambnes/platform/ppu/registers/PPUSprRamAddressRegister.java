@@ -33,7 +33,14 @@ public class PPUSprRamAddressRegister
 	
 	public Integer getRawControlByte()
 	{
-		return rawControlByte;
+		if (rawControlByte != null)
+		{
+			return rawControlByte;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	private void setRawControlByte(Integer rawControlByte)

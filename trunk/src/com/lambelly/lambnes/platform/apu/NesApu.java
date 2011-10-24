@@ -1,10 +1,11 @@
 package com.lambelly.lambnes.platform.apu;
 
 import com.lambelly.lambnes.platform.apu.registers.*;
+import javax.sound.sampled.*;
 
 public class NesApu implements AudioProcessingUnit
 {
-	APUControlRegister apuControlRegister = new APUControlRegister();
+	APUControlRegister apuControlRegister = APUControlRegister.getRegister();
 	
 	public void cycle()
 	{

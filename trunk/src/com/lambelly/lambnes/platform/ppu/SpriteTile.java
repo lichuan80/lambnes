@@ -13,14 +13,12 @@ public class SpriteTile
 	private int spriteNumber = 0;
 	private int[] patternA = null;
 	private int[] patternB = null;
-	
 	private SpriteAttribute spriteAttribute = new SpriteAttribute();
 	private Logger logger = Logger.getLogger(SpriteTile.class);
 	
 	public SpriteTile(int spriteNumber)
 	{
 		this.setSpriteNumber(spriteNumber);
-		//this.setSpriteAttributes(new SpriteAttribute(spriteNumber));
 		this.instantiateSprite();
 	}
 	
@@ -157,13 +155,10 @@ public class SpriteTile
 		{
 			for (int col = 0; col < 8; col++)
 			{
-				// figure out color
-				int spritePaletteIndex = this.getPixelSpriteColorPaletteIndex(col, row);
-				int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.SPRITE_PALETTE_ADDRESS + spritePaletteIndex);
-				int rgb = Platform.getMasterPalette().getColor(masterPaletteIndex).getColorInt();
+				PaletteColor[] p = this.getTileColorRow(row);
 				
 				// set pixel
-				bImage.setRGB(col, row, rgb);
+				bImage.setRGB(col, row, p[col].getMasterPaletteColor().getColorInt());
 			}
 		}
 		
