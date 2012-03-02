@@ -1,6 +1,10 @@
 #summary List of the roms that have been tested with the LambNes emulator.
 
 ||game name||support||details||
-||Balloon Fight||partial||main game is playable, some errors in background generation||
-||Donkey Kong||minimal||the title screen is pretty seriously jacked up, sprites unable to move.||
-||Super Mario Brothers||none||game does not start due to sprite0 error||
+||Balloon Fight||partial||main game is playable, albeit a bit slow.||
+||Donkey Kong||partial||As of version 0.0.6 appears largely playable.||
+||Super Mario Brothers||partial||As of version 0.0.6 appears largely playable.||
+||Wrecking Crew||partial||some rendering problems during vertical scroll, but otherwise seems to work.||
+||kung fu||partial||weird timing issue is noticable during horizontal scroll, but does not appear to affect game play||
+||Mega Man||partial||As of version 0.0.7 appears largely playable.||
+||Kid Icarus||partial||As of version 0.0.7 appears largely playable.||
