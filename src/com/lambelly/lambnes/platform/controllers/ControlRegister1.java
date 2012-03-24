@@ -10,9 +10,9 @@ public class ControlRegister1
 	private Integer firstWrite = null;
 	private boolean strobe = false;
 	private int strobeCount = 0;
+	private NesControllerPorts controllerPorts;
 	public static final int REGISTER_ADDRESS = 0x4016;
-	private static ControlRegister1 register = new ControlRegister1();
-	private Logger logger = Logger.getLogger(ControlRegister1.class);
+	private static Logger logger = Logger.getLogger(ControlRegister1.class);
 	
 	private ControlRegister1()
 	{
@@ -20,12 +20,10 @@ public class ControlRegister1
 	}
 
 	public void cycle()
-	{
-		Integer ret = null;
-		
+	{	
 		if (this.getRawControlByte() != null)
 		{
-			logger.debug("received rawControlByte: " + this.getRawControlByte());
+			//logger.debug("received rawControlByte: " + this.getRawControlByte());
 			
 			if (this.getRawControlByte() == 1)
 			{
@@ -62,22 +60,12 @@ public class ControlRegister1
 		// if in strobe mode
 		if (this.getStrobe() && this.getStrobeCount() < 24)
 		{
-			strobeValue = (Platform.getControllerPorts().getPortA().read(this.getStrobeCount()));
-			logger.debug("reading " + this.getStrobeCount() + ":" + strobeValue);
+			strobeValue = (this.getControllerPorts().getPortA().read(this.getStrobeCount()));
+			//logger.debug("reading " + this.getStrobeCount() + ":" + strobeValue);
 			this.incrementStrobeCount();
 		}
 		
 		return strobeValue;
-	}
-	
-	public static ControlRegister1 getRegister()
-	{
-		return register;
-	}
-
-	public static void setRegister(ControlRegister1 register)
-	{
-		ControlRegister1.register = register;
 	}
 
 	private Integer getRawControlByte()
@@ -124,4 +112,14 @@ public class ControlRegister1
 	{
 		this.strobeCount++;
 	}
+
+	public NesControllerPorts getControllerPorts()
+    {
+    	return controllerPorts;
+    }
+
+	public void setControllerPorts(NesControllerPorts controllerPorts)
+    {
+    	this.controllerPorts = controllerPorts;
+    }
 }

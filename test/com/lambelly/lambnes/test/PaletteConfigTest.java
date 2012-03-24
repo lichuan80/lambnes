@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Iterator;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import static org.junit.Assert.*;
 
 import com.lambelly.lambnes.platform.*;
@@ -13,9 +18,12 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.*;
 
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class PaletteConfigTest
 {
+	@Autowired
+	private TestUtils testUtils;
 	private Logger logger = Logger.getLogger(PaletteConfigTest.class);
 	
 	@Test
@@ -46,7 +54,17 @@ public class PaletteConfigTest
 	@Test
 	public void palette()throws Exception
 	{
-		TestUtils.createTestPlatform();
-		logger.debug(Platform.getMasterPalette());
+		this.getTestUtils().createTestPlatform();
+		logger.debug(NesMasterPalette.getInstance());
 	}
+
+	public TestUtils getTestUtils()
+    {
+    	return testUtils;
+    }
+
+	public void setTestUtils(TestUtils testUtils)
+    {
+    	this.testUtils = testUtils;
+    }
 }

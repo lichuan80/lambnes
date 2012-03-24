@@ -2,19 +2,33 @@ package com.lambelly.lambnes.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import static org.junit.Assert.*;
 
 import com.lambelly.lambnes.platform.*;
 import com.lambelly.lambnes.platform.cpu.NesCpu;
+import com.lambelly.lambnes.platform.cpu.NesCpuMemory;
 import com.lambelly.lambnes.test.utils.TestUtils;
 
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class NesCpuLDATest
 {
+	@Autowired
+	private NesCpu cpu;
+	@Autowired
+	private NesCpuMemory cpuMemory;
+	@Autowired
+	private TestUtils testUtils;
+	
 	@Before
 	public void setUp() throws Exception
 	{
-		TestUtils.createTestPlatform();
+		this.getTestUtils().createTestPlatform();
 	}
 	
 	// LDA
@@ -24,19 +38,19 @@ public class NesCpuLDATest
 		int instruction = 0xA9;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x01,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x01,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCC);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCC);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCC,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCC,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -45,19 +59,19 @@ public class NesCpuLDATest
 		int instruction = 0xA5;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x01,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x01,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCC);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCC);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCC,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCC,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -66,21 +80,21 @@ public class NesCpuLDATest
 		int instruction = 0xB5;
 		
 		// test 1
-		Platform.getCpu().setX(0xA1);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0xA1);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xA2,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0xA2,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		Platform.getCpu().setX(0x31);
-		TestUtils.setMemory(0x8003, 0xCC);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0x31);
+		this.getTestUtils().setMemory(0x8003, 0xCC);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xFD,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xFD,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -89,18 +103,18 @@ public class NesCpuLDATest
 		int instruction = 0xAD;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x0001,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x0001,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x0004,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x0004,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	public void testLdaAbsoluteX()
@@ -108,20 +122,20 @@ public class NesCpuLDATest
 		int instruction = 0xB9;
 		
 		// test 1
-		Platform.getCpu().setX(0xA1);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0xA1);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x00A2,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x00A2,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.performInstruction(instruction);
-		Platform.getCpu().setX(0x1F);
+		this.getTestUtils().performInstruction(instruction);
+		this.getCpu().setX(0x1F);
 		
-		assertEquals(0x0023,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x0023,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -130,20 +144,20 @@ public class NesCpuLDATest
 		int instruction = 0xA1;
 		
 		// test 1
-		Platform.getCpu().setX(0xA1);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0xA1);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x00A2,Platform.getCpu().getAccumulator());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x00A2,this.getCpu().getAccumulator());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		Platform.getCpu().setX(0x1F);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0x1F);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x002,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x002,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -152,21 +166,21 @@ public class NesCpuLDATest
 		int instruction = 0xB1;
 		
 		// test 1
-		Platform.getCpu().setY(0x01);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setY(0x01);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x0002,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x0002,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// TODO: Not sure why this has this value.
 		// test 2
-		Platform.getCpu().setY(0x1F);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setY(0x1F);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x022,Platform.getCpu().getAccumulator());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x022,this.getCpu().getAccumulator());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	// LDX
@@ -176,19 +190,19 @@ public class NesCpuLDATest
 		int instruction = 0xA2;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getX());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getX());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCE,Platform.getCpu().getX());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCE,this.getCpu().getX());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -197,19 +211,19 @@ public class NesCpuLDATest
 		int instruction = 0xA6;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getX());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getX());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCE,Platform.getCpu().getX());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCE,this.getCpu().getX());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -218,20 +232,20 @@ public class NesCpuLDATest
 		int instruction = 0xB6;
 		
 		// test 1
-		Platform.getCpu().setY(0xA);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setY(0xA);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xB,Platform.getCpu().getX());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0xB,this.getCpu().getX());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xD8,Platform.getCpu().getX());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xD8,this.getCpu().getX());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -240,19 +254,19 @@ public class NesCpuLDATest
 		int instruction = 0xAE;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getX());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getX());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x04,Platform.getCpu().getX());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x04,this.getCpu().getX());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -261,20 +275,20 @@ public class NesCpuLDATest
 		int instruction = 0xBE;
 		
 		// test 1
-		Platform.getCpu().setY(0xA1);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setY(0xA1);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xA2,Platform.getCpu().getX());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0xA2,this.getCpu().getX());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xA5,Platform.getCpu().getX());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xA5,this.getCpu().getX());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}		
 	
 	// LDY
@@ -284,19 +298,19 @@ public class NesCpuLDATest
 		int instruction = 0xA0;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getY());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getY());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCE,Platform.getCpu().getY());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCE,this.getCpu().getY());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -305,19 +319,19 @@ public class NesCpuLDATest
 		int instruction = 0xA4;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getY());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getY());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xCE,Platform.getCpu().getY());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xCE,this.getCpu().getY());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -326,20 +340,20 @@ public class NesCpuLDATest
 		int instruction = 0xB4;
 		
 		// test 1
-		Platform.getCpu().setX(0xA);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0xA);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xB,Platform.getCpu().getY());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0xB,this.getCpu().getY());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xD8,Platform.getCpu().getY());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0xD8,this.getCpu().getY());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}
 	
 	@Test
@@ -348,19 +362,19 @@ public class NesCpuLDATest
 		int instruction = 0xAC;
 		
 		// test 1
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x1,Platform.getCpu().getY());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0x1,this.getCpu().getY());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0x04,Platform.getCpu().getY());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
+		assertEquals(0x04,this.getCpu().getY());
+		assertFalse(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
 	}	
 	
 	@Test
@@ -369,19 +383,49 @@ public class NesCpuLDATest
 		int instruction = 0xBC;
 		
 		// test 1
-		Platform.getCpu().setX(0xA1);
-		TestUtils.performInstruction(instruction);
+		this.getCpu().setX(0xA1);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xA2,Platform.getCpu().getY());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
+		assertEquals(0xA2,this.getCpu().getY());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());
 		
 		// test 2
-		TestUtils.setMemory(0x8003, 0xCE);
-		TestUtils.performInstruction(instruction);
+		this.getTestUtils().setMemory(0x8003, 0xCE);
+		this.getTestUtils().performInstruction(instruction);
 		
-		assertEquals(0xA5,Platform.getCpu().getY());
-		assertTrue(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-		assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());		
-	}		
+		assertEquals(0xA5,this.getCpu().getY());
+		assertTrue(this.getCpu().getFlags().isNegative());
+		assertFalse(this.getCpu().getFlags().isZero());		
+	}
+
+	public NesCpuMemory getCpuMemory()
+    {
+    	return cpuMemory;
+    }
+
+	public void setCpuMemory(NesCpuMemory cpuMemory)
+    {
+    	this.cpuMemory = cpuMemory;
+    }
+
+	public TestUtils getTestUtils()
+    {
+    	return testUtils;
+    }
+
+	public void setTestUtils(TestUtils testUtils)
+    {
+    	this.testUtils = testUtils;
+    }
+
+	public NesCpu getCpu()
+    {
+    	return cpu;
+    }
+
+	public void setCpu(NesCpu cpu)
+    {
+    	this.cpu = cpu;
+    }		
 }

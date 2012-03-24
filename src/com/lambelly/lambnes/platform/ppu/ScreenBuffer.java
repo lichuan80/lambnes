@@ -4,6 +4,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
 
+import java.io.File;
+import javax.imageio.ImageIO;
+import java.util.Calendar;
+
+import com.lambelly.lambnes.LambNes;
 import com.lambelly.lambnes.gui.LambNesGui;
 import com.lambelly.lambnes.gui.Screen;
 import org.apache.log4j.*;
@@ -32,6 +37,26 @@ public class ScreenBuffer
         return image;
     }
     
+    public void toFile()
+    {
+    	this.toFile(null);
+    }
+    
+    public void toFile(String identifier)
+    {
+    	try 
+    	{
+    		Calendar cal = Calendar.getInstance();
+    	    File outputfile = new File(Long.toString(cal.getTimeInMillis()) + ((identifier != null) ? identifier : "") + ".png");
+    	    ImageIO.write(this.getBufferedImageFromScreenBuffer(), "png", outputfile);
+    	} 
+    	catch (Exception e) 
+    	{
+    	    logger.error("problem writing screen buffer to file");
+    	}
+
+    }
+    
     public void setScreenBufferPixel(int arrayIndex, int color)
     {
     	this.screenBuffer[arrayIndex] = color;
@@ -39,17 +64,24 @@ public class ScreenBuffer
     
     public void setScreenBufferPixel(int horizontal, int vertical, int color)
 	{
+    	//logger.info("setting color to buffer from int: h: " + horizontal + " v: " + vertical + " color:" + color );
 		this.screenBuffer[this.coordinatesToArrayIndex(horizontal, vertical)] = color;
 	}
     
     public void setScreenBufferPixel(int horizontal, int vertical, PaletteColor color)
     {
+    	//logger.info("setting color to buffer from palette: h: " + horizontal + " v: " + vertical + " color:" + color );
     	this.setScreenBufferPixel(horizontal, vertical, color.getMasterPaletteColor().getColorInt());
     }
     
     public void setScreenBufferTileRow(int horizontalCoord, int verticalCoord, int hFineScrollOffset, int vFineScrollOffset, PaletteColor[] tileRow)
     {
-    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontalCoord, verticalCoord - vFineScrollOffset);
+    	int bufferIndexStart = this.coordinatesToArrayIndex(horizontalCoord, verticalCoord);
+    	//for (int i=0;i<tileRow.length;i++)
+    	//{
+    	//	logger.info("setting color to buffer: h: " + horizontalCoord + " v: " + verticalCoord + " hFileScrollOffset " + hFineScrollOffset +  "  vfineScrollOffet: " + vFineScrollOffset + " bufferIndexStart: " + bufferIndexStart + " color:" + tileRow[i]);
+    	//}
+    	
     	
     	for (int tileRowIndex = 0; tileRowIndex < tileRow.length; tileRowIndex++)
     	{

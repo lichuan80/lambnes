@@ -29,7 +29,17 @@ public class Header
         this.setProgramInstructionByte(rawData[4]);
         this.setPatternTileByte(rawData[5]);
         this.parseControlByte1(rawData[6]);
-        this.setMapperID(this.parseMapper(rawData[6], rawData[7]));
+        
+        // determine if header is in extended format -- essentially forces 0 for bytes 8-15 otherwise assumes it's
+        // using unextended ines with a crappy signature tacked on to the end -- DiskDude!, for instance.
+        if (rawData[8] == 0 && rawData[9] == 0 && rawData[10] == 0 && rawData[11] == 0 && rawData[12] == 0 && rawData[13] == 0 && rawData[14] == 0 && rawData[15] == 0)
+        {
+        	this.setMapperID(this.parseMapper(rawData[6], rawData[7]));
+        }
+        else
+        {
+        	this.setMapperID(this.parseMapper(rawData[6]));
+        }
     }
     
     private void parseControlByte1(int control)
@@ -48,6 +58,11 @@ public class Header
     	this.setFourScreenMirroring(BitUtils.isBitSet(control, 3));
     }
 
+    private int parseMapper(int controlBit1)
+    {
+    	return (((controlBit1 & 0xF0) >> 4));
+    }
+    
     private int parseMapper(int controlBit1, int controlBit2)
     {
     	return (((controlBit1 & 0xF0) >> 4) | (controlBit2 & 0xF0));

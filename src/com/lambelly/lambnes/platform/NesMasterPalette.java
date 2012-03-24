@@ -3,15 +3,17 @@ package com.lambelly.lambnes.platform;
 import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
 
+import com.lambelly.lambnes.platform.ppu.NesPpuMemory;
+
 import java.util.List;
 
-public class Palette
+public class NesMasterPalette implements MasterPalette
 {
-	private Logger logger = Logger.getLogger(Palette.class);
-	private NesMasterColor[] paletteColors = new NesMasterColor[64];
+	private static Logger logger = Logger.getLogger(NesMasterPalette.class);
+	private MasterColor[] paletteColors = new MasterColor[64];
+	private static NesMasterPalette instance= null;
 	
-	
-	public Palette() throws ConfigurationException
+	public NesMasterPalette() throws ConfigurationException
 	{
 		try
 		{
@@ -22,11 +24,8 @@ public class Palette
 		    
 		    for (int i=0;i<64;i++)
 		    {
-		    	if(logger.isDebugEnabled())
-		    	{
-		    		logger.debug("setting color[" + i + "] with " + reds.get(i));
-		    	}
-		    	this.setColor(i, new NesMasterColor(reds.get(i), blues.get(i), greens.get(i)));		    	
+		    	//logger.debug("setting color[" + i + "] with " + reds.get(i));
+		    	this.setColor(i, new MasterColor(reds.get(i), blues.get(i), greens.get(i)));		    	
 		    }
 		    
 		}
@@ -47,17 +46,32 @@ public class Palette
 		return returnString;
 	}
 	
-	private NesMasterColor[] getPaletteColors()
+    public static NesMasterPalette getInstance()
+    {
+        if(instance == null)
+        {
+        	try
+        	{
+        		instance = new NesMasterPalette();
+        	}
+        	catch(Exception e)
+        	{
+        		logger.fatal("boot issue: " + e.getMessage(),e);
+        	}
+        }
+        return instance;
+    }
+	private MasterColor[] getPaletteColors()
 	{
 		return paletteColors;
 	}
 	
-	private void setPaletteColors(NesMasterColor[] colors)
+	private void setPaletteColors(MasterColor[] colors)
 	{
 		this.paletteColors = colors;
 	}
 	
-	public NesMasterColor getColor(int index)
+	public MasterColor getColor(int index)
 	{
 		if (!Config.getConfig().getBoolean("colorScreen"))
 		{
@@ -67,7 +81,7 @@ public class Palette
 		return this.getPaletteColors()[index];	
 	}
 	
-	public void setColor(int index, NesMasterColor color)
+	public void setColor(int index, MasterColor color)
 	{
 		this.getPaletteColors()[index] = color;
 	}

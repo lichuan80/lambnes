@@ -5,23 +5,39 @@
 
 package com.lambelly.lambnes.test.utils;
 
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.lambelly.lambnes.LambNes;
+import com.lambelly.lambnes.cartridge.Cartridge;
 import com.lambelly.lambnes.cartridge.Ines;
 import com.lambelly.lambnes.cartridge.RomLoader;
-import com.lambelly.lambnes.platform.*;
+import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.cpu.NesCpu;
+import com.lambelly.lambnes.platform.cpu.NesCpuMemory;
+import com.lambelly.lambnes.platform.ppu.NesPpuMemory;
 import com.lambelly.lambnes.util.ArrayUtils;
 
 /**
  *
  * @author thomasmccarthy
  */
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class TestUtils
 {
+	@Autowired
+    private NesCpuMemory cpuMemory;
+	@Autowired
+	private NesPpuMemory ppuMemory;
+	@Autowired
+	private NesCpu cpu;
+	
     /**
      * creates test rom used for testing memory
      *
      * @return
      */
-    public static int[] createTestIntArray(int size)
+    public int[] createTestIntArray(int size)
     {
         int[] testArray = new int[size];
 
@@ -40,7 +56,7 @@ public class TestUtils
         return testArray;
     }
 
-    public static Integer[] createTestIntegerArray(int size)
+    public Integer[] createTestIntegerArray(int size)
     {
         Integer[] testArray = new Integer[size];
 
@@ -59,48 +75,74 @@ public class TestUtils
         return testArray;
     }
     
-    
-    public static void createTestPlatform() throws Exception
-    {
-    	// make sure platform has been instantiated
-    	Platform p = Platform.getInstance();
-    	
+    public void createTestPlatform() throws Exception
+    {    	
     	// establish memories
-    	Platform.getCpuMemory().setMemory(TestUtils.createTestIntArray(65536));
-    	Platform.getCpuMemory().setProgramInstructions(TestUtils.createTestIntArray(32768));
+    	this.getCpuMemory().setMemory(this.createTestIntArray(65536));
+    	this.getCpuMemory().setProgramInstructions(this.createTestIntArray(32768));
     	
         RomLoader rl = new RomLoader("./roms/NEStress.zip");
-        Ines i = new Ines(rl.getRomData());
-        ArrayUtils.head(i.getPatternTiles(), 16);
-    	Platform.getPpuMemory().setPatternTable0(i.getPatternTiles());
+        Ines cartridge = new Ines(rl);
+        ArrayUtils.head(cartridge.getPatternTiles(), 16);
+        this.getPpuMemory().setPatternTable0(cartridge.getPatternTiles());
     	
     	//reset some stuff
-    	Platform.getCpuMemory().resetCounters();  
-    	Platform.getCpu().getFlags().resetFlags();
-    	Platform.getCpu().resetRegisters();
+        this.getCpuMemory().resetCounters();  
+        this.getCpu().getFlags().resetFlags();
+    	this.getCpu().resetRegisters();
     }
     
-	public static void performInstruction(int instruction)
+	public void performInstruction(int instruction)
 	{
 		setNextMemory(instruction);
-		Platform.getCpu().processNextInstruction();		
+		cpu.processNextInstruction();		
 	}
 	
-	public static void performInstruction(int instruction, int accumulator)
+	public void performInstruction(int instruction, int accumulator)
 	{
 		setNextMemory(instruction);
-		Platform.getCpu().setAccumulator(accumulator);
-		Platform.getCpu().processNextInstruction();		
+		cpu.setAccumulator(accumulator);
+		cpu.processNextInstruction();		
 	}
 	
-	public static void setNextMemory(int value)
+	public void setNextMemory(int value)
 	{
-		int curPrgAddress = Platform.getCpuMemory().getProgramCounter();
-		Platform.getCpuMemory().setMemoryFromHexAddress(curPrgAddress, value);
+		int curPrgAddress = cpuMemory.getProgramCounter();
+		cpuMemory.setMemoryFromHexAddress(curPrgAddress, value);
 	}
 	
-	public static void setMemory(int address, int value)
+	public void setMemory(int address, int value)
 	{
-		Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
-	}    
+		cpuMemory.setMemoryFromHexAddress(address, value);
+	}
+
+	public NesCpuMemory getCpuMemory()
+    {
+    	return cpuMemory;
+    }
+
+	public void setCpuMemory(NesCpuMemory cpuMemory)
+    {
+		this.cpuMemory = cpuMemory;
+    }
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+		this.ppuMemory = ppuMemory;
+    }
+
+	public NesCpu getCpu()
+    {
+    	return cpu;
+    }
+
+	public void setCpu(NesCpu cpu)
+    {
+    	this.cpu = cpu;
+    }    
 }

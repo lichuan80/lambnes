@@ -2,8 +2,10 @@ package com.lambelly.lambnes.gui;
 
 import java.awt.*;  
 import javax.swing.*;
-import com.lambelly.lambnes.platform.NesMasterColor;
+import com.lambelly.lambnes.platform.MasterColor;
+import com.lambelly.lambnes.platform.NesMasterPalette;
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpuMemory;
 
 import org.apache.log4j.*;
 
@@ -12,6 +14,7 @@ public class PaletteVisualization extends JPanel
 	private Logger logger = Logger.getLogger(PaletteVisualization.class);
 	private int paletteMemoryBaseAddress = 0;
 	private PaletteLabel[] paletteLabels = null;
+	private NesPpuMemory ppuMemory;
 	public static final int SCREEN_HORIZONTAL_RESOLUTION = 256;
 	public static final int SCREEN_VERTICAL_RESOLUTION = 240;
 	
@@ -32,7 +35,7 @@ public class PaletteVisualization extends JPanel
     	this.setPaletteLabels(new PaletteLabel[paletteSize]);
 		for (int x=0;x<paletteSize;x++)
 		{
-			PaletteLabel pl = new PaletteLabel(Platform.getMasterPalette().getColor(0));
+			PaletteLabel pl = new PaletteLabel(NesMasterPalette.getInstance().getColor(0));
 			this.setPaletteLabel(x, pl);
 			this.add(pl);
 		}
@@ -45,8 +48,8 @@ public class PaletteVisualization extends JPanel
 	{
 		for (int x=0;x<this.getPaletteLabels().length;x++)
 		{
-			int masterPaletteIndex = Platform.getPpuMemory().getMemoryFromHexAddress(this.getPaletteMemoryBaseAddress() + x);
-			NesMasterColor p = Platform.getMasterPalette().getColor(masterPaletteIndex);
+			int masterPaletteIndex = this.getPpuMemory().getMemoryFromHexAddress(this.getPaletteMemoryBaseAddress() + x);
+			MasterColor p = NesMasterPalette.getInstance().getColor(masterPaletteIndex);
 			this.getPaletteLabel(x).refreshBackground(p);
 		}
 	}
@@ -79,5 +82,15 @@ public class PaletteVisualization extends JPanel
 	public void setPaletteLabel(int index, PaletteLabel paletteLabel)
 	{
 		this.paletteLabels[index] = paletteLabel;
-	}	
+	}
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+    	this.ppuMemory = ppuMemory;
+    }	
 }

@@ -18,7 +18,6 @@ public class PPUMaskRegister
 	public static final int DISPLAY_TYPE_MONOCHROME = 1;
 	private static final int CYCLES_PER_EXECUTION = 0;
 
-	private static PPUMaskRegister register = new PPUMaskRegister();
 	private Integer rawControlByte = null;
 	private Integer controlByte = null;
 	private int fullBackgroundColor = 0;
@@ -189,11 +188,6 @@ public class PPUMaskRegister
 	private void setRawControlByte(int rawControlByte)
 	{
 		this.rawControlByte = rawControlByte;
-	}
-	
-	public static PPUMaskRegister getRegister()
-	{
-		return register;
 	}
 
 	public Integer getControlByte()

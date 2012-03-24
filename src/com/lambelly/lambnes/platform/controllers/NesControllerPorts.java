@@ -1,13 +1,11 @@
 package com.lambelly.lambnes.platform.controllers;
 
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 
 public class NesControllerPorts
 {
-	private ControlRegister1 controlRegister1 = ControlRegister1.getRegister();
-	private ControlRegister2 controlRegister2 = ControlRegister2.getRegister();
+	private ControlRegister1 controlRegister1;
+	private ControlRegister2 controlRegister2;
 	private NesController portA = null;
 	private NesController portB = null;
 	private Logger logger = Logger.getLogger(NesControllerPorts.class);
@@ -22,6 +20,7 @@ public class NesControllerPorts
 		this.getControlRegister1().cycle();
 		this.getControlRegister2().cycle();
 	}
+	
 	public ControlRegister1 getControlRegister1()
 	{
 		return controlRegister1;

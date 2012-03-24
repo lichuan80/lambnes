@@ -1,7 +1,11 @@
 package com.lambelly.lambnes.platform.ppu;
 
+import org.apache.log4j.Logger;
+
+import com.lambelly.lambnes.LambNes;
+import com.lambelly.lambnes.platform.NesMasterPalette;
 import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.platform.NesMasterColor;
+import com.lambelly.lambnes.platform.MasterColor;
 
 public class PaletteColor
 {
@@ -12,30 +16,36 @@ public class PaletteColor
 	public static final int PALETTE_TYPE_SPRITE = 0;
 	public static final int PALETTE_TYPE_BACKGROUND = 1;
 	
+	private Logger logger = Logger.getLogger(PaletteColor.class);
+	
 	public PaletteColor(int paletteIndex, int paletteType)
 	{
 		this.setPaletteType(paletteType);
 		this.setPaletteIndex(paletteIndex);
 		
 		// determine master palette index
+		int address = 0;
 		if (paletteType == PaletteColor.PALETTE_TYPE_BACKGROUND)
 		{
-			this.setMasterPaletteIndex(Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex));
+			address = NesPpuMemory.BACKGROUND_PALETTE_ADDRESS + paletteIndex;
 		}
 		else
 		{
-			this.setMasterPaletteIndex(Platform.getPpuMemory().getMemoryFromHexAddress(NesPpuMemory.SPRITE_PALETTE_ADDRESS + paletteIndex));
+			address = NesPpuMemory.SPRITE_PALETTE_ADDRESS + paletteIndex;
 		}
+		this.setMasterPaletteIndex(LambNes.getPlatform().getPpuMemory().getMemoryFromHexAddress(address));
+		
+		//logger.info("instantiated with MPI from " + address + " : " + this.toString());
 	}
 	
 	public String toString()
 	{
-		return Integer.toString(this.getMasterPaletteIndex());
+		return "MPI: " + this.getMasterPaletteIndex() + " paletteIndex: " + paletteIndex + " paletteType: " + this.getPaletteType();
 	}
 	
-	public NesMasterColor getMasterPaletteColor()
+	public MasterColor getMasterPaletteColor()
 	{
-		return Platform.getMasterPalette().getColor(masterPaletteIndex);
+		return NesMasterPalette.getInstance().getColor(masterPaletteIndex);
 	}
 
 	public int getPaletteIndex()

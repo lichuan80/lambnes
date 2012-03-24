@@ -1,6 +1,7 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpu;
 import com.lambelly.lambnes.util.BitUtils;
 
 import org.apache.log4j.*;
@@ -8,12 +9,13 @@ import org.apache.log4j.*;
 public class PPUVramAddressRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2006;
-	private static PPUVramAddressRegister register = new PPUVramAddressRegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
 	private Integer addressLowByte = null;
 	private Integer addressHighByte = null;
 	private Integer rawControlByte = null;
 	private Logger logger = Logger.getLogger(PPUVramAddressRegister.class);
+	private NesPpu ppu;
+    private PPUVramIORegister ppuVramIORegister;
 	
 	private PPUVramAddressRegister()
 	{
@@ -26,32 +28,26 @@ public class PPUVramAddressRegister
 		{			 
 			//if (Platform.getPpu().getPpuStatusRegister().isVblank() || (!Platform.getPpu().getPpuMaskRegister().isBackgroundVisibility()) && !Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
 			{
-				int flipflop = Platform.getPpu().getRegisterAddressFlipFlopLatch();
-				int loopyT = Platform.getPpu().getLoopyT();
+				int flipflop = this.getPpu().getRegisterAddressFlipFlopLatch();
+				int loopyT = this.getPpu().getLoopyT();
 				int setLoopyT = 0;
 					
 				// do memory access on vblank.
 				if (flipflop == 1)
 				{
-					if(logger.isDebugEnabled())
-					{
-						logger.debug("setting low bit: " + this.getRawControlByte());
-					}
+					//logger.debug("setting low bit: " + this.getRawControlByte());
 					
 					this.setAddressLowByte(this.getRawControlByte());
 	
 					// both are set, so set 0x2007
-					Platform.getPpu().getPpuVramIORegister().setIoAddress(BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
+					this.getPpuVramIORegister().setIoAddress(BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
 					
 					// perform loopyT changes
 					setLoopyT = (loopyT & 0xFF00) | (this.getRawControlByte());
-					Platform.getPpu().setLoopyT(setLoopyT);
-					Platform.getPpu().setLoopyV(Platform.getPpu().getLoopyT());
+					this.getPpu().setLoopyT(setLoopyT);
+					this.getPpu().setLoopyV(this.getPpu().getLoopyT());
 					
-					if(logger.isDebugEnabled())
-					{
-						logger.debug("io address: " + BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
-					}
+					//logger.debug("io address: " + BitUtils.unsplitAddress(this.getAddressHighByte(), this.getAddressLowByte()));
 				}
 				else
 				{
@@ -64,7 +60,7 @@ public class PPUVramAddressRegister
 					// perform loopyT changes
 					setLoopyT = loopyT & 0xBFFF; // clear D14
 					setLoopyT = (loopyT & 0xC0FF) | (this.getRawControlByte() & 0x3F);
-					Platform.getPpu().setLoopyT(setLoopyT);
+					this.getPpu().setLoopyT(setLoopyT);
 				}
 				
 				if (logger.isDebugEnabled())
@@ -73,7 +69,7 @@ public class PPUVramAddressRegister
 							"flipflop is " + flipflop + "\n" + 
 							"loopyT is: " + loopyT + "\n" +
 							"setting loopyT to: " + setLoopyT + "\n" +
-							"at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
+							"at scanline " + this.getPpu().getScanlineCount() + " screencount: " + this.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
 				}
 				
 				if (flipflop == 1)
@@ -138,9 +134,24 @@ public class PPUVramAddressRegister
 	{
 		this.rawControlByte = rawControlByte;
 	}
-	
-	public static PPUVramAddressRegister getRegister()
-	{
-		return register;
-	}
+
+	public NesPpu getPpu()
+    {
+    	return ppu;
+    }
+
+	public void setPpu(NesPpu ppu)
+    {
+    	this.ppu = ppu;
+    }
+
+	public PPUVramIORegister getPpuVramIORegister()
+    {
+    	return ppuVramIORegister;
+    }
+
+	public void setPpuVramIORegister(PPUVramIORegister ppuVramIORegister)
+    {
+    	this.ppuVramIORegister = ppuVramIORegister;
+    }
 }

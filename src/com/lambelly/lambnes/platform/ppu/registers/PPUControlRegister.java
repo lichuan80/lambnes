@@ -1,6 +1,7 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpu;
 import com.lambelly.lambnes.util.*;
 import org.apache.log4j.*;
 
@@ -23,7 +24,6 @@ public class PPUControlRegister
 	public static final int NAME_TABLE_ADDRESS_2800 = 2;
 	public static final int NAME_TABLE_ADDRESS_2C00 = 3;
 	
-	private static PPUControlRegister register = new PPUControlRegister();
 	private Integer rawControlByte = null;
 	private boolean executeNMIOnVBlank = false;
 	private int masterSlaveSelection = 0;
@@ -32,6 +32,7 @@ public class PPUControlRegister
 	private int spritePatternTableAddress = 0;
 	private int ppuAddressIncrement = 0;
 	private int nameTableAddress = 0;
+	private NesPpu ppu;
 	private Logger logger = Logger.getLogger(PPUControlRegister.class);
 	
 	private PPUControlRegister()
@@ -43,12 +44,12 @@ public class PPUControlRegister
 	{
 		if (this.getRawControlByte() != null)
 		{
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("rawControlByte: " + rawControlByte);
-				logger.debug("setting background pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
-				logger.debug("setting sprite pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 3)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
-			}
+			//if (logger.isDebugEnabled())
+			//{
+				//logger.info("rawControlByte: " + rawControlByte);
+				//logger.debug("setting background pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 4)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
+				//logger.debug("setting sprite pattern table address to: " + (BitUtils.isBitSet(this.getRawControlByte(), 3)?BACKGROUND_PATTERN_TABLE_ADDRESS_1000:BACKGROUND_PATTERN_TABLE_ADDRESS_0000));
+			//}
 			this.setExecuteNMIOnVBlank(BitUtils.isBitSet(this.getRawControlByte(), 7));
 			this.setMasterSlaveSelection(BitUtils.isBitSet(this.getRawControlByte(), 6)?MASTER_SLAVE_SELECTION_SLAVE:MASTER_SLAVE_SELECTION_MASTER);
 			this.setSpriteSize(BitUtils.isBitSet(this.getRawControlByte(), 5)?SPRITE_SIZE_8X16:SPRITE_SIZE_8X8);
@@ -59,10 +60,10 @@ public class PPUControlRegister
 			// base name table logic
 			int nameTableControlBit = (this.getRawControlByte() & 3); 
 			this.setNameTableAddress(nameTableControlBit);
-			int loopyT = (Platform.getPpu().getLoopyT() & 0x73FF) | (nameTableControlBit << 10);
+			int loopyT = (this.getPpu().getLoopyT() & 0x73FF) | (nameTableControlBit << 10);
 			//logger.debug("rawControlByte was: " + this.getRawControlByte() + " loopyT was: " + Platform.getPpu().getLoopyT() + " setting loopyT to: " + loopyT);
 
-			Platform.getPpu().setLoopyT(loopyT);
+			this.getPpu().setLoopyT(loopyT);
 			
 			this.clear();
 		}
@@ -94,7 +95,7 @@ public class PPUControlRegister
 
 	private Integer getRawControlByte()
 	{
-		return rawControlByte;
+		return this.rawControlByte;
 	}
 
 	private void setRawControlByte(Integer rawControlByte)
@@ -172,13 +173,13 @@ public class PPUControlRegister
 		this.nameTableAddress = nameTableAddress;
 	}
 
-	public static PPUControlRegister getRegister()
-	{
-		return register;
-	}
+	public NesPpu getPpu()
+    {
+    	return ppu;
+    }
 
-	private static void setRegister(PPUControlRegister register)
-	{
-		PPUControlRegister.register = register;
-	}
+	public void setPpu(NesPpu ppu)
+    {
+    	this.ppu = ppu;
+    }
 }

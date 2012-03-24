@@ -6,6 +6,7 @@ import javax.swing.*;
 
 import org.apache.log4j.*;
 
+import com.lambelly.lambnes.LambNes;
 import com.lambelly.lambnes.platform.Platform;
 
 public class LambNesGui extends JFrame implements Runnable 
@@ -13,12 +14,12 @@ public class LambNesGui extends JFrame implements Runnable
 	private static Screen screen = new Screen();
 	private static Container content = null;
 	private static boolean run = true;
-	private PatternTableVisualization sptv = new PatternTableVisualization(LambNesGui.SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_SPRITE);
-	private PatternTableVisualization bptv = new PatternTableVisualization(LambNesGui.BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_IMAGE);
-	private PaletteVisualization bpv = new PaletteVisualization(0x3F00, 16);
-	private PaletteVisualization spv = new PaletteVisualization(0x3F10, 16);
+	//private PatternTableVisualization sptv = new PatternTableVisualization(LambNesGui.SPRITE_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_SPRITE);
+	//private PatternTableVisualization bptv = new PatternTableVisualization(LambNesGui.BACKGROUND_PATTERN_TABLE_TOOL_TIP_TEXT, PatternTableVisualization.PATTERN_TABLE_VISUALIZATION_IMAGE);
+	//private PaletteVisualization bpv = new PaletteVisualization(0x3F00, 16);
+	//private PaletteVisualization spv = new PaletteVisualization(0x3F10, 16);
 	private Timer workertimer = null;
-	private Logger logger = Logger.getLogger(LambNesGui.class);
+	private static Logger logger = Logger.getLogger(LambNesGui.class);
 	public static final int SLEEP_TIME = 125;
 	public static final int WORKER_INTIAL_DELAY = 10000;
 	public static final int WORKER_PAUSE = 100000;
@@ -46,120 +47,24 @@ public class LambNesGui extends JFrame implements Runnable
             		logger.debug("window closed.");
             	}
             	setVisible(false);
-            	Platform.setRun(false);
-            	setRun(false);
+            	LambNes.getPlatform().setRun(false);
+            	//setRun(false);
             	dispose();    					
             }
         });
         
-        this.addKeyListener(new KeyListener()
-        {
-			public void keyPressed(KeyEvent e)
-			{
-				logger.debug("received KeyEvent " + e.getKeyCode());
-				
-				if (e.getKeyCode() == KeyEvent.VK_W)
-				{
-					logger.debug("key: W pressed");
-					Platform.getControllerPorts().getPortA().setUp(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_A)
-				{
-					logger.debug("key: A pressed");
-					Platform.getControllerPorts().getPortA().setLeft(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_D)
-				{
-					logger.debug("key: D pressed");
-					Platform.getControllerPorts().getPortA().setRight(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_X)
-				{
-					logger.debug("key: X pressed");
-					Platform.getControllerPorts().getPortA().setDown(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_J)
-				{
-					logger.debug("key: J pressed");
-					Platform.getControllerPorts().getPortA().setA(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_K)
-				{
-					logger.debug("key: K pressed");
-					Platform.getControllerPorts().getPortA().setB(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				{
-					logger.debug("key: esc pressed");
-					Platform.getControllerPorts().getPortA().setSelect(true);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					logger.debug("key: enter pressed");
-					Platform.getControllerPorts().getPortA().setStart(true);					
-				}
-			}
-
-			public void keyReleased(KeyEvent e)
-			{
-				if (e.getKeyCode() == KeyEvent.VK_W)
-				{
-					logger.info("key: W released");
-					Platform.getControllerPorts().getPortA().setUp(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_A)
-				{
-					logger.info("key: A released");
-					Platform.getControllerPorts().getPortA().setLeft(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_D)
-				{
-					logger.info("key: D released");
-					Platform.getControllerPorts().getPortA().setRight(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_X)
-				{
-					logger.info("key: X released");
-					Platform.getControllerPorts().getPortA().setDown(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_J)
-				{
-					logger.debug("key: J released");
-					Platform.getControllerPorts().getPortA().setA(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_K)
-				{
-					logger.debug("key: K released");
-					Platform.getControllerPorts().getPortA().setB(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				{
-					logger.debug("key: esc released");
-					Platform.getControllerPorts().getPortA().setSelect(false);
-				}
-				else if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					logger.debug("key: K released");
-					Platform.getControllerPorts().getPortA().setStart(false);
-				}
-			}
-
-			public void keyTyped(KeyEvent e)
-			{
-				
-			}
-        });
+        this.addKeyListener(new LambNesKeyListener());
         
         // add panels to content pane
         setContent(getContentPane());
-        getContent().setLayout(new GridLayout(2,3));
-        getContent().add(getSpv());
-        MasterPaletteVisualization mpv = new MasterPaletteVisualization();
-        getContent().add(mpv);
-        getContent().add(getBpv());
-        getContent().add(getSptv());
+        getContent().setLayout(new GridLayout(1,1));
+        //getContent().add(getSpv());
+        //MasterPaletteVisualization mpv = new MasterPaletteVisualization();
+        //getContent().add(mpv);
+        //getContent().add(getBpv());
+        //getContent().add(getSptv());
         getContent().add(LambNesGui.getScreen());
-        getContent().add(getBptv());
+        //getContent().add(getBptv());
         this.pack();    
         
         // set up worker threads that update the visualizations
@@ -167,12 +72,12 @@ public class LambNesGui extends JFrame implements Runnable
         {
             public void actionPerformed(ActionEvent actionEvent) 
             {
-                PatternTableWorker sptw = new PatternTableWorker(sptv);
-                sptw.execute();
-                PatternTableWorker bptw = new PatternTableWorker(bptv);
-                bptw.execute();
-				getBpv().refreshPalette();
-				getSpv().refreshPalette();
+                //PatternTableWorker sptw = new PatternTableWorker(sptv);
+                //sptw.execute();
+                //PatternTableWorker bptw = new PatternTableWorker(bptv);
+                //bptw.execute();
+				//getBpv().refreshPalette();
+				//getSpv().refreshPalette();
 				getWorkertimer().restart();
             }
         };
@@ -186,7 +91,8 @@ public class LambNesGui extends JFrame implements Runnable
 	{   
 		try
 		{   
-			while(LambNesGui.isRun())
+			Platform p = LambNes.getPlatform();
+			while(p.isRun())
 			{   
 				Thread.sleep(LambNesGui.SLEEP_TIME);   
 				content.repaint();    
@@ -196,6 +102,20 @@ public class LambNesGui extends JFrame implements Runnable
 		{   
 			e.printStackTrace();   
 		}      
+		finally
+		{
+        	setVisible(false);
+        	dispose();  
+		}
+	}
+	
+	public static void pushErrorMessage(String message)
+	{
+		logger.error(message);
+		JOptionPane.showMessageDialog(null,
+		    message,
+		    "error",
+		    JOptionPane.ERROR_MESSAGE);
 	}
 
 	public static Screen getScreen()
@@ -255,6 +175,7 @@ public class LambNesGui extends JFrame implements Runnable
 		LambNesGui.content = content;
 	}
 
+	/*
 	public PaletteVisualization getBpv()
 	{
 		return bpv;
@@ -274,6 +195,7 @@ public class LambNesGui extends JFrame implements Runnable
 	{
 		this.spv = spv;
 	}
+	*/
 
 	public Timer getWorkertimer()
 	{
@@ -285,6 +207,7 @@ public class LambNesGui extends JFrame implements Runnable
 		this.workertimer = workertimer;
 	}
 
+	/*
 	public PatternTableVisualization getSptv()
 	{
 		return sptv;
@@ -304,4 +227,5 @@ public class LambNesGui extends JFrame implements Runnable
 	{
 		this.bptv = bptv;
 	}   
+	*/
 }

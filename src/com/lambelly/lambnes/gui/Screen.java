@@ -38,11 +38,6 @@ public class Screen extends javax.swing.JPanel
 
 	public void setImage(BufferedImage image)
 	{
-		logger.debug("setting image");
-		if (image == null)
-		{
-			logger.debug("danger -- image is null");
-		}
 		this.image = image;
 	}      
 }

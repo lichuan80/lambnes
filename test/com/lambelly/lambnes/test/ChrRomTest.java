@@ -9,8 +9,13 @@ import org.junit.*;
 import com.lambelly.lambnes.util.*;
 import com.lambelly.lambnes.cartridge.*;
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpuMemory;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.apache.log4j.*;
 import java.io.FileNotFoundException;
 
@@ -18,53 +23,59 @@ import java.io.FileNotFoundException;
  *
  * @author thomasmccarthy
  */
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class ChrRomTest
 {
     private Logger logger = Logger.getLogger(ChrRomTest.class);
     private RomLoader rl = null;
-    private Ines cart = null;
+	@Autowired
+	private Platform platform;
+	@Autowired
+	private Ines cartridge;
+	@Autowired
+	private NesPpuMemory ppuMemory;
 
     @Before
     public void initialize() throws FileNotFoundException
     {
     	// make sure platform has been instantiated
-    	Platform p = Platform.getInstance();
-    	
     	logger.debug("loading file");
         this.setRl(new RomLoader("./roms/rom.zip"));
         logger.debug("creating ines");
-        this.setCart(new Ines(getRl().getRomData()));
+        this.getCartridge().init(getRl().getRomData());
         logger.debug("attempting to set pattern tiles");
-        System.out.println(getCart().getPatternTiles());
-        System.out.println(Platform.getPpuMemory());
-        Platform.getPpuMemory().setPatternTiles(getCart().getPatternTiles());
+        System.out.println(this.getCartridge().getPatternTiles());
+        System.out.println(this.getPpuMemory());
+        this.getPpuMemory().setPatternTiles(this.getCartridge().getPatternTiles());
     }
     
     @Test
     public void testData()
     {
-    	ArrayUtils.head(Platform.getPpuMemory().getPatternTable0(),20);
-    	ArrayUtils.foot(Platform.getPpuMemory().getPatternTable0(),20);
-    	ArrayUtils.head(Platform.getPpuMemory().getPatternTable1(),20);
-    	ArrayUtils.foot(Platform.getPpuMemory().getPatternTable1(),20);
+    	ArrayUtils.head(this.getPpuMemory().getPatternTable0(),20);
+    	ArrayUtils.foot(this.getPpuMemory().getPatternTable0(),20);
+    	ArrayUtils.head(this.getPpuMemory().getPatternTable1(),20);
+    	ArrayUtils.foot(this.getPpuMemory().getPatternTable1(),20);
     	
     	// try to print sprite1.
-    	int line1a = Platform.getPpuMemory().getPatternTable0()[0];
-    	int line2a = Platform.getPpuMemory().getPatternTable0()[1];
-    	int line3a = Platform.getPpuMemory().getPatternTable0()[2];
-    	int line4a = Platform.getPpuMemory().getPatternTable0()[3];
-    	int line5a = Platform.getPpuMemory().getPatternTable0()[4];
-    	int line6a = Platform.getPpuMemory().getPatternTable0()[5];
-    	int line7a = Platform.getPpuMemory().getPatternTable0()[6];
-    	int line8a = Platform.getPpuMemory().getPatternTable0()[7];
-    	int line1b = Platform.getPpuMemory().getPatternTable0()[0];
-    	int line2b = Platform.getPpuMemory().getPatternTable0()[1];
-    	int line3b = Platform.getPpuMemory().getPatternTable0()[2];
-    	int line4b = Platform.getPpuMemory().getPatternTable0()[3];
-    	int line5b = Platform.getPpuMemory().getPatternTable0()[4];
-    	int line6b = Platform.getPpuMemory().getPatternTable0()[5];
-    	int line7b = Platform.getPpuMemory().getPatternTable0()[6];
-    	int line8b = Platform.getPpuMemory().getPatternTable0()[7];
+    	int line1a = this.getPpuMemory().getPatternTable0()[0];
+    	int line2a = this.getPpuMemory().getPatternTable0()[1];
+    	int line3a = this.getPpuMemory().getPatternTable0()[2];
+    	int line4a = this.getPpuMemory().getPatternTable0()[3];
+    	int line5a = this.getPpuMemory().getPatternTable0()[4];
+    	int line6a = this.getPpuMemory().getPatternTable0()[5];
+    	int line7a = this.getPpuMemory().getPatternTable0()[6];
+    	int line8a = this.getPpuMemory().getPatternTable0()[7];
+    	int line1b = this.getPpuMemory().getPatternTable0()[0];
+    	int line2b = this.getPpuMemory().getPatternTable0()[1];
+    	int line3b = this.getPpuMemory().getPatternTable0()[2];
+    	int line4b = this.getPpuMemory().getPatternTable0()[3];
+    	int line5b = this.getPpuMemory().getPatternTable0()[4];
+    	int line6b = this.getPpuMemory().getPatternTable0()[5];
+    	int line7b = this.getPpuMemory().getPatternTable0()[6];
+    	int line8b = this.getPpuMemory().getPatternTable0()[7];
     	
     	// print a
     	logger.debug("a");
@@ -105,19 +116,33 @@ public class ChrRomTest
         this.rl = rl;
     }
 
-    /**
-     * @return the cart
-     */
-    public Ines getCart()
+	public Platform getPlatform()
     {
-        return cart;
+    	return platform;
     }
 
-    /**
-     * @param cart the cart to set
-     */
-    public void setCart(Ines cart)
+	public void setPlatform(Platform platform)
     {
-        this.cart = cart;
+    	this.platform = platform;
+    }
+
+	public Ines getCartridge()
+    {
+    	return cartridge;
+    }
+
+	public void setCartridge(Ines cartridge)
+    {
+    	this.cartridge = cartridge;
+    }
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+    	this.ppuMemory = ppuMemory;
     }
 }

@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.ppu.*;
+import com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister;
+
 import java.awt.*;
 import org.apache.log4j.*;
 
@@ -14,6 +16,7 @@ public class PatternTableIcon implements Icon
 	public int getIconWidth() { return 8; }
     public int getIconHeight() { return 8; }
     private BufferedImage icon = new BufferedImage(this.getIconWidth(), this.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+    private PPUMaskRegister ppuMaskRegister;
     private Logger logger = Logger.getLogger(PatternTableIcon.class);    
     
     public PatternTableIcon(int spriteNumber)
@@ -23,17 +26,14 @@ public class PatternTableIcon implements Icon
     
     public void paintIcon(Component c, Graphics g, int x, int y) 
     {
-    	if (Platform.getPpu() != null)
-    	{
-    		if (Platform.getPpu().getPpuMaskRegister().isSpriteVisibility())
-    		{
-    			if(logger.isDebugEnabled())
-    			{
-    				logger.debug("drawing icon");
-    			}
-    			g.drawImage(this.getIcon(),0,0,null);
-    		}
-    	}
+		if (this.getPpuMaskRegister().isSpriteVisibility())
+		{
+			if(logger.isDebugEnabled())
+			{
+				logger.debug("drawing icon");
+			}
+			g.drawImage(this.getIcon(),0,0,null);
+		}
     }
 	public int getTileNumber()
 	{
@@ -51,4 +51,12 @@ public class PatternTableIcon implements Icon
 	{
 		this.icon = icon;
 	}
+	public PPUMaskRegister getPpuMaskRegister()
+    {
+    	return ppuMaskRegister;
+    }
+	public void setPpuMaskRegister(PPUMaskRegister ppuMaskRegister)
+    {
+    	this.ppuMaskRegister = ppuMaskRegister;
+    }
 }

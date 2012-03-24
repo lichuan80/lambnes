@@ -67,7 +67,6 @@ public class CartridgeLocator
 	private void generateListOfDefaultRoms(String path)
 	{
 		// maybe eventually make a version capable of traversing subdirectories.
-		logger.debug("opening path: " + path);
 		File dir = new File(path);
 		
 		File[] children = dir.listFiles();
@@ -77,7 +76,6 @@ public class CartridgeLocator
 			if (dir.isFile())
 			{
 				// path was direct to a file
-				logger.debug("loading file directly");
 				if (dir.getName().toLowerCase().endsWith(".zip"))
 				{
 					this.addRom(dir);
@@ -93,7 +91,6 @@ public class CartridgeLocator
 		        
 		        if (file.getName().toLowerCase().endsWith(".zip"))
 		        {
-		        	logger.debug("adding rom: " + file.getName());
 		        	this.addRom(file);
 		        }
 		        else
