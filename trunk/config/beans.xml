@@ -1,0 +1,284 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+ 
+
+    <bean id="Cartridge" class="com.lambelly.lambnes.cartridge.Ines"></bean>
+    
+    <!-- CPU -->
+    <bean id="NesCpu" class="com.lambelly.lambnes.platform.cpu.NesCpu">
+        <property name="addressing">
+            <ref bean="NesCpuAddressingModes" />
+        </property>
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>        
+    </bean>
+    <bean id="NesCpuAddressingModes" class="com.lambelly.lambnes.platform.cpu.NesCpuAddressingModes">
+        <property name="cpu">
+            <ref bean="NesCpu" />
+        </property>
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>           
+    </bean>   
+    <bean id="NesCpuMemory" class="com.lambelly.lambnes.platform.cpu.NesCpuMemory">
+        <property name="ppuSprRamIORegister">
+            <ref bean="PPUSprRamIORegister" />
+        </property>
+        <property name="ppuSprRamAddressRegister">
+            <ref bean="PPUSprRamAddressRegister" />
+        </property>        
+        <property name="ppuControlRegister">
+            <ref bean="PPUControlRegister" />
+        </property>        
+        <property name="ppuStatusRegister">
+            <ref bean="PPUStatusRegister" />
+        </property>           
+        <property name="ppuVramAddressRegister">
+            <ref bean="PPUVramAddressRegister" />
+        </property>   
+        <property name="ppuVramIORegister">
+            <ref bean="PPUVramIORegister" />
+        </property>          
+        <property name="ppuScrollRegister">
+            <ref bean="PPUScrollRegister" />
+        </property>         
+        <property name="ppuSpriteDmaRegister">
+            <ref bean="PPUSpriteDMARegister" />
+        </property>        
+        <property name="ppuMaskRegister">
+            <ref bean="PPUMaskRegister" />
+        </property>    
+        <property name="apuControlRegister">
+            <ref bean="APUControlRegister" />
+        </property>                   
+        <property name="apuFrameCounterRegister">
+            <ref bean="APUFrameCounterRegister" />
+        </property>                   
+        <property name="apuPulse1ChannelRegister">
+            <ref bean="APUPulse1ChannelRegister" />
+        </property>                   
+        <property name="apuPulse1LengthCounterRegister">
+            <ref bean="APUPulse1LengthCounterRegister" />
+        </property>                   
+        <property name="apuPulse1SweepRegister">
+            <ref bean="APUPulse1SweepRegister" />
+        </property>                   
+        <property name="apuPulse1TimerLowRegister">
+            <ref bean="APUPulse1TimerLowRegister" />
+        </property>  
+        <property name="controlRegister1">
+            <ref bean="ControlRegister1" />
+        </property>
+        <property name="controlRegister2">
+            <ref bean="ControlRegister2" />
+        </property> 
+        <property name="mapper">
+            <ref bean="Mapper0" />
+        </property>                                                                   
+    </bean>
+    
+    <bean id="Platform" class="com.lambelly.lambnes.platform.Platform">
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>
+        <property name="cpu">
+            <ref bean="NesCpu" />
+        </property>
+        <property name="interrupts">
+            <ref bean="NesInterrupts" />
+        </property>
+        <property name="cartridge">
+            <ref bean="Cartridge" />
+        </property>
+        <property name="ppu">
+            <ref bean="NesPpu" />
+        </property>
+        <property name="ppuMemory">
+            <ref bean="NesPpuMemory" />
+        </property>
+        <property name="apu">
+            <ref bean="NesApu" />
+        </property>
+        <property name="controllerPorts">
+            <ref bean="NesControllerPorts" />
+        </property>        
+    </bean>     
+    
+    <!-- PPU -->
+    <bean id="NesPpu" class="com.lambelly.lambnes.platform.ppu.NesPpu">
+        <property name="ppuMemory">
+            <ref bean="NesPpuMemory" />
+        </property>     
+        <property name="ppuSprRamIORegister">
+            <ref bean="PPUSprRamIORegister" />
+        </property>        
+        <property name="ppuSprRamAddressRegister">
+            <ref bean="PPUSprRamAddressRegister" />
+        </property>        
+        <property name="ppuControlRegister">
+            <ref bean="PPUControlRegister" />
+        </property>          
+        <property name="ppuStatusRegister">
+            <ref bean="PPUStatusRegister" />
+        </property>
+        <property name="ppuVramAddressRegister">
+            <ref bean="PPUVramAddressRegister" />
+        </property> 
+        <property name="ppuVramIORegister">
+            <ref bean="PPUVramIORegister" />
+        </property>     
+        <property name="ppuScrollRegister">
+            <ref bean="PPUScrollRegister" />
+        </property>                   
+        <property name="ppuSpriteDmaRegister">
+            <ref bean="PPUSpriteDMARegister" />
+        </property>
+        <property name="ppuMaskRegister">
+            <ref bean="PPUMaskRegister" />
+        </property>            
+        <property name="interrupts">
+            <ref bean="NesInterrupts" />
+        </property>                                                                     
+    </bean>
+    <bean id="NesPpuMemory" class="com.lambelly.lambnes.platform.ppu.NesPpuMemory">
+        <property name="cartridge">
+            <ref bean="Cartridge" />
+        </property>         
+    </bean>
+
+    
+    <!-- PPU Registers -->
+    <bean id="PPUSprRamIORegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUSprRamIORegister">
+        <property name="ppuMemory">
+            <ref bean="NesPpuMemory" />
+        </property>
+        <property name="ppuSprRamAddressRegister">
+            <ref bean="PPUSprRamAddressRegister" />
+        </property>
+    </bean>
+    <bean id="PPUSprRamAddressRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUSprRamAddressRegister"></bean>
+    <bean id="PPUControlRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister">
+        <property name="ppu">
+            <ref bean="NesPpu" />
+        </property>
+    </bean>
+    <bean id="PPUStatusRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUStatusRegister">
+        <property name="ppu">
+            <ref bean="NesPpu" />
+        </property>
+    </bean>    
+    <bean id="PPUVramAddressRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUVramAddressRegister">
+        <property name="ppu">
+            <ref bean="NesPpu" />
+        </property>
+        <property name="ppuVramIORegister">
+            <ref bean="PPUVramIORegister" />
+        </property>        
+    </bean>
+    <bean id="PPUVramIORegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUVramIORegister">
+        <property name="ppuMemory">
+            <ref bean="NesPpuMemory" />
+        </property>
+        <property name="ppuControlRegister">
+            <ref bean="PPUControlRegister" />
+        </property>         
+    </bean>
+    <bean id="PPUScrollRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUScrollRegister">
+        <property name="ppu">
+            <ref bean="NesPpu" />
+        </property>        
+    </bean>
+    <bean id="PPUSpriteDMARegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUSpriteDMARegister">
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>
+        <property name="ppuMemory"> 
+            <ref bean="NesPpuMemory" />
+        </property>     
+        <property name="ppuSprRamAddressRegister">
+            <ref bean="PPUSprRamAddressRegister" />
+        </property>                   
+    </bean>        
+    <bean id="PPUMaskRegister" class="com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister" />
+    
+    <bean id="NesApu" class="com.lambelly.lambnes.platform.apu.NesApu">
+        <property name="apuControlRegister">
+            <ref bean="APUControlRegister" />
+        </property>                   
+        <property name="apuFrameCounterRegister">
+            <ref bean="APUFrameCounterRegister" />
+        </property>                   
+        <property name="apuPulse1ChannelRegister">
+            <ref bean="APUPulse1ChannelRegister" />
+        </property>                   
+        <property name="apuPulse1LengthCounterRegister">
+            <ref bean="APUPulse1LengthCounterRegister" />
+        </property>                   
+        <property name="apuPulse1SweepRegister">
+            <ref bean="APUPulse1SweepRegister" />
+        </property>                   
+        <property name="apuPulse1TimerLowRegister">
+            <ref bean="APUPulse1TimerLowRegister" />
+        </property>                                      
+    </bean>
+    
+    <bean id="APUControlRegister" class="com.lambelly.lambnes.platform.apu.registers.APUControlRegister" />
+    <bean id="APUFrameCounterRegister" class="com.lambelly.lambnes.platform.apu.registers.APUFrameCounterRegister" />
+    <bean id="APUPulse1ChannelRegister" class="com.lambelly.lambnes.platform.apu.registers.APUPulse1ChannelRegister" />
+    <bean id="APUPulse1LengthCounterRegister" class="com.lambelly.lambnes.platform.apu.registers.APUPulse1LengthCounterRegister">
+        <property name="apuControlRegister">
+            <ref bean="APUControlRegister" />
+        </property>    
+    </bean>
+    <bean id="APUPulse1SweepRegister" class="com.lambelly.lambnes.platform.apu.registers.APUPulse1SweepRegister" />
+    <bean id="APUPulse1TimerLowRegister" class="com.lambelly.lambnes.platform.apu.registers.APUPulse1TimerLowRegister" />
+    
+    <bean id="NesControllerPorts" class="com.lambelly.lambnes.platform.controllers.NesControllerPorts">
+        <property name="controlRegister1">
+            <ref bean="ControlRegister1" />
+        </property>
+        <property name="controlRegister2">
+            <ref bean="ControlRegister2" />
+        </property>
+    </bean>
+    <bean id="ControlRegister1" class="com.lambelly.lambnes.platform.controllers.ControlRegister1">
+        <property name="controllerPorts">
+            <ref bean="NesControllerPorts" />
+        </property>
+    </bean>
+    <bean id="ControlRegister2" class="com.lambelly.lambnes.platform.controllers.ControlRegister2" />
+    
+    <!-- Interrupts -->
+    <bean id="NesInterrupts" class="com.lambelly.lambnes.platform.interrupts.NesInterrupts">
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>   
+        <property name="cpu">
+            <ref bean="NesCpu" />
+        </property>     
+    </bean>
+    
+    <!-- mappers  -->
+    <bean id="Mapper0" class="com.lambelly.lambnes.platform.mappers.Mapper0">
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>        
+    </bean>
+    
+    <!--  test utils -->
+    <bean id="TestUtils" class="com.lambelly.lambnes.test.utils.TestUtils">
+        <property name="cpuMemory">
+            <ref bean="NesCpuMemory" />
+        </property>        
+        <property name="cpu">
+            <ref bean="NesCpu" />
+        </property> 
+        <property name="ppuMemory"> 
+            <ref bean="NesPpuMemory" />
+        </property>                      
+    </bean>
+                
+</beans>

@@ -43,22 +43,32 @@
     </appender>
 
     <logger name="com.lambelly">
-        <level value="info"/>
+        <level value="debug"/>
         <appender-ref ref="log"/>
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="fatal"/>
+        <appender-ref ref="console"/>
     </logger>
 
     <logger name="org.apache">
         <level value="fatal"/>
         <appender-ref ref="console"/>
     </logger>    
+    
+    <logger name="org.springframework">
+        <level value="fatal"/>
+        <appender-ref ref="console"/>
+    </logger>
 
     <logger name="com.lambelly.lambnes.test">
         <level value="debug"/>
-        <appender-ref ref="console"/>
+        <appender-ref ref="log"/>
     </logger>    
 
     <logger name="com.lambelly.lambnes.platform.cpu.NesCpu">
-        <level value="info"/>
+        <level value="fatal"/>
         <appender-ref ref="cpulog"/>
     </logger>    
 

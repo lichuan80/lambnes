@@ -2,22 +2,36 @@ package com.lambelly.lambnes.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import static org.junit.Assert.*;
 
 import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.cpu.NesCpu;
+import com.lambelly.lambnes.platform.cpu.NesCpuMemory;
 import com.lambelly.lambnes.test.utils.TestUtils;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class NesCpuPHATest
 {
+	@Autowired
+	private NesCpu cpu;
+	@Autowired
+	private NesCpuMemory cpuMemory;
+	@Autowired
+	private TestUtils testUtils;
 	private Logger logger = Logger.getLogger(NesCpuPHATest.class);
 	
 	@Before
 	public void setUp() throws Exception
 	{
-		TestUtils.createTestPlatform();
+		this.getTestUtils().createTestPlatform();
 	}
 	
 	@Test
@@ -28,9 +42,9 @@ public class NesCpuPHATest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test case 1
-		TestUtils.performInstruction(instruction, 0xA1);
-		assertEquals(0xFF,Platform.getCpuMemory().getStackPointer());
-		int result = Platform.getCpuMemory().popStack();
+		this.getTestUtils().performInstruction(instruction, 0xA1);
+		assertEquals(0xFF,this.getCpuMemory().getStackPointer());
+		int result = this.getCpuMemory().popStack();
 		assertEquals(0xA1, result);
 	}
 	
@@ -42,10 +56,10 @@ public class NesCpuPHATest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test case 1
-		Platform.getCpuMemory().pushStack(0xCF);
-		TestUtils.performInstruction(instruction, 0xA1);
-		assertEquals(0x0,Platform.getCpuMemory().getStackPointer());
-		assertEquals(0xCF, Platform.getCpu().getAccumulator());
+		this.getCpuMemory().pushStack(0xCF);
+		this.getTestUtils().performInstruction(instruction, 0xA1);
+		assertEquals(0x0,this.getCpuMemory().getStackPointer());
+		assertEquals(0xCF, this.getCpu().getAccumulator());
 	}	
 	
 	@Test
@@ -56,14 +70,14 @@ public class NesCpuPHATest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test case 1
-    	((NesCpu)Platform.getCpu()).getFlags().setNegative(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setOverflow(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setDecimalMode(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setIrqDisable(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setZero(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setCarry(true);
-    	TestUtils.performInstruction(instruction);
-    	int result = Platform.getCpuMemory().popStack();
+    	this.getCpu().getFlags().setNegative(true);
+    	this.getCpu().getFlags().setOverflow(false);
+    	this.getCpu().getFlags().setDecimalMode(false);
+    	this.getCpu().getFlags().setIrqDisable(true);
+    	this.getCpu().getFlags().setZero(false);
+    	this.getCpu().getFlags().setCarry(true);
+    	this.getTestUtils().performInstruction(instruction);
+    	int result = this.getCpuMemory().popStack();
     	assertEquals(0xB5,result);
 	}	
 
@@ -88,14 +102,14 @@ public class NesCpuPHATest
 		 * 	Y: 1
 		 *	A: 144
 		 * */
-    	((NesCpu)Platform.getCpu()).getFlags().setNegative(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setOverflow(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setDecimalMode(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setIrqDisable(true);
-    	((NesCpu)Platform.getCpu()).getFlags().setZero(false);
-    	((NesCpu)Platform.getCpu()).getFlags().setCarry(false);
-    	TestUtils.performInstruction(instruction);
-    	int result = Platform.getCpuMemory().popStack();
+    	this.getCpu().getFlags().setNegative(true);
+    	this.getCpu().getFlags().setOverflow(true);
+    	this.getCpu().getFlags().setDecimalMode(false);
+    	this.getCpu().getFlags().setIrqDisable(true);
+    	this.getCpu().getFlags().setZero(false);
+    	this.getCpu().getFlags().setCarry(false);
+    	this.getTestUtils().performInstruction(instruction);
+    	int result = this.getCpuMemory().popStack();
     	logger.debug("status: 0x" + Integer.toHexString(result));
     	assertEquals(0xF4,result);
 	}	
@@ -108,14 +122,44 @@ public class NesCpuPHATest
 		logger.debug("testing instruction: " + Integer.toHexString(instruction));
 
 		// test case 1
-    	Platform.getCpuMemory().pushStack(0x55);
-    	TestUtils.performInstruction(instruction);
-    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isNegative());
-    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isOverflow());
-    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isDecimalMode());
-    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isIrqDisable());
-    	assertFalse(((NesCpu)Platform.getCpu()).getFlags().isZero());
-    	assertTrue(((NesCpu)Platform.getCpu()).getFlags().isCarry());
+		this.getCpuMemory().pushStack(0x55);
+    	this.getTestUtils().performInstruction(instruction);
+    	assertFalse(this.getCpu().getFlags().isNegative());
+    	assertTrue(this.getCpu().getFlags().isOverflow());
+    	assertFalse(this.getCpu().getFlags().isDecimalMode());
+    	assertTrue(this.getCpu().getFlags().isIrqDisable());
+    	assertFalse(this.getCpu().getFlags().isZero());
+    	assertTrue(this.getCpu().getFlags().isCarry());
 
-	}		
+	}
+
+	public NesCpu getCpu()
+    {
+    	return cpu;
+    }
+
+	public void setCpu(NesCpu cpu)
+    {
+    	this.cpu = cpu;
+    }
+
+	public NesCpuMemory getCpuMemory()
+    {
+    	return cpuMemory;
+    }
+
+	public void setCpuMemory(NesCpuMemory cpuMemory)
+    {
+    	this.cpuMemory = cpuMemory;
+    }
+
+	public TestUtils getTestUtils()
+    {
+    	return testUtils;
+    }
+
+	public void setTestUtils(TestUtils testUtils)
+    {
+    	this.testUtils = testUtils;
+    }		
 }

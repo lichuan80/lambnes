@@ -1,99 +1,124 @@
 package com.lambelly.lambnes.platform.ppu;
 
+import org.apache.log4j.*;
+
+import com.lambelly.lambnes.LambNes;
+
 public class NesTileCache
 {
-	private static BackgroundTile[] backgroundTileCache = new BackgroundTile[256];
-	private static SpriteTile[] spriteTileCache = new SpriteTile[256];
+	private BackgroundTile[] backgroundTileCache = new BackgroundTile[256];
+	private SpriteTile[] spriteTileCache = new SpriteTile[256];
+	private Logger logger = Logger.getLogger(NesTileCache.class);
 	
-	private static void loadBackgroundCache()
+	public NesTileCache()
+	{
+		this.loadBackgroundCache();
+		this.loadSpriteCache();
+	}
+	
+	private void loadBackgroundCache()
 	{
 		for (int i = 0; i < backgroundTileCache.length; i++)
 		{
-			NesTileCache.setBackgroundTile(new BackgroundTile(i), i);
+			this.setBackgroundTile(new BackgroundTile(i), i);
 		}
 	}
 	
-	private static void loadSpriteCache()
+	private void loadSpriteCache()
 	{
 		for (int i = 0; i < spriteTileCache.length; i++)
 		{
-			NesTileCache.setSpriteTile(new SpriteTile(i), i);
+			this.setSpriteTile(new SpriteTile(i), i);
 		}
 	}
 	
-	public static BackgroundTile getBackgroundTile(int backgroundTileNumber)
+	public boolean checkForTileStaleness(NesTile tile)
 	{
-		// make sure the cache is loaded -- loads on first request
-		if (backgroundTileCache[backgroundTileNumber] == null)
+		// get first bit of tile from pattern table to determine if stale
+		int patternTableAddress = (tile.getNameTableSelectBit() * 0x1000) | (tile.tileNumber * 16);
+		int patternTableBit = LambNes.getPlatform().getPpuMemory().getMemoryFromHexAddress(patternTableAddress);
+		if (tile.getPatternA()[0] != patternTableBit)
 		{
-			NesTileCache.loadBackgroundCache();
+			return true;
 		}
-
+		else
+		{
+			return false;
+		}
+	}
+	
+	public BackgroundTile getBackgroundTile(int backgroundTileNumber)
+	{
 		return backgroundTileCache[backgroundTileNumber];
 	}
 	
-	public static BackgroundTile getBackgroundTile(int backgroundTileNumber, int colorMSB)
+	public BackgroundTile getBackgroundTile(int backgroundTileNumber, int colorMSB)
 	{
-		BackgroundTile bg = NesTileCache.getBackgroundTile(backgroundTileNumber);
-		bg.getBackgroundAttributes().setColorHighBit(colorMSB);
+		
+		BackgroundTile bg = this.getBackgroundTile(backgroundTileNumber);
+		
+		// make sure cache isn't stale. Not sure this is any more efficient than anything else.
+		if (this.checkForTileStaleness(bg))
+		{
+			//logger.info("reloading background cache");
+			this.loadBackgroundCache();
+			bg = this.getBackgroundTile(backgroundTileNumber);
+		}
+		
+		bg.setAttributes(new BackgroundAttribute(colorMSB));
+		
 		return bg;
 	}
 	
-	public static SpriteTile getSpriteTile(int spriteTileNumber)
+	public SpriteTile getSpriteTile(int spriteTileNumber)
 	{
-		// make sure the cache is loaded -- loads on first request
-		if (spriteTileCache[spriteTileNumber] == null)
-		{
-			NesTileCache.loadSpriteCache();
-		}
-		
-		SpriteTile s = spriteTileCache[spriteTileNumber];
 		
 		return spriteTileCache[spriteTileNumber];
 	}
 	
-	public static SpriteTile getSpriteTile(int spriteTileNumber, SpriteAttribute spriteAttribute)
-	{
-		// make sure the cache is loaded -- loads on first request
-		if (spriteTileCache[spriteTileNumber] == null)
-		{
-			NesTileCache.loadSpriteCache();
-		}
-		
+	public SpriteTile getSpriteTile(int spriteTileNumber, SpriteAttribute spriteAttribute)
+	{	
 		SpriteTile s = spriteTileCache[spriteTileNumber];
-		s.setSpriteAttributes(spriteAttribute);
+		s.setAttributes(spriteAttribute);
+		
+		if (this.checkForTileStaleness(s))
+		{
+			// logger.debug("reloading sprite cache");
+			this.loadSpriteCache();
+			s = this.getSpriteTile(spriteTileNumber, spriteAttribute);
+		}
 		
 		return spriteTileCache[spriteTileNumber];
 	}
 	
-	private static void setBackgroundTile(BackgroundTile bg, int backgroundTileNumber)
+	private void setBackgroundTile(BackgroundTile bg, int backgroundTileNumber)
 	{
 		backgroundTileCache[backgroundTileNumber] = bg;
 	}
 
-	public static BackgroundTile[] getBackgroundTileCache()
+	public BackgroundTile[] getBackgroundTileCache()
 	{
 		return backgroundTileCache;
 	}
 
-	public static void setBackgroundTileCache(BackgroundTile[] backgroundTileCache)
+	public void setBackgroundTileCache(BackgroundTile[] backgroundTileCache)
 	{
-		NesTileCache.backgroundTileCache = backgroundTileCache;
+		this.backgroundTileCache = backgroundTileCache;
 	}
 
-	private static void setSpriteTile(SpriteTile sp, int spriteTileNumber)
+	private void setSpriteTile(SpriteTile sp, int spriteTileNumber)
 	{
 		spriteTileCache[spriteTileNumber] = sp;
 	}
 	
-	public static SpriteTile[] getSpriteTileCache()
+	public SpriteTile[] getSpriteTileCache()
 	{
 		return spriteTileCache;
 	}
 
-	public static void setSpriteTileCache(SpriteTile[] spriteTileCache)
+	public void setSpriteTileCache(SpriteTile[] spriteTileCache)
 	{
-		NesTileCache.spriteTileCache = spriteTileCache;
+		this.spriteTileCache = spriteTileCache;
 	}
 	
 }

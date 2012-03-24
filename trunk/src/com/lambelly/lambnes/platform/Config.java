@@ -30,6 +30,11 @@ public class Config
 
 	public static Configuration getConfig()
 	{		
+		if (Config.config == null)
+		{
+			Config.loadConfig();
+		}
+		
 		return config;
 	}
 

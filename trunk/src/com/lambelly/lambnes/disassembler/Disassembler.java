@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.lambelly.lambnes.LambNes;
 import com.lambelly.lambnes.cartridge.Cartridge;
@@ -14,10 +16,13 @@ import com.lambelly.lambnes.gui.LambNesGui;
 import com.lambelly.lambnes.platform.Config;
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.cpu.Instruction;
+import com.lambelly.lambnes.platform.cpu.NesCpuMemory;
 
 public class Disassembler
 {
 	private static Logger logger = Logger.getLogger(Disassembler.class);
+	private static Platform platform = null;
+	private static Cartridge cartridge = null;
 	
 	public Disassembler()
 	{
@@ -27,12 +32,12 @@ public class Disassembler
 	private static void disassembleRom()
 	{
 		logger.debug("disassembling rom");
-	
+		
 		while (true)
 		{
 			// get instruction from memory
-			int instAddress = Platform.getCpuMemory().getProgramCounter();
-			Instruction curInst = Instruction.get(Platform.getCpuMemory().getNextPrgRomByte());
+			int instAddress = getPlatform().getCpuMemory().getProgramCounter();
+			Instruction curInst = Instruction.get(getPlatform().getCpuMemory().getNextPrgRomByte());
 			int address = 0;
 			
 			if (curInst != null)
@@ -45,12 +50,12 @@ public class Disassembler
 				else if (curInst.getBytes() == 2)
 				{
 					// get 1 bytes for address
-					address = Platform.getCpuMemory().getNextPrgRomByte();
+					address = getPlatform().getCpuMemory().getNextPrgRomByte();
 				}
 				else if (curInst.getBytes() == 3)
 				{
 					// get 2 bytes for address
-					address = Platform.getCpuMemory().getNextPrgRomShort();
+					address = getPlatform().getCpuMemory().getNextPrgRomShort();
 				}
 				
 				DisassembledLine line = new DisassembledLine(curInst, address);
@@ -64,51 +69,17 @@ public class Disassembler
 	}
 	
     public static void main(String[] args) 
-    {
-    	String cartridgeLoadPath = null;
-        if (args.length > 0)
-        {
-        	logger.debug(args[0]);
-        	cartridgeLoadPath = args[0];
-        }
-        
+    {   
         // instantiate platform
         logger.info("instantiating platform");
-        Platform p = Platform.getInstance();
-        Config config = new Config();
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
+        Disassembler.setPlatform(applicationContext.getBean(Platform.class));
+        Disassembler.setCartridge(applicationContext.getBean(Ines.class));
         
-        // load default cartridge
     	try
-    	{
-    		// get cartridge
-    		CartridgeLocator c = null;
-    		if (cartridgeLoadPath != null)
-    		{
-    			// absolute path provided by command line
-    			c = new CartridgeLocator(cartridgeLoadPath);
-    		}
-    		else
-    		{
-    			// path provided from rom chosen from default location 
-    			c = new CartridgeLocator();
-    		}
-    		
-    		File romFile = c.locateCartridge();
-			
-			if (romFile != null)
-    		{
-				cartridgeLoadPath = romFile.getAbsolutePath();
-    		}
-    		
-    		if (cartridgeLoadPath != null)
-    		{
-		        RomLoader rl = new RomLoader(cartridgeLoadPath);
-		        Cartridge cart = new Ines(rl.getRomData());
-		        
-		        Platform.setCartridge(cart);
-		        
-		        Platform.init();
-		        
+    	{	
+    		if (getCartridge().getCartridgePath() != null)
+    		{   
 		        disassembleRom();
     		}
     		else
@@ -120,10 +91,6 @@ public class Disassembler
     	{
     		logger.error("illegal state",ex);
     	}
-    	catch(FileNotFoundException ex)
-    	{
-    		logger.error("unable to load default cartridge: " + cartridgeLoadPath,ex);
-    	}
     	catch(NullPointerException ex)
     	{
     		logger.error("null pointer", ex);
@@ -132,6 +99,26 @@ public class Disassembler
     	{
     		logger.error("unhandled exception",e);
     	}        
+    }
+
+	public static Platform getPlatform()
+    {
+    	return platform;
+    }
+
+	public static void setPlatform(Platform platform)
+    {
+    	Disassembler.platform = platform;
+    }
+
+	public static Cartridge getCartridge()
+    {
+    	return cartridge;
+    }
+
+	public static void setCartridge(Cartridge cartridge)
+    {
+    	Disassembler.cartridge = cartridge;
     }
 	
 }

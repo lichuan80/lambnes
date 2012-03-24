@@ -11,6 +11,10 @@ import com.lambelly.lambnes.cartridge.*;
 import com.lambelly.lambnes.util.ArrayUtils;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.apache.log4j.*;
 import java.io.FileNotFoundException;
 
@@ -18,11 +22,14 @@ import java.io.FileNotFoundException;
  *
  * @author thomasmccarthy
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class CartridgeTest
 {
     private Logger logger = Logger.getLogger(CartridgeTest.class);
     private RomLoader rl = null;
-    private Ines cart = null;
+    @Autowired
+    private Ines ines;
 
     @Before
     public void initialize() throws FileNotFoundException
@@ -30,7 +37,7 @@ public class CartridgeTest
     	logger.debug("loading file");
         this.setRl(new RomLoader("./roms/Wrecking Crew.zip"));
         logger.debug("creating ines");
-        this.setCart(new Ines(getRl().getRomData()));
+        this.getInes().init(getRl().getRomData());
     }
     
     @Test
@@ -41,33 +48,32 @@ public class CartridgeTest
     	
     	logger.debug("controlBit1 & 0xF0: " + (controlBit1 & 0xF0));
     	
-    	
     	assertEquals(1,((controlBit1 & 0xF0) >> 4) | (controlBit2 & 0xF0));
     }
 
     @Test
     public void header() throws FileNotFoundException
     {
-        assertTrue(getCart().getHeader().isNes());
+        assertTrue(this.getInes().getHeader().isNes());
     }
 
     @Test
     public void program() throws FileNotFoundException
     {
-        assertEquals(32768,getCart().getProgramInstructions().length);
+        assertEquals(32768,this.getInes().getProgramInstructions().length);
     }
 
     @Test
     public void pattern() throws FileNotFoundException
     {
-        assertEquals(8192,getCart().getPatternTiles().length);
+        assertEquals(8192,this.getInes().getPatternTiles().length);
     }
     
     @Test
     public void patternDebug() throws FileNotFoundException
     {
     	logger.debug("pattern tile head: ");
-        ArrayUtils.head(getCart().getPatternTiles(), 16);
+        ArrayUtils.head(this.getInes().getPatternTiles(), 16);
     }    
 
     /**
@@ -86,19 +92,13 @@ public class CartridgeTest
         this.rl = rl;
     }
 
-    /**
-     * @return the cart
-     */
-    public Ines getCart()
+	public Ines getInes()
     {
-        return cart;
+    	return ines;
     }
 
-    /**
-     * @param cart the cart to set
-     */
-    public void setCart(Ines cart)
+	public void setInes(Ines ines)
     {
-        this.cart = cart;
+    	this.ines = ines;
     }
 }

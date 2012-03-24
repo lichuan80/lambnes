@@ -1,19 +1,21 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpu;
+
 import org.apache.log4j.*;
 
 public class PPUStatusRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2002;
 	private static final int CYCLES_PER_EXECUTION = 0;
-	private static PPUStatusRegister register = new PPUStatusRegister();
 	private boolean vblank = false;
 	private boolean sprite0Occurance = false;
 	private boolean scanlineSpriteCount = false;
 	private boolean vramWriteFlag = false;
 	private int rawControlByte = 0;
 	private Logger logger = Logger.getLogger(PPUStatusRegister.class);
+	private NesPpu ppu;
 	
 	private PPUStatusRegister()
 	{
@@ -45,7 +47,7 @@ public class PPUStatusRegister
 	{
 		int rValue = this.getRawControlByte();
 		this.setVblank(false);
-		Platform.getPpu().resetRegisterAddressFlipFlopLatch();
+		this.getPpu().resetRegisterAddressFlipFlopLatch();
 		return rValue;
 	}
 	
@@ -101,10 +103,15 @@ public class PPUStatusRegister
 	{
 		this.rawControlByte = rawControlByte;
 	}
-	
-	public static PPUStatusRegister getRegister()
-	{
-		return register;
-	}
+
+	public NesPpu getPpu()
+    {
+    	return ppu;
+    }
+
+	public void setPpu(NesPpu ppu)
+    {
+    	this.ppu = ppu;
+    }
 	
 }

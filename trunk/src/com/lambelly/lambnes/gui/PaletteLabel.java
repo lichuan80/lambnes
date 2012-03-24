@@ -5,13 +5,13 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import com.lambelly.lambnes.platform.NesMasterColor;
+import com.lambelly.lambnes.platform.MasterColor;
 
 public class PaletteLabel extends JLabel
 {
-	private NesMasterColor backgroundColor = null;
+	private MasterColor backgroundColor = null;
 	
-	public PaletteLabel(NesMasterColor color)
+	public PaletteLabel(MasterColor color)
 	{
 		this.setBackgroundColor(color);
 		this.setHorizontalTextPosition(JLabel.CENTER);
@@ -23,19 +23,19 @@ public class PaletteLabel extends JLabel
 		this.setBackground(new Color(this.getBackgroundColor().getColorInt()));
 	}
 	
-	public void refreshBackground(NesMasterColor color)
+	public void refreshBackground(MasterColor color)
 	{
 		this.setBackgroundColor(color);
 		this.setToolTipText("r" + this.getBackgroundColor().getRed() + "b" + this.getBackgroundColor().getBlue() + "g" + this.getBackgroundColor().getGreen());
 		this.setBackground(new Color(this.getBackgroundColor().getColorInt()));
 	}
 
-	public NesMasterColor getBackgroundColor()
+	public MasterColor getBackgroundColor()
 	{
 		return backgroundColor;
 	}
 
-	public void setBackgroundColor(NesMasterColor color)
+	public void setBackgroundColor(MasterColor color)
 	{
 		backgroundColor = color;
 	}

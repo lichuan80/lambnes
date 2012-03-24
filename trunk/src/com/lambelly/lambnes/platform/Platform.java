@@ -1,6 +1,8 @@
 package com.lambelly.lambnes.platform;
 
 import com.lambelly.lambnes.platform.cpu.*;
+import com.lambelly.lambnes.platform.mappers.MMC1Mapper;
+import com.lambelly.lambnes.platform.mappers.UnromMapper;
 import com.lambelly.lambnes.cartridge.*;
 import com.lambelly.lambnes.platform.interrupts.InterruptRequest;
 import com.lambelly.lambnes.platform.interrupts.NesInterrupts;
@@ -10,61 +12,73 @@ import com.lambelly.lambnes.platform.controllers.*;
 
 import org.apache.log4j.*;
 
+
 /**
  *
  * @author thomasmccarthy
  */
 public class Platform
 {
-	private static Cartridge cartridge = null;
-    private static NesCpuMemory cpuMemory = null;
-    private static NesPpuMemory ppuMemory = null;
-    private static CentralProcessingUnit cpu = null;
-    private static PictureProcessingUnit ppu = null;
-    private static AudioProcessingUnit apu = null;
-    private static NesInterrupts nesInterrupts = null;
-    private static NesControllerPorts controllerPorts = null;
-    private static Platform instance = null;
-    private static Palette MasterPalette = null;
-    private static boolean run = true;
+    private boolean run = true;
     private static Logger logger = Logger.getLogger(Platform.class);
 	public static final int CPU_FREQUENCY = ((Double)(1.789 * 1000000)).intValue();
     public static final int EIGHT_BIT_MASK = 0xFF;
     public static final int SIXTEEN_BIT_MASK = 0xFFFF;
     private static long cycleCount = 0;
+    private NesCpu cpu;
+    private NesApu apu;
+    private NesCpuMemory cpuMemory;
+    private NesPpu ppu;
+    private NesPpuMemory ppuMemory;
+    private NesInterrupts interrupts;
+    private NesControllerPorts controllerPorts;
+    private Ines cartridge;
     
-    protected Platform()
+    
+    private Platform()
     {
-    	try
-    	{
-	    	Platform.setCpuMemory(new NesCpuMemory());
-	        Platform.setCpu(new NesCpu());
-	        Platform.setPpu(new NesPpu());
-	        Platform.setApu(new NesApu());
-	        Platform.setControllerPorts(new NesControllerPorts());
-	        Platform.setPpuMemory(new NesPpuMemory());
-	        Platform.setMasterPalette(new Palette());
-    	}
-    	catch(Exception e)
-    	{
-    		if(logger.isDebugEnabled())
-    		{
-    			logger.fatal("boot exception: " + e.getMessage(),e);
-    		}
-    	}
+    	
     }
     
-    public static void init()
+    public void init()
     {
-    	if (Platform.getCartridge() != null)
-    	{
-    		if (logger.isDebugEnabled())
+    	if (this.getCartridge() != null)
+    	{	
+    		// establish mapper
+    		// logger.debug("using mapper: " + this.getCartridge().getHeader().getMapperID());
+    		
+    		if (this.getCartridge().getHeader().getMapperID() > 0)
     		{
-    			logger.debug("using mapper: " + Platform.getCartridge().getHeader().getMapperID());
+    	        //logger.info("program pages: " + this.getCartridge().getHeader().getProgramInstructionByte());
+    	        //logger.info("chr-rom pages: " + this.getCartridge().getHeader().getPatternTileByte());
+    	        //logger.info("program array length: " + this.getCartridge().getProgramInstructions().length);
+    	        //logger.info("pattern array length: " + this.getCartridge().getPatternTiles().length);
     		}
-    		Platform.getPpuMemory().establishMirroring();
-    		Platform.getCpuMemory().setProgramInstructions(Platform.getCartridge().getProgramInstructions());
-    		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
+    		
+    		// TODO: this should probably be an enum or something.
+    		if (this.getCartridge().getHeader().getMapperID() == 0)
+    		{
+    			//logger.info("using default mapper");
+    		}
+    		else if (this.getCartridge().getHeader().getMapperID() == 1)
+    		{
+    			//logger.info("using mapper MMC1");
+    			this.getCpuMemory().setMapper(new MMC1Mapper(this.getCpuMemory()));
+    		}
+    		else if (this.getCartridge().getHeader().getMapperID() == 2)
+    		{
+    			//logger.info("using mapper unrom");
+    			this.getCpuMemory().setMapper(new UnromMapper(this.getCpuMemory()));
+    		}    		
+    		else
+    		{
+    			throw new IllegalStateException("cartridge utilizes currently unsupported mapper: " + this.getCartridge().getHeader().getMapperID());
+    		}
+    		
+    		this.getPpuMemory().establishMirroring();
+    		this.getCpuMemory().init(this.getCartridge().getProgramInstructions());
+    		this.getPpuMemory().setPatternTiles(this.getCartridge().getPatternTiles());
+    		this.getInterrupts().init();
     	}
     	else
     	{
@@ -72,162 +86,48 @@ public class Platform
     		throw new IllegalStateException("no cartridge inserted");
     	}
     	
-    	Platform.setNesInterrupts(new NesInterrupts());
-    	Platform.getNesInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeReset));
-    	Platform.getNesInterrupts().cycle();
+    	this.getInterrupts().addInterruptRequestToQueue(new InterruptRequest(InterruptRequest.interruptTypeReset));
+    	this.getInterrupts().cycle();
     }
     
-    public static void power()
+    public void power()
     {
-    	Platform.init();
+    	this.init();
+    	
     	
         while (isRun())
         {
     		int cyclesPassed = 0;
     		
         	// 1. cpu cycle
-        	cyclesPassed += Platform.getCpu().processNextInstruction();
+        	cyclesPassed += this.getCpu().processNextInstruction();
         	
         	// 2. Execute Interrupts.
-        	cyclesPassed += Platform.getNesInterrupts().cycle();
+        	cyclesPassed += this.getInterrupts().cycle();
         	
         	// 3. ppu cycle
-        	Platform.getPpu().cycle(cyclesPassed); 
+        	this.getPpu().cycle(cyclesPassed); 
 
         	// 4 apu cycle
-        	Platform.getApu().cycle();
+        	this.getApu().cycle(cyclesPassed);
         	
         	// 5. controller cycle 
-        	Platform.getControllerPorts().cycle();
+        	this.getControllerPorts().cycle();
         	
         	addToCycleCount(cyclesPassed);
         }
         
         // shutdown
-        logger.info("platform stopped");
     }
 
-    public static Platform getInstance()
-    {
-        if(instance == null)
-        {
-            instance = new Platform();
-        }
-        return instance;
-    }
-
-    /**
-     * @return the programMemory
-     */
-    public static NesCpuMemory getCpuMemory()
-    {
-        return cpuMemory;
-    }
-
-    /**
-     * @param aProgramMemory the programMemory to set
-     */
-    private static void setCpuMemory(NesCpuMemory aCpuMemory)
-    {
-        cpuMemory = aCpuMemory;
-    }
-
-    /**
-     * @return the characterMemory
-     */
-    public static NesPpuMemory getPpuMemory()
-    {
-        return ppuMemory;
-    }
-
-    /**
-     * @param aCharacterMemory the characterMemory to set
-     */
-    private static void setPpuMemory(NesPpuMemory aPpuMemory)
-    {
-        ppuMemory = aPpuMemory;
-    }
-
-    /**
-     * @return the cpu
-     */
-    public static CentralProcessingUnit getCpu()
-    {
-        return cpu;
-    }
-
-    /**
-     * @param aCpu the cpu to set
-     */
-    private static void setCpu(CentralProcessingUnit aCpu)
-    {
-        cpu = aCpu;
-    }
-
-    /**
-     * @return the ppu
-     */
-    public static PictureProcessingUnit getPpu()
-    {
-        return ppu;
-    }
-
-    /**
-     * @param aPpu the ppu to set
-     */
-    private static void setPpu(PictureProcessingUnit aPpu)
-    {
-        ppu = aPpu;
-    }
-
-	public static Palette getMasterPalette()
-	{
-		return MasterPalette;
-	}
-
-	public static void setMasterPalette(Palette masterPalette)
-	{
-		MasterPalette = masterPalette;
-	}
-
-	public static boolean isRun()
+	public boolean isRun()
 	{
 		return run;
 	}
 
-	public static void setRun(boolean run)
+	public void setRun(boolean run)
 	{
-		Platform.run = run;
-	}
-
-	public static NesInterrupts getNesInterrupts()
-	{
-		return nesInterrupts;
-	}
-
-	public static void setNesInterrupts(NesInterrupts nesInterrupts)
-	{
-		Platform.nesInterrupts = nesInterrupts;
-	}
-
-	public static Cartridge getCartridge()
-	{
-		return cartridge;
-	}
-
-	public static void setCartridge(Cartridge cartridge)
-	{
-		Platform.cartridge = cartridge;
-	}
-
-	public static NesControllerPorts getControllerPorts()
-	{
-		return controllerPorts;
-	}
-
-	public static void setControllerPorts(NesControllerPorts controllerPorts)
-	{
-		Platform.controllerPorts = controllerPorts;
+		this.run = run;
 	}
 
 	public static long getCycleCount()
@@ -250,13 +150,83 @@ public class Platform
 		Platform.cycleCount++;
 	}
 
-	public static AudioProcessingUnit getApu()
-	{
-		return apu;
-	}
+	public NesCpu getCpu()
+    {
+    	return cpu;
+    }
 
-	public static void setApu(AudioProcessingUnit apu)
-	{
-		Platform.apu = apu;
-	}
+	public void setCpu(NesCpu cpu)
+    {
+    	this.cpu = cpu;
+    }
+
+	public NesInterrupts getInterrupts()
+    {
+    	return interrupts;
+    }
+
+	public void setInterrupts(NesInterrupts interrupts)
+    {
+    	this.interrupts = interrupts;
+    }
+
+	public NesCpuMemory getCpuMemory()
+    {
+    	return cpuMemory;
+    }
+
+	public void setCpuMemory(NesCpuMemory cpuMemory)
+    {
+    	this.cpuMemory = cpuMemory;
+    }
+
+	public Ines getCartridge()
+    {
+    	return cartridge;
+    }
+
+	public void setCartridge(Ines cartridge)
+    {
+    	this.cartridge = cartridge;
+    }
+
+	public NesPpu getPpu()
+    {
+    	return ppu;
+    }
+
+	public void setPpu(NesPpu ppu)
+    {
+    	this.ppu = ppu;
+    }
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+    	this.ppuMemory = ppuMemory;
+    }
+
+	public NesApu getApu()
+    {
+    	return apu;
+    }
+
+	public void setApu(NesApu apu)
+    {
+    	this.apu = apu;
+    }
+
+	public NesControllerPorts getControllerPorts()
+    {
+    	return controllerPorts;
+    }
+
+	public void setControllerPorts(NesControllerPorts controllerPorts)
+    {
+    	this.controllerPorts = controllerPorts;
+    }
 }

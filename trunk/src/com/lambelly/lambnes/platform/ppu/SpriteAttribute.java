@@ -4,7 +4,7 @@ import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.BitUtils;
 import org.apache.log4j.*;
 
-public class SpriteAttribute
+public class SpriteAttribute extends NesTileAttribute
 {
 	private int tileIndex = 0;
 	private boolean verticalFlip = false;
@@ -22,54 +22,8 @@ public class SpriteAttribute
 		
 	}
 	
-	public SpriteAttribute(int spriteNumber)
-	{
-		this.generateSpriteAttributes(spriteNumber);
-	}
-	
 	public SpriteAttribute(int rawBit1, int rawBit2, int rawBit3, int rawBit4)
 	{
-		this.parseSprRam(rawBit1, rawBit2, rawBit3, rawBit4);
-	}
-	
-	private void generateSpriteAttributes(int spriteNumber)
-	{
-		int rawBit1 = 0;
-		int rawBit2 = 0;
-		int rawBit3 = 0;
-		int rawBit4 = 0;
-		
-		// tileIndex and spriteNumber ought to match, so iterate the spr-ram until the right tileIndex is found
-		int tileIndex = -1;
-		int x = 0;
-		while (tileIndex != spriteNumber && x < 64)
-		{	
-			tileIndex = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 1); 
-		
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("looking at sprite attribute: " + x + " : tileIndex: " + tileIndex + " : spriteNumber: " + spriteNumber);
-			}
-			
-			if (tileIndex == spriteNumber)
-			{
-				rawBit1 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4);
-				rawBit2 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 1);
-				rawBit3 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 2);
-				rawBit4 = Platform.getPpuMemory().getSprRamFromHexAddress(x * 4 + 3);
-			}
-			x++;
-		}
-		
-		
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("sprite " + spriteNumber + " rawBit1: " + rawBit1);
-			logger.debug("sprite " + spriteNumber + " rawBit2: " + rawBit2);
-			logger.debug("sprite " + spriteNumber + " rawBit3: " + rawBit3);
-			logger.debug("sprite " + spriteNumber + " rawBit4: " + rawBit4);
-		}
-
 		this.parseSprRam(rawBit1, rawBit2, rawBit3, rawBit4);
 	}
 	
@@ -92,14 +46,29 @@ public class SpriteAttribute
 		int colorMSB = 0;
 		colorMSB = ((BitUtils.isBitSet(rawBit3,1)?1:0) << 1) | (BitUtils.isBitSet(rawBit3, 0)?1:0);
 
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3));
-		}
+		// logger.debug("generated MSB " + colorMSB + " from raw bit: " + Integer.toBinaryString(rawBit3));
 		
 		this.setColorHighBit(colorMSB);
 		
 		this.setxCoordinate(rawBit4);
+	}
+	
+	public void parseSprRam3(int rawBit)
+	{
+		// parse flips
+		this.setVerticalFlip(BitUtils.isBitSet(rawBit, 7));
+		this.setHorizontalFlip(BitUtils.isBitSet(rawBit, 6));
+		
+		// parse background priority
+		if (BitUtils.isBitSet(rawBit, 5))
+		{
+			this.setBackgroundPriority(SpriteAttribute.BACKGROUND_PRIORITY_BEHIND);
+		}
+		
+		// parse color high bit
+		int colorMSB = 0;
+		colorMSB = ((BitUtils.isBitSet(rawBit,1)?1:0) << 1) | (BitUtils.isBitSet(rawBit, 0)?1:0);
+		this.setColorHighBit(colorMSB);
 	}
 
 	public String toString()

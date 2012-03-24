@@ -7,11 +7,12 @@ public class NesPpuPatternTable
 {
 	private int numSprites = 0;
 	private SpriteTile[] sprites = null;
+	private PPUControlRegister ppuControlRegister;
 	
 	public NesPpuPatternTable()
 	{
 		// set up pattern table
-		if (Platform.getPpu().getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X8)
+		if (this.getPpuControlRegister().getSpriteSize() == PPUControlRegister.SPRITE_SIZE_8X8)
 		{
 			this.setNumSprites(64);
 		}
@@ -44,4 +45,14 @@ public class NesPpuPatternTable
 	{
 		this.sprites = sprites;
 	}
+
+	public PPUControlRegister getPpuControlRegister()
+    {
+    	return ppuControlRegister;
+    }
+
+	public void setPpuControlRegister(PPUControlRegister ppuControlRegister)
+    {
+    	this.ppuControlRegister = ppuControlRegister;
+    }
 }

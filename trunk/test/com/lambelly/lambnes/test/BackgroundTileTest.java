@@ -12,6 +12,10 @@ import com.lambelly.lambnes.platform.ppu.*;
 import com.lambelly.lambnes.util.*;
 import com.lambelly.lambnes.test.utils.TestUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.apache.log4j.*;
 
 
@@ -19,8 +23,16 @@ import org.apache.log4j.*;
  *
  * @author thomasmccarthy
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:beans.xml"})
 public class BackgroundTileTest
 {
+	@Autowired
+	private Platform platform;
+	@Autowired
+	private Ines cartridge;
+	@Autowired
+	private NesPpuMemory ppuMemory;
 	private Logger logger = Logger.getLogger(BackgroundTileTest.class);
 	
 	@Test
@@ -29,35 +41,29 @@ public class BackgroundTileTest
 		BackgroundTile bg = new BackgroundTile();
 		bg.setPatternA(new int[]{0,0,0,0,128,128,128,0});
 		bg.setPatternB(new int[]{0,0,128,128,64,96,32,0});
-		bg.setBackgroundAttributes(new BackgroundAttribute(4));
+		bg.setAttributes(4);
 
-		assertEquals(18, bg.getPixelBackgroundColorPaletteIndex(7,2));
+		assertEquals(18, bg.getPixelColorPaletteIndex(7,2));
 	}
 	
 	@Test
 	public void testColorIndex2() throws Exception
 	{	
-		Platform p = Platform.getInstance();
-		
 		RomLoader rl = new RomLoader("./roms/BalloonFight.zip");
-        Cartridge cart = new Ines(rl.getRomData());
-        Platform.setCartridge(cart);
+        this.getCartridge().init(rl.getRomData());
         
-		ArrayUtils.head(Platform.getCartridge().getPatternTiles(), 16);
-		Platform.getPpuMemory().setPatternTiles(Platform.getCartridge().getPatternTiles());
+		ArrayUtils.head(this.getCartridge().getPatternTiles(), 16);
+		this.getPpuMemory().setPatternTiles(this.getCartridge().getPatternTiles());
         
         BackgroundTile bg = new BackgroundTile(36,4);
-        assertEquals(18, bg.getPixelBackgroundColorPaletteIndex(7,2));
+        assertEquals(18, bg.getPixelColorPaletteIndex(7,2));
 	}
 	
 	@Test
 	public void testColorIndex3() throws Exception
 	{
-		Platform p = Platform.getInstance();
-		
 		RomLoader rl = new RomLoader("./roms/BalloonFight.zip");
-        Cartridge cart = new Ines(rl.getRomData());
-        Platform.setCartridge(cart);
+        this.getCartridge().init(rl.getRomData());
         
         int tile = 0;
         int pattern = 0;
@@ -65,11 +71,11 @@ public class BackgroundTileTest
         {
         	if (pattern >= 0 && pattern < 8)
         	{
-        		logger.debug("byte " + pattern + " for tile " + tile + ":" + Platform.getCartridge().getPatternTiles()[i]);
+        		logger.debug("byte " + pattern + " for tile " + tile + ":" + this.getCartridge().getPatternTiles()[i]);
         	}
         	else if (pattern >= 8 && pattern < 16)
         	{
-        		logger.debug("byte " + pattern + " for tile " + tile + ":" + Platform.getCartridge().getPatternTiles()[i]);
+        		logger.debug("byte " + pattern + " for tile " + tile + ":" + this.getCartridge().getPatternTiles()[i]);
         	}
         	
         	pattern ++;
@@ -79,15 +85,45 @@ public class BackgroundTileTest
         		pattern = 0;
         	}
         }
-        Platform.getCartridge().getPatternTiles();
+        this.getCartridge().getPatternTiles();
 	}
 	
 	@Test
 	public void testImageGenerator() throws Exception
 	{
-		RomLoader rl = new RomLoader("./roms/NEStress.zip");
-        Cartridge cart = new Ines(rl.getRomData());
-        TileTestImageViewer t = new TileTestImageViewer(cart, 0x45);
+		RomLoader rl = new RomLoader("./roms/BalloonFight.zip");
+		this.getCartridge().init(rl.getRomData());
+        TileTestImageViewer t = new TileTestImageViewer(0x45);
         t.run();
 	}
+
+	public Platform getPlatform()
+    {
+    	return platform;
+    }
+
+	public void setPlatform(Platform platform)
+    {
+    	this.platform = platform;
+    }
+
+	public Ines getCartridge()
+    {
+    	return cartridge;
+    }
+
+	public void setCartridge(Ines cartridge)
+    {
+    	this.cartridge = cartridge;
+    }
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+    	this.ppuMemory = ppuMemory;
+    }
 }

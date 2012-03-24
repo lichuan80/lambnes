@@ -1,17 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.lambelly.lambnes.platform.cpu;
 
 import org.apache.log4j.*;
 
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.platform.apu.registers.APUControlRegister;
+import com.lambelly.lambnes.platform.apu.registers.APUPulse1ChannelRegister;
+import com.lambelly.lambnes.platform.apu.registers.APUPulse1LengthCounterRegister;
+import com.lambelly.lambnes.platform.apu.registers.APUPulse1SweepRegister;
+import com.lambelly.lambnes.platform.apu.registers.APUPulse1TimerLowRegister;
+import com.lambelly.lambnes.platform.apu.registers.APUFrameCounterRegister;
 import com.lambelly.lambnes.platform.controllers.ControlRegister1;
 import com.lambelly.lambnes.platform.controllers.ControlRegister2;
-import com.lambelly.lambnes.platform.controllers.NesJoypad;
 import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUMaskRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUSprRamAddressRegister;
@@ -22,6 +21,8 @@ import com.lambelly.lambnes.platform.ppu.registers.PPUScrollRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUVramAddressRegister;
 import com.lambelly.lambnes.platform.ppu.registers.PPUVramIORegister;
 import com.lambelly.lambnes.util.BitUtils;
+import com.lambelly.lambnes.platform.mappers.Mapper;
+import com.lambelly.lambnes.platform.mappers.Mapper0;
 import com.lambelly.lambnes.util.NumberConversionUtils;
 
 /**
@@ -30,7 +31,7 @@ import com.lambelly.lambnes.util.NumberConversionUtils;
  */
 public class NesCpuMemory
 {
-	/*
+	/* 
 	 * cpu memory map 
 	 * $0000 - $00FF 256 bytes Zero Page - Special Zero Page addressing modes give faster memory read/write access 
 	 * $0100 - $01FF 256 bytes Stack memory 
@@ -51,7 +52,7 @@ public class NesCpuMemory
 	 * $4000 - $401F 32 bytes Input/Output registers 
 	 * $4020 - $5FFF 8160 bytes Expansion ROM - Used with Nintendo's MMC5 to expand the capabilities of VRAM. 
 	 * $6000 - $7FFF 8192 bytes SRAM - Save Ram used to save data between game plays. 
-	 * $8000  - $BFFF 16384 bytes PRG-ROM lower bank - executable code 
+	 * $8000 - $BFFF 16384 bytes PRG-ROM lower bank - executable code 
 	 * $C000 - $FFFF 16384 bytes PRG-ROM upper bank - executable code 
 	 * $FFFA - $FFFB 2 bytes Address of Non Maskable Interrupt (NMI) handler routine 
 	 * $FFFC - $FFFD 2 bytes Address of Power on reset handler routine 
@@ -60,20 +61,7 @@ public class NesCpuMemory
 
 	private int stackPointer = 0;
 	private int programCounter = 0x8000; // starts at start of lower bank
-
 	private int[] memory = new int[65536];
-	private PPUControlRegister ppuControlRegister = PPUControlRegister.getRegister(); // 2000
-	private PPUMaskRegister ppuMaskRegister = PPUMaskRegister.getRegister(); // 2001
-	private PPUStatusRegister ppuStatusRegister = PPUStatusRegister.getRegister(); //2002
-	private PPUSprRamAddressRegister ppuSprRamAddressRegister = PPUSprRamAddressRegister.getRegister(); // 2003
-	private PPUSprRamIORegister ppuSprRamIORegister = PPUSprRamIORegister.getRegister(); // 2004
-	private PPUScrollRegister ppuScrollRegister = PPUScrollRegister.getRegister(); // 2005
-	private PPUVramAddressRegister ppuVramAddressRegister = PPUVramAddressRegister.getRegister(); // 2006
-	private PPUVramIORegister ppuVramIORegister = PPUVramIORegister.getRegister(); // 2007
-	private PPUSpriteDMARegister ppuDMARegister = PPUSpriteDMARegister.getRegister(); // $4014
-	private APUControlRegister apuControlRegister = APUControlRegister.getRegister(); // $4015
-	private ControlRegister1 joypadControlRegister1 = ControlRegister1.getRegister(); // $4016
-	private ControlRegister2 joypadControlRegister2 = ControlRegister2.getRegister(); // $4017
 
     public static final int STACK_BASE = 0x0100;
     public static final int STACK_MAX = 0x01FF;
@@ -82,14 +70,31 @@ public class NesCpuMemory
     public static final int RESET_VECTOR = 0xFFFC;
     public static final int IRQBRK_VECTOR = 0xFFFE;
 	
-	private Logger logger = Logger.getLogger(NesCpuMemory.class);
+    private PPUSprRamIORegister ppuSprRamIORegister; // 0x2004
+    private PPUSprRamAddressRegister ppuSprRamAddressRegister; // 0x2003 
+    private PPUControlRegister ppuControlRegister; // 0x2000
+    private PPUStatusRegister ppuStatusRegister; // 0x2002
+    private PPUVramAddressRegister ppuVramAddressRegister; // 0x2006
+    private PPUVramIORegister ppuVramIORegister; // 0x2007
+    private PPUScrollRegister ppuScrollRegister; // 0x2005
+    private PPUSpriteDMARegister ppuSpriteDmaRegister; // 0x4014
+    private PPUMaskRegister ppuMaskRegister; // 0x2001
+    
+    private APUControlRegister apuControlRegister; // 0x4015
+    private APUFrameCounterRegister apuFrameCounterRegister; // 0x4017
+    private APUPulse1ChannelRegister apuPulse1ChannelRegister; // 0x4000
+    private APUPulse1LengthCounterRegister apuPulse1LengthCounterRegister; // 0x4003
+    private APUPulse1SweepRegister apuPulse1SweepRegister; // 0x4001
+    private APUPulse1TimerLowRegister apuPulse1TimerLowRegister; // 0x4002
+    
+    private ControlRegister1 controlRegister1;
+    private ControlRegister2 controlRegister2; 
+    
+    private Mapper mapper = null;
+    
+	private static Logger logger = Logger.getLogger(NesCpuMemory.class);
 
-	public NesCpuMemory()
-	{
-
-	}
-
-	public NesCpuMemory(int[] programInstructions)
+	public void init(int[] programInstructions)
 	{
 		this.setProgramInstructions(programInstructions);
 	}
@@ -124,429 +129,30 @@ public class NesCpuMemory
 		return b;
 	}
 
-	/**
-	 * getImmediate - #aa returns the next value in program memory to be used by
-	 * the instruction
-	 * 
-	 * @return
-	 */
-	public int getImmediateValue()
-	{
-		return this.getNextPrgRomByte();
-	}
-
-	/**
-	 * getAbsolute - aaaa 
-	 * contains the 16 bit address of the 8 bit value to be used
-	 * 
-	 * @return
-	 */
-	public int getAbsoluteValue()
-	{
-		int address = this.getAbsoluteAddress();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("using address: " + Integer.toHexString(address));
-		}
-		return this.getMemoryFromHexAddress(address);
-	}
-
-	/**
-	 * getAbsoluteIndexXValue - aaaa,X
-	 * adds X to 16 bit address
-	 * 
-	 * @return
-	 */
-	public int getAbsoluteIndexedXValue()
-	{
-		int address = this.getAbsoluteIndexedXAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-
-	/**
-	 * getAbsoluteIndexYValue - aaaa,Y
-	 * adds Y to 16 bit address
-	 * 
-	 * @return
-	 */
-	public int getAbsoluteIndexedYValue()
-	{
-		int address = this.getAbsoluteIndexedYAddress();
-		return this.getMemoryFromHexAddress(address);
-	}	
-	
-	/**
-	 * getZeroPageValue - aa - 8 bit address returns value from zero page
-	 * 
-	 * @return
-	 */
-	public int getZeroPageValue()
-	{
-		int address = this.getZeroPageAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-	
-	/**
-	 * getIndirectAbsoluteValue() | (aaaa) | aa = 2 hex digits private int
-	 * 
-	 */
-	public int getIndirectAbsoluteValue() 
-	{
-		int address = this.getIndirectAbsoluteAddress();
-		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(address), this.getMemoryFromHexAddress(++address));
-	}
-
-	/**
-	 * getZeroPageIndexedXValue - aa,x - 8 bit address returns value from address + x register
-	 * 
-	 * @return
-	 */
-	public int getZeroPageIndexedXValue() 
-	{
-		int address = this.getZeroPageIndexedXAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-	
-	/**
-	 * getZeroPageIndexedYValue() | aa,Y | digits as private int
-	 */
-	public int getZeroPageIndexedYValue()
-	{
-		int address = this.getZeroPageIndexedYAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-	
-	/**
-	 *  getIndexedIndirectXValue (aa,X)
-	 *  zero page address + x points to a 16bit address
-	 *  
-	 *  @return
-	 */
-	public int getIndexedIndirectXValue()
-	{
-		int address = this.getIndexedIndirectXAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-	
-	 /**
-	 * getIndirectIndexedYValue() - (aa),Y 
-	 * gets the value of a 16 bit address from zero page based on 8 bit address, adds Y, then gets the value the 16 bit address points at 
-	 * @return 
-	 */
-	public int getIndirectIndexedYValue()
-	{
-		int address = this.getIndirectIndexedYAddress();
-		return this.getMemoryFromHexAddress(address);
-	}
-	
-	public int getAbsoluteAddress()
-	{
-		int address = this.getNextPrgRomShort();
-		return address;
-	}
-	
-	public int getIndirectAbsoluteAddress()
-	{
-		int lsbAddress = this.getNextPrgRomShort();
-		int lsb = this.getMemoryFromHexAddress(lsbAddress);
-		
-		// simulate msb bug
-		int lsbAddressMsb = lsbAddress & 0xFF00;
-		int lsbAddressLsb = lsbAddress & 0x00FF;
-		lsbAddressLsb = lsbAddressLsb + 1;
-		lsbAddressLsb = lsbAddressLsb & 0x00FF;
-		int msb = this.getMemoryFromHexAddress(lsbAddressMsb | lsbAddressLsb);
-		
-		//logger.debug("lsbAddress: " + Integer.toHexString(lsbAddress));
-		//logger.debug("lsb: " + Integer.toHexString(lsb));
-		//logger.debug("msb: " + Integer.toHexString(msb));
-	
-		return BitUtils.unsplitAddress(msb, lsb);
-	}
-	
-	public int getAbsoluteIndexedXAddress()
-	{
-		int address = this.getNextPrgRomShort();
-		address += Platform.getCpu().getX();
-		return address & Platform.SIXTEEN_BIT_MASK;
-	}
-	
-	public int getAbsoluteIndexedYAddress()
-	{
-		int address = this.getNextPrgRomShort();
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("Y: " + Integer.toHexString(Platform.getCpu().getY()));
-			logger.debug("Address: " + Integer.toHexString(address));
-		}
-		address += Platform.getCpu().getY();
-
-		return address & Platform.SIXTEEN_BIT_MASK;
-	}
-	
-	public int getZeroPageAddress()
-	{
-		return this.getNextPrgRomByte();
-	}
-	
-	public int getZeroPageIndexedXAddress()
-	{
-		// get initial address
-		int address = this.getNextPrgRomByte();
-		
-		// add address to x register
-		address += Platform.getCpu().getX();
-
-		// if address is > FF it wraps around.
-		address = address & Platform.EIGHT_BIT_MASK;
-
-		return address;
-	}
-	
-	public int getZeroPageIndexedYAddress()
-	{
-		// get initial address
-		int address = this.getNextPrgRomByte();
-		
-		// add address to Y register
-		address += Platform.getCpu().getY();
-		
-		// if address is > FF it wraps around.
-		address = address & Platform.EIGHT_BIT_MASK;
-
-		return address;
-	}	
-	
-	public int getIndexedIndirectXAddress()
-	{ 
-		int lowByteAddress = Platform.getCpuMemory().getNextPrgRomByte() + Platform.getCpu().getX() & Platform.EIGHT_BIT_MASK;
-		int highByteAddress =  lowByteAddress + 1 & Platform.EIGHT_BIT_MASK;
-		
-		return BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
-	}
-	
-	public int getIndirectIndexedYAddress()
-	{
-		int lowByteAddress = this.getNextPrgRomByte();
-		int highByteAddress =  lowByteAddress + 1 & Platform.EIGHT_BIT_MASK;
-		int finalAddress = BitUtils.unsplitAddress(this.getMemoryFromHexAddress(highByteAddress), this.getMemoryFromHexAddress(lowByteAddress));
-		finalAddress += Platform.getCpu().getY();
-		return finalAddress & Platform.SIXTEEN_BIT_MASK;
-	}
-	
-	public int getRelativeAddress()
-	{	
-		int offset = this.getNextPrgRomByte();
-		if (offset > 0x7F)
-		{
-			offset = offset - 0x100;
-		}
-		return (offset + this.getProgramCounter());
-	}
-	
 	public int getMemoryFromHexAddress(int address) throws IllegalStateException
-	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("getting memory from address: 0x" + Integer.toHexString(address));
-		}
-
-		int value = 0;
-		
-		value = this.getMemory()[address];
-		
-		// determine if register holds memory
-		if (address >= 0x2000 && address <= 0x3FFF)
-		{
-			// determine if mirrored
-			if (address > 0x2007)
-			{
-				// I only really care about the LSB
-				address = address & 0xFF; // throw out MSB
-				
-				// of the LSB I only really care which register it's referring to
-				address = address % 8;
-				address += 0x2000; 
-			}
-			
-			// Input/Output registers
-			if (address == PPUControlRegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
-			}
-			else if (address == PPUMaskRegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
-			}
-			else if (address == PPUSprRamAddressRegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
-			}
-			else if (address == PPUSprRamIORegister.REGISTER_ADDRESS)
-			{
-				value = this.getPpuSprRamIORegister().getRegisterValue();
-			}
-			else if (address == PPUStatusRegister.REGISTER_ADDRESS)
-			{
-				value = this.getPpuStatusRegister().getRegisterValue();
-			}
-			else if (address == PPUScrollRegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
-			}
-			else if (address == PPUVramAddressRegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register: " + Integer.toHexString(address));
-			}
-			else if (address == PPUVramIORegister.REGISTER_ADDRESS)
-			{
-				value = this.getPpuVramIORegister().getRegisterValue();
-			}
-			
-			logger.debug("getting memory from control register 0x" + Integer.toHexString(address) + ": " + Integer.toHexString(value));
-		}
-		else if (address >= 0x4000 && address <= 0x401F)
-		{
-			// Input/Output registers
-			if (address == PPUSpriteDMARegister.REGISTER_ADDRESS)
-			{
-				throw new IllegalStateException("reading from write only register");
-			}
-			else if (address == ControlRegister1.REGISTER_ADDRESS)
-			{
-				value = this.getJoypadControlRegister1().getRegisterValue();
-			}
-			else if (address == ControlRegister2.REGISTER_ADDRESS)
-			{
-				value = this.getJoypadControlRegister2().getRegisterValue();
-			}
-
-		}
-		
-		return value;
+	{		
+		return this.getMapper().getMemoryFromHexAddress(address);
 	}
 
 	public void setMemoryFromHexAddress(int address, int value) throws IllegalStateException
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.info("setting memory to address: 0x" + Integer.toHexString(address) + ": 0x" + Integer.toHexString(value));
-		}
-		
-		// set memory
-		this.getMemory()[address] = value;
-		
-		// check registers for set
-		if (address >= 0x2000 && address <= 0x3FFF)
-		{
-			// determine if mirrored
-			if (address > 0x2007)
-			{
-				// I only really care about the LSB
-				address = address & 0xFF; // throw out MSB
-				
-				// of the LSB I only really care which register it's referring to
-				address = address % 8;
-				address += 0x2000; 
-			}
-			
-			// Input/Output registers
-			if (address == PPUControlRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuControlRegister().setRegisterValue(value);
-			}
-			else if (address == PPUMaskRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuMaskRegister().setRegisterValue(value);
-			}
-			else if (address == PPUSprRamAddressRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuSprRamAddressRegister().setRegisterValue(value);
-			}
-			else if (address == PPUSprRamIORegister.REGISTER_ADDRESS)
-			{
-				this.getPpuSprRamIORegister().setRegisterValue(value);
-			}
-			else if (address == PPUStatusRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuStatusRegister().setRegisterValue(value);
-			}
-			else if (address == PPUScrollRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuScrollRegister().setRegisterValue(value);
-			}
-			else if (address == PPUVramAddressRegister.REGISTER_ADDRESS)
-			{
-				this.getPpuVramAddressRegister().setRegisterValue(value);
-			}
-			else if (address == PPUVramIORegister.REGISTER_ADDRESS)
-			{
-				this.getPpuVramIORegister().setRegisterValue(value);
-			}
-			
-			logger.debug("setting control register 0x" + Integer.toHexString(address) + " to " + Integer.toHexString(value) + " at cpu cycle " + Platform.getCycleCount());			
-		}
-		else if (address >= 0x4000 && address <= 0x401F)
-		{
-			logger.info("write to one register " + Integer.toHexString(address) + ": " + value);
-			// Input/Output registers
-			if (address == PPUSpriteDMARegister.REGISTER_ADDRESS)
-			{
-				this.getPpuDMARegister().setRegisterValue(value);
-			}
-			else if (address == APUControlRegister.REGISTER_ADDRESS)
-			{
-				this.getApuControlRegister().setRegisterValue(value);
-			}
-			else if (address == ControlRegister1.REGISTER_ADDRESS)
-			{
-				this.getJoypadControlRegister1().setRegisterValue(value);
-			}
-			else if (address == ControlRegister2.REGISTER_ADDRESS)
-			{
-				this.getJoypadControlRegister2().setRegisterValue(value);
-			}
-		}
+		this.getMapper().setMemoryFromHexAddress(address, value);
 	}	
 	
 	public void setProgramInstructions(int[] programInstructions)
 	{
-		if (programInstructions.length > 16384)
-		{
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("program instructions length: " + programInstructions.length);
-			}
-
-			System.arraycopy(programInstructions, 0, this.getMemory(), NesCpuMemory.PRG_ROM_BASE, programInstructions.length);
-		}
-		else if (programInstructions.length <= 16384)
-		{
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("mirroring prg rom");
-			}
-			// instructions are mirrored to fill the progrom
-			for (int i = 0; i< (32768 / programInstructions.length); i++)
-			{
-				logger.debug("at " + i);
-				System.arraycopy(programInstructions, 0, this.getMemory(), NesCpuMemory.PRG_ROM_BASE + (programInstructions.length * i), programInstructions.length);
-			}
-		}
+		this.getMapper().setProgramInstructions(programInstructions);
 	}
 
 	public void resetCounters()
 	{
-		this.setProgramCounter(this.PRG_ROM_BASE);
+		this.setProgramCounter(NesCpuMemory.PRG_ROM_BASE);
 		this.setStackPointer(0);
 	}
 	
 	public void pushStack(int value)
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("stack pointer: " + this.getStackPointer());
-		}
+		// logger.debug("stack pointer: " + this.getStackPointer());
 		if (Integer.bitCount(value) > 8)
 		{
 			throw new IllegalStateException("tried to push non-8 bit digit on stack: 0x" + Integer.toHexString(value));
@@ -562,17 +168,14 @@ public class NesCpuMemory
 		
 		// decrement stack pointer
 		--stackPointer;
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("stack pointer: " + stackPointer);
-		}
+
+		// logger.debug("stack pointer: " + stackPointer);
+
 
 		// roll over
 		stackPointer = (stackPointer & Platform.EIGHT_BIT_MASK);
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("stack pointer: " + stackPointer);
-		}
+
+		//logger.debug("stack pointer: " + stackPointer);
 		
 		// set stack pointer
 		this.setStackPointer(stackPointer);
@@ -583,7 +186,7 @@ public class NesCpuMemory
 		int stackPointer = this.getStackPointer();
 		
 		// increment
-		stackPointer = (++stackPointer);
+		++stackPointer;
 		
 		// roll over
 		stackPointer = (stackPointer & Platform.EIGHT_BIT_MASK);
@@ -639,119 +242,6 @@ public class NesCpuMemory
 		this.setProgramCounter(++programCounter);
 	}
 
-	public PPUVramIORegister getPpuVramIORegister()
-	{
-		return ppuVramIORegister;
-	}
-
-	public PPUControlRegister getPpuControlRegister()
-	{
-		return ppuControlRegister;
-	}
-
-	public void setPpuControlRegister(PPUControlRegister ppuControlRegister)
-	{
-		this.ppuControlRegister = ppuControlRegister;
-	}
-
-	public PPUMaskRegister getPpuMaskRegister()
-	{
-		return ppuMaskRegister;
-	}
-
-	public void setPpuMaskRegister(PPUMaskRegister ppuMaskRegister)
-	{
-		this.ppuMaskRegister = ppuMaskRegister;
-	}
-
-	public PPUStatusRegister getPpuStatusRegister()
-	{
-		return ppuStatusRegister;
-	}
-
-	public void setPpuStatusRegister(PPUStatusRegister ppuStatusRegister)
-	{
-		this.ppuStatusRegister = ppuStatusRegister;
-	}
-
-	public PPUSprRamAddressRegister getPpuSprRamAddressRegister()
-	{
-		return ppuSprRamAddressRegister;
-	}
-
-	public void setPpuSprRamAddressRegister(
-			PPUSprRamAddressRegister ppuSprRamAddressRegister)
-	{
-		this.ppuSprRamAddressRegister = ppuSprRamAddressRegister;
-	}
-
-	public PPUSprRamIORegister getPpuSprRamIORegister()
-	{
-		return ppuSprRamIORegister;
-	}
-
-	public void setPpuSprRamIORegister(PPUSprRamIORegister ppuSprRamIORegister)
-	{
-		this.ppuSprRamIORegister = ppuSprRamIORegister;
-	}
-
-	public PPUVramAddressRegister getPpuVramAddressRegister()
-	{
-		return ppuVramAddressRegister;
-	}
-
-	public void setPpuVramAddressRegister(
-			PPUVramAddressRegister ppuVramAddressRegister)
-	{
-		this.ppuVramAddressRegister = ppuVramAddressRegister;
-	}
-
-	public void setPpuVramIORegister(PPUVramIORegister ppuVramIORegister)
-	{
-		this.ppuVramIORegister = ppuVramIORegister;
-	}
-
-	public PPUSpriteDMARegister getPpuDMARegister()
-	{
-		return ppuDMARegister;
-	}
-
-	public void setPpuDMARegister(PPUSpriteDMARegister ppuDMARegister)
-	{
-		this.ppuDMARegister = ppuDMARegister;
-	}
-
-	public PPUScrollRegister getPpuScrollRegister()
-	{
-		return ppuScrollRegister;
-	}
-
-	public void setPpuVramAddressRegister(
-			PPUScrollRegister ppuVramAddressRegister1)
-	{
-		this.ppuScrollRegister = ppuVramAddressRegister1;
-	}
-
-	public ControlRegister1 getJoypadControlRegister1()
-	{
-		return joypadControlRegister1;
-	}
-
-	public void setJoypadControlRegister1(ControlRegister1 joypadControlRegister1)
-	{
-		this.joypadControlRegister1 = joypadControlRegister1;
-	}
-
-	public ControlRegister2 getJoypadControlRegister2()
-	{
-		return joypadControlRegister2;
-	}
-
-	public void setJoypadControlRegister2(ControlRegister2 joypadControlRegister2)
-	{
-		this.joypadControlRegister2 = joypadControlRegister2;
-	}
-
 	public int[] getMemory()
 	{
 		return memory;
@@ -762,13 +252,190 @@ public class NesCpuMemory
 		this.memory = memory;
 	}
 
+	public PPUSprRamIORegister getPpuSprRamIORegister()
+    {
+    	return ppuSprRamIORegister;
+    }
+
+	public void setPpuSprRamIORegister(PPUSprRamIORegister ppuSprRamIORegister)
+    {
+    	this.ppuSprRamIORegister = ppuSprRamIORegister;
+    }
+
+	public PPUControlRegister getPpuControlRegister()
+    {
+    	return ppuControlRegister;
+    }
+
+	public void setPpuControlRegister(PPUControlRegister ppuControlRegister)
+    {
+    	this.ppuControlRegister = ppuControlRegister;
+    }
+
+	public PPUStatusRegister getPpuStatusRegister()
+    {
+    	return ppuStatusRegister;
+    }
+
+	public void setPpuStatusRegister(PPUStatusRegister ppuStatusRegister)
+    {
+    	this.ppuStatusRegister = ppuStatusRegister;
+    }
+
+	public PPUVramAddressRegister getPpuVramAddressRegister()
+    {
+    	return ppuVramAddressRegister;
+    }
+
+	public void setPpuVramAddressRegister(
+            PPUVramAddressRegister ppuVramAddressRegister)
+    {
+    	this.ppuVramAddressRegister = ppuVramAddressRegister;
+    }
+
+	public PPUVramIORegister getPpuVramIORegister()
+    {
+    	return ppuVramIORegister;
+    }
+
+	public void setPpuVramIORegister(PPUVramIORegister ppuVramIORegister)
+    {
+    	this.ppuVramIORegister = ppuVramIORegister;
+    }
+
+	public PPUScrollRegister getPpuScrollRegister()
+    {
+    	return ppuScrollRegister;
+    }
+
+	public void setPpuScrollRegister(PPUScrollRegister ppuScrollRegister)
+    {
+    	this.ppuScrollRegister = ppuScrollRegister;
+    }
+
+	public PPUSprRamAddressRegister getPpuSprRamAddressRegister()
+    {
+    	return ppuSprRamAddressRegister;
+    }
+
+	public void setPpuSprRamAddressRegister(
+            PPUSprRamAddressRegister ppuSprRamAddressRegister)
+    {
+    	this.ppuSprRamAddressRegister = ppuSprRamAddressRegister;
+    }
+
+	public PPUSpriteDMARegister getPpuSpriteDmaRegister()
+    {
+    	return ppuSpriteDmaRegister;
+    }
+
+	public void setPpuSpriteDmaRegister(PPUSpriteDMARegister ppuSpriteDmaRegister)
+    {
+    	this.ppuSpriteDmaRegister = ppuSpriteDmaRegister;
+    }
+
+	public PPUMaskRegister getPpuMaskRegister()
+    {
+    	return ppuMaskRegister;
+    }
+
+	public void setPpuMaskRegister(PPUMaskRegister ppuMaskRegister)
+    {
+    	this.ppuMaskRegister = ppuMaskRegister;
+    }
+
 	public APUControlRegister getApuControlRegister()
-	{
-		return apuControlRegister;
-	}
+    {
+    	return apuControlRegister;
+    }
 
 	public void setApuControlRegister(APUControlRegister apuControlRegister)
-	{
-		this.apuControlRegister = apuControlRegister;
-	}
+    {
+    	this.apuControlRegister = apuControlRegister;
+    }
+
+	public APUFrameCounterRegister getApuFrameCounterRegister()
+    {
+    	return apuFrameCounterRegister;
+    }
+
+	public void setApuFrameCounterRegister(
+            APUFrameCounterRegister apuFrameCounterRegister)
+    {
+    	this.apuFrameCounterRegister = apuFrameCounterRegister;
+    }
+
+	public APUPulse1ChannelRegister getApuPulse1ChannelRegister()
+    {
+    	return apuPulse1ChannelRegister;
+    }
+
+	public void setApuPulse1ChannelRegister(
+            APUPulse1ChannelRegister apuPulse1ChannelRegister)
+    {
+    	this.apuPulse1ChannelRegister = apuPulse1ChannelRegister;
+    }
+
+	public APUPulse1LengthCounterRegister getApuPulse1LengthCounterRegister()
+    {
+    	return apuPulse1LengthCounterRegister;
+    }
+
+	public void setApuPulse1LengthCounterRegister(
+            APUPulse1LengthCounterRegister apuPulse1LengthCounterRegister)
+    {
+    	this.apuPulse1LengthCounterRegister = apuPulse1LengthCounterRegister;
+    }
+
+	public APUPulse1SweepRegister getApuPulse1SweepRegister()
+    {
+    	return apuPulse1SweepRegister;
+    }
+
+	public void setApuPulse1SweepRegister(
+            APUPulse1SweepRegister apuPulse1SweepRegister)
+    {
+    	this.apuPulse1SweepRegister = apuPulse1SweepRegister;
+    }
+
+	public APUPulse1TimerLowRegister getApuPulse1TimerLowRegister()
+    {
+    	return apuPulse1TimerLowRegister;
+    }
+
+	public void setApuPulse1TimerLowRegister(
+            APUPulse1TimerLowRegister apuPulse1TimerLowRegister)
+    {
+    	this.apuPulse1TimerLowRegister = apuPulse1TimerLowRegister;
+    }
+
+	public ControlRegister1 getControlRegister1()
+    {
+    	return controlRegister1;
+    }
+
+	public void setControlRegister1(ControlRegister1 controlRegister1)
+    {
+    	this.controlRegister1 = controlRegister1;
+    }
+
+	public ControlRegister2 getControlRegister2()
+    {
+    	return controlRegister2;
+    }
+
+	public void setControlRegister2(ControlRegister2 controlRegister2)
+    {
+    	this.controlRegister2 = controlRegister2;
+    }
+
+	public Mapper getMapper()
+    {
+    	return mapper;
+    }
+
+	public void setMapper(Mapper mapper)
+    {
+    	this.mapper = mapper;
+    }
 }

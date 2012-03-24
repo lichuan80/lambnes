@@ -3,17 +3,18 @@ package com.lambelly.lambnes.platform.ppu;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
 
+import com.lambelly.lambnes.LambNes;
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.registers.PPUControlRegister;
 import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.util.NumberConversionUtils; 
 import java.awt.image.*;  
 
-public class NesTile
+public abstract class NesTile
 {
 	protected int tileNumber = 0;
 	protected int[] patternA = null;
 	protected int[] patternB = null;
-	protected BackgroundAttribute backgroundAttribute = new BackgroundAttribute();
 	protected Logger logger = Logger.getLogger(NesTile.class);
 	
 	public NesTile()
@@ -30,37 +31,46 @@ public class NesTile
 	public NesTile(int tileNumber, int colorHighBit)
 	{
 		this.setTileNumber(tileNumber);
-		this.setBackgroundAttributes(new BackgroundAttribute(colorHighBit));
+		this.setAttributes(colorHighBit);
 		this.instantiateTile();
 	}
 	
 	public NesTile(NesTile tile)
 	{
 		this.setTileNumber(tile.getTileNumber());
-		this.setBackgroundAttributes(new BackgroundAttribute(tile.getBackgroundAttributes().getColorHighBit()));
+		this.setAttributes(tile.getAttributes().getColorHighBit());
 		this.setPatternA(tile.getPatternA());
 		this.setPatternB(tile.getPatternB());
 	}
 	
-	protected void instantiateTile()
-	{
+	protected abstract void instantiateTile();
 
+	public abstract void refreshAttributes();	
+	
+	public void refreshTile()
+	{
+		this.refreshAttributes();
+		this.instantiateTile();
 	}
 	
 	public int[] getTileByteArray(int tileNumber)
 	{
-		int[] tile = new int[16];
+		int spriteLength;
+		int address;
 		
-		// determine address high bit (either in 0x0000 or 0x1000)
-		int address = (this.getHighBit() * 0x1000) | (tileNumber * 16);
-		for (int x = 0; x < 16; x++)
+		address = (this.getNameTableSelectBit() * 0x1000) | (tileNumber * 16);
+		spriteLength = 16;
+		
+		int[] tile = new int[spriteLength];
+		
+		for (int x = 0; x < spriteLength; x++)
 		{
-			if(logger.isDebugEnabled())
-			{
-				logger.debug("getting memory from " + Integer.toHexString(address + x) + " for tile " + tileNumber + " with base address " + address + " and high bit " + this.getHighBit());
-			}
-			tile[x] = Platform.getPpuMemory().getMemoryFromHexAddress(address + x);
-		}
+			int value = LambNes.getPlatform().getPpuMemory().getMemoryFromHexAddress(address + x);
+		
+			// logger.debug("getting memory from " + Integer.toHexString(address + x) + " for tile " + tileNumber + " with base address " + address + " and high bit " + this.getNameTableSelectBit() + ": " + value);
+			
+			tile[x] = value;
+		}		
 		
 		return tile;
 	}	
@@ -75,37 +85,15 @@ public class NesTile
 		PaletteColor colorBit[] = new PaletteColor[8];
 		for (int i = 0; i < 8; i++)
 		{
-			PaletteColor pixel = new PaletteColor(this.getPixelBackgroundColorPaletteIndex(i, row), PaletteColor.PALETTE_TYPE_BACKGROUND);
+			PaletteColor pixel = new PaletteColor(this.getPixelColorPaletteIndex(i, row), PaletteColor.PALETTE_TYPE_BACKGROUND);
+			//logger.info("generated MPI: " + pixel + " for tile " + this.getTileNumber());
 			colorBit[i ^ 0x07] = pixel;
 		}
 		
 		return colorBit;
 	}
 	
-	public int getPixelBackgroundColorPaletteIndex(int column, int row)
-	{
-		int patternABit = (BitUtils.isBitSet(this.getPatternA()[row],column))?1:0;
-		int patternBBit = (BitUtils.isBitSet(this.getPatternB()[row],column))?1:0;
-	
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("generating pixel color for " + column + ", " + row);
-			logger.debug(this.toString());
-			logger.debug("pattern a row " + row + ": " + Integer.toBinaryString(this.getPatternA()[row]));
-			logger.debug("pattern b row " + row + ": " + Integer.toBinaryString(this.getPatternB()[row]));
-			logger.debug("pattern a pixel bit: " + patternABit);
-			logger.debug("pattern b pixel bit: " + patternBBit);
-			logger.debug("highbit: " + this.getBackgroundAttributes().getColorHighBit());
-		}
-		
-		int lowbit = (patternBBit) << 1 | (patternABit); 
-		int color = (this.getBackgroundAttributes().getColorHighBit() << 2) | lowbit;
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("color bitstring generated for " + column + ", " + row + ": " + Integer.toBinaryString(color));
-		}
-		return color;
-	}
+	public abstract int getPixelColorPaletteIndex(int column, int row);
 	
 	public BufferedImage getBufferedImage()
 	{
@@ -118,10 +106,7 @@ public class NesTile
 		{
 			PaletteColor[] p = this.getTileColorRow(row);
 			
-			if (logger.isDebugEnabled())
-			{
-				logger.info("row " + row + " of background + " + Integer.toHexString(this.getTileNumber()) + ": " + ArrayUtils.toString(p));
-			}
+			// logger.debug("row " + row + " of background + " + Integer.toHexString(this.getTileNumber()) + ": " + ArrayUtils.toString(p));
 			
 			for (int col = 0; col < 8; col++)
 			{
@@ -133,10 +118,7 @@ public class NesTile
 		return bImage;
 	}
 	
-	public int getHighBit()
-	{
-		return 0;
-	}
+	public abstract int getNameTableSelectBit();
 	
 	public String toString()
 	{
@@ -147,7 +129,7 @@ public class NesTile
 			colorMapString+= "\n";
 			for (int col = 0; col < 8; col++)
 			{
-				colorMapString += this.getPixelBackgroundColorPaletteIndex(col, row);
+				colorMapString += this.getPixelColorPaletteIndex(col, row);
 			}
 		}
 		
@@ -170,7 +152,6 @@ public class NesTile
 			"\t" + NumberConversionUtils.generateBinaryStringWithleadingZeros(this.patternB[5], 8) + "\n" +
 			"\t" + NumberConversionUtils.generateBinaryStringWithleadingZeros(this.patternB[6], 8) + "\n" +
 			"\t" + NumberConversionUtils.generateBinaryStringWithleadingZeros(this.patternB[7], 8) + "\n" +
-			"\t\tcolor high bit: " + this.getBackgroundAttributes().getColorHighBit() + "\n" +
 			"\t\tbackground color palette index map: " + colorMapString;
 	}
 	
@@ -203,14 +184,11 @@ public class NesTile
 	{
 		this.patternB = patternB;
 	}
+	
+	public abstract NesTileAttribute getAttributes();
 
-	public BackgroundAttribute getBackgroundAttributes()
-	{
-		return backgroundAttribute;
-	}
+	public abstract void setAttributes(int colorHighBit);
+	
+	public abstract void setAttributes(NesTileAttribute tileAttribute);
 
-	public void setBackgroundAttributes(BackgroundAttribute backgroundAttribute)
-	{
-		this.backgroundAttribute = backgroundAttribute;
-	}
 }

@@ -1,11 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lambelly.lambnes.platform.cpu;
 
 import org.apache.log4j.*;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.core.io.ClassPathResource;
 
+import com.lambelly.lambnes.platform.cpu.NesCpuAddressingModes;
 import com.lambelly.lambnes.platform.Platform;
 import com.lambelly.lambnes.util.BitUtils;
 import com.lambelly.lambnes.util.NumberConversionUtils;
@@ -15,7 +14,7 @@ import com.lambelly.lambnes.util.NumberConversionUtils;
  * @author thomasmccarthy
  */
 public class NesCpu implements CentralProcessingUnit
-{
+{	
     // flags
 	NesFlags flags = new NesFlags();
 
@@ -23,6 +22,9 @@ public class NesCpu implements CentralProcessingUnit
     private int x = 0;
     private int y = 0;
     private int accumulator = 0;
+ 
+    private NesCpuMemory cpuMemory;
+    private NesCpuAddressingModes addressing;
 
     private Logger logger = Logger.getLogger(NesCpu.class);
     
@@ -33,7 +35,8 @@ public class NesCpu implements CentralProcessingUnit
 
     public int processNextInstruction()
     {
-    	int instCode = Platform.getCpuMemory().getNextPrgRomByte();
+    	
+    	int instCode = cpuMemory.getNextPrgRomByte();
         Instruction instruction = Instruction.get(instCode);
         
         if (instruction == null)
@@ -46,10 +49,7 @@ public class NesCpu implements CentralProcessingUnit
     	int x = 0;
     	int y = 0;
     	
-    	if (logger.isDebugEnabled())
-        {
-        	logger.info("program counter: 0x" + Integer.toHexString(Platform.getCpuMemory().getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction.getOpCode()) + "\t|\t" + instruction.name() + "\t|\taddress: " + Integer.toHexString(address) + "\t|\tvalue: " + value + "\t|\tA: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getAccumulator(),2).toUpperCase() + "\t|\tX: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getX(),2).toUpperCase() + "\t|\tY: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getY(),2).toUpperCase() + "\t|\tP: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getStatus(false),2).toUpperCase());
-        }
+        //	logger.debug("program counter: 0x" + Integer.toHexString(cpuMemory.getProgramCounter()) + " -- next instruction: 0x" + Integer.toHexString(instruction.getOpCode()) + "\t|\t" + instruction.name() + "\t|\taddress: " + Integer.toHexString(address) + "\t|\tvalue: " + value + "\t|\tA: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getAccumulator(),2).toUpperCase() + "\t|\tX: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getX(),2).toUpperCase() + "\t|\tY: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getY(),2).toUpperCase() + "\t|\tP: " + NumberConversionUtils.generateHexStringWithleadingZeros(this.getStatus(false),2).toUpperCase());
     	
         switch (instruction.getOpCode())
         {
@@ -58,42 +58,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x69:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doADC(value);
                 break;
             case 0x65:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doADC(value);
             	break;
             case 0x75:
                 // aa,X
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doADC(value);
             	break;
             case 0x6D:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doADC(value);
             	break;
             case 0x7D:
                 // aaaa,X
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doADC(value);
                 break;
             case 0x79:
             	// aaaa,Y
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doADC(value);
             	break;
             case 0x61:
             	// (aa,X)
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doADC(value);            	
             	break;
             case 0x71:
             	// (aa), y
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doADC(value);            	
             	break;
 
@@ -102,42 +102,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x29:
                 // #aa
-                value = Platform.getCpuMemory().getImmediateValue();
+                value = addressing.getImmediateValue();
             	this.doAND(value);
                 break;
             case 0x25:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doAND(value);
                 break;
             case 0x35:
                 // aa,X
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doAND(value);
             	break;
             case 0x2D:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doAND(value);            	
                 break;
             case 0x3D:
                 // aaaa,X
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doAND(value);            	
             	break;
             case 0x39:
                 // aaaa,Y
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doAND(value);            	            	
                 break;
             case 0x21:
                 // (aa,X)
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doAND(value);            	            	          	
                 break;
             case 0x31:
                 // (aa),Y
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doAND(value);            	            	          	
                 break;
 
@@ -152,31 +152,31 @@ public class NesCpu implements CentralProcessingUnit
                 break;
             case 0x06:
                 // aa
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doASL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x16:
                 // aa,X
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doASL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x0E:
                 // aaaa
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doASL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x1E:
                 //aaaa,X
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doASL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
 
             /**
@@ -184,7 +184,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x90:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress(); 
+            	address = addressing.getRelativeAddress(); 
             	if (!this.getFlags().isCarry())
             	{
             		this.doBranch(address);
@@ -196,7 +196,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xB0:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (this.getFlags().isCarry())
             	{
             		this.doBranch(address);
@@ -208,7 +208,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xF0:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (this.getFlags().isZero())
             	{
             		this.doBranch(address);
@@ -221,12 +221,12 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x24:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doBIT(value);
                 break;
             case 0x2C:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doBIT(value);
             	break;
 
@@ -235,7 +235,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x30:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (this.getFlags().isNegative())
             	{
             		this.doBranch(address);
@@ -247,7 +247,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xD0:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (!this.getFlags().isZero())
             	{
             		this.doBranch(address);
@@ -259,7 +259,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x10:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (!this.getFlags().isNegative())
             	{
             		this.doBranch(address);
@@ -278,7 +278,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x50:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (!this.getFlags().isOverflow())
             	{
             		this.doBranch(address);
@@ -290,7 +290,7 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x70:
                 // aa
-            	address = Platform.getCpuMemory().getRelativeAddress();
+            	address = addressing.getRelativeAddress();
             	if (this.getFlags().isOverflow())
             	{
             		this.doBranch(address);
@@ -330,42 +330,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xC9:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xC5:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xD5:
                 // aa,X
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xCD:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xDD:
                 // aaaa,X
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xD9:
                 // aaaa,Y
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doCompare(value, this.getAccumulator());
                 break;
             case 0xC1:
                 // (aa,X)
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doCompare(value, this.getAccumulator());
             	break;
             case 0xD1:
                 // (aa),Y
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doCompare(value, this.getAccumulator());
             	break;
                 
@@ -374,17 +374,17 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xE0:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doCompare(value, this.getX());
                 break;
             case 0xE4:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doCompare(value, this.getX());
                 break;
             case 0xEC:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doCompare(value, this.getX());
                 break;
 
@@ -393,17 +393,17 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xC0:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doCompare(value, this.getY());
                 break;
             case 0xC4:
                 // aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doCompare(value, this.getY());
                 break;
             case 0xCC:
                 // aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doCompare(value, this.getY());
                 break;                
                 
@@ -412,31 +412,31 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xC6:
                 // aa
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doDEC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0xD6:
                 // aa,X
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doDEC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
             case 0xCE:
                 // aaaa
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doDEC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);            
+            	cpuMemory.setMemoryFromHexAddress(address, value);            
             	break;
             case 0xDE:
                 // aaaa,X
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doDEC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
                 
             /**
@@ -467,42 +467,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x49:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doEOR(value);
                 break;
             case 0x45:
                 // $aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doEOR(value);
                 break;
             case 0x55:
                 // $aa,X
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doEOR(value);
                 break;
             case 0x4D:
                 // $aaaa
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doEOR(value);
                 break;
             case 0x5D:
                 // $aaaa,X
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doEOR(value);
                 break;
             case 0x59:
                 // $aaaa,Y
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doEOR(value);
                 break;
             case 0x41:
                 // ($aa,X)
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doEOR(value);
                 break;
             case 0x51:
                 // ($aa),Y
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doEOR(value);
                 break;
 
@@ -511,31 +511,31 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xE6:
                 // $aa
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doINC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
             case 0xF6:
                 //  $aa,X
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doINC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
             case 0xEE:
                 // $aaaa
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doINC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);                
+            	cpuMemory.setMemoryFromHexAddress(address, value);                
             	break;
             case 0xFE:
                 // $aaaa,X
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doINC(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
 
             /**
@@ -567,13 +567,13 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x4C:
                 // $aaaa
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	Platform.getCpuMemory().setProgramCounter(address);
+            	address = addressing.getAbsoluteAddress();
+            	cpuMemory.setProgramCounter(address);
                 break;
             case 0x6C:
                 // ($aaaa)
-            	address = Platform.getCpuMemory().getIndirectAbsoluteAddress();
-            	Platform.getCpuMemory().setProgramCounter(address);
+            	address = addressing.getIndirectAbsoluteAddress();
+            	cpuMemory.setProgramCounter(address);
             	break;
 
             /**
@@ -582,15 +582,15 @@ public class NesCpu implements CentralProcessingUnit
             case 0x20:
                 // $aaaa
             	// get address to jump to
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
+            	address = addressing.getAbsoluteAddress();
             	
             	// push current prgRomCounter
-            	int a[] = BitUtils.splitAddress(Platform.getCpuMemory().getProgramCounter() - 1);
-            	Platform.getCpuMemory().pushStack(a[1]);
-            	Platform.getCpuMemory().pushStack(a[0]);
+            	int a[] = BitUtils.splitAddress(cpuMemory.getProgramCounter() - 1);
+            	cpuMemory.pushStack(a[1]);
+            	cpuMemory.pushStack(a[0]);
             	
             	//transfer control
-            	Platform.getCpuMemory().setProgramCounter(address);
+            	cpuMemory.setProgramCounter(address);
                 break;
                 
             /**
@@ -598,49 +598,49 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xA9:
                 // #aa
-            	this.setAccumulator(Platform.getCpuMemory().getImmediateValue());
+            	this.setAccumulator(addressing.getImmediateValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
                 break;
             case 0xA5:
                 // $aa
-            	this.setAccumulator(Platform.getCpuMemory().getZeroPageValue());
+            	this.setAccumulator(addressing.getZeroPageValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xB5:
                 // $aa,X
-            	this.setAccumulator(Platform.getCpuMemory().getZeroPageIndexedXValue());
+            	this.setAccumulator(addressing.getZeroPageIndexedXValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xAD:
                 // $aaaa
-            	this.setAccumulator(Platform.getCpuMemory().getAbsoluteValue());
+            	this.setAccumulator(addressing.getAbsoluteValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xBD:
                 // $aaaa,X
-            	this.setAccumulator(Platform.getCpuMemory().getAbsoluteIndexedXValue());
+            	this.setAccumulator(addressing.getAbsoluteIndexedXValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xB9:
                 //  $aaaa,Y
-            	this.setAccumulator(Platform.getCpuMemory().getAbsoluteIndexedYValue());
+            	this.setAccumulator(addressing.getAbsoluteIndexedYValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xA1:
                 //  ($aa,X)
-            	this.setAccumulator(Platform.getCpuMemory().getIndexedIndirectXValue());
+            	this.setAccumulator(addressing.getIndexedIndirectXValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
             case 0xB1:
                 // ($aa),Y
-            	this.setAccumulator(Platform.getCpuMemory().getIndirectIndexedYValue());
+            	this.setAccumulator(addressing.getIndirectIndexedYValue());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
             	break;
@@ -650,31 +650,31 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xA2:
                 // #aa      
-            	this.setX(Platform.getCpuMemory().getImmediateValue());
+            	this.setX(addressing.getImmediateValue());
             	this.checkNegativeBit(this.getX());
             	this.checkZero(this.getX());
             	break;
             case 0xA6:
                 // $aa      
-            	this.setX(Platform.getCpuMemory().getZeroPageValue());
+            	this.setX(addressing.getZeroPageValue());
             	this.checkNegativeBit(this.getX());
             	this.checkZero(this.getX());
             	break;
             case 0xB6:
                 // $aa,Y    
-            	this.setX(Platform.getCpuMemory().getZeroPageIndexedYValue());
+            	this.setX(addressing.getZeroPageIndexedYValue());
             	this.checkNegativeBit(this.getX());
             	this.checkZero(this.getX());
             	break;
             case 0xAE:
                 // $aaaa    
-            	this.setX(Platform.getCpuMemory().getAbsoluteValue());
+            	this.setX(addressing.getAbsoluteValue());
             	this.checkNegativeBit(this.getX());
             	this.checkZero(this.getX());
             	break;
             case 0xBE:
                 // $aaaa,Y  
-            	this.setX(Platform.getCpuMemory().getAbsoluteIndexedYValue());
+            	this.setX(addressing.getAbsoluteIndexedYValue());
             	this.checkNegativeBit(this.getX());
             	this.checkZero(this.getX());
             	break;
@@ -684,31 +684,31 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xA0:
                 // #aa    
-            	this.setY(Platform.getCpuMemory().getImmediateValue());
+            	this.setY(addressing.getImmediateValue());
             	this.checkNegativeBit(this.getY());
             	this.checkZero(this.getY());
             	break;
             case 0xA4:
                 // $aa
-            	this.setY(Platform.getCpuMemory().getZeroPageValue());
+            	this.setY(addressing.getZeroPageValue());
             	this.checkNegativeBit(this.getY());
             	this.checkZero(this.getY());
             	break;
             case 0xB4:
                 // $aa,X    
-            	this.setY(Platform.getCpuMemory().getZeroPageIndexedXValue());
+            	this.setY(addressing.getZeroPageIndexedXValue());
             	this.checkNegativeBit(this.getY());
             	this.checkZero(this.getY());
             	break;
             case 0xAC:
                 // $aaaa    
-            	this.setY(Platform.getCpuMemory().getAbsoluteValue());
+            	this.setY(addressing.getAbsoluteValue());
             	this.checkNegativeBit(this.getY());
             	this.checkZero(this.getY());
             	break;
             case 0xBC:
                 // $aaaa,X  
-            	this.setY(Platform.getCpuMemory().getAbsoluteIndexedXValue());
+            	this.setY(addressing.getAbsoluteIndexedXValue());
             	this.checkNegativeBit(this.getY());
             	this.checkZero(this.getY());
             	break;
@@ -724,31 +724,31 @@ public class NesCpu implements CentralProcessingUnit
                 break;
             case 0x46:
                 // $aa
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x56:
                 // $aa,X    
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doLSR(value);    	
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x4E:
                 // $aaaa
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x5E:
                 // $aaaa,X  
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doLSR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
 
             /**
@@ -762,42 +762,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x09:
                 // #aa 
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doORA(value);
                 break;
             case 0x05:
                 // $aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doORA(value);
                 break;
             case 0x15:
                 // $aa,X   
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doORA(value);
                 break;
             case 0x0D:
                 // $aaaa   
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doORA(value);
                 break;
             case 0x1D:
                 // $aaaa,X 
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doORA(value);
                 break;
             case 0x19:
                 // $aaaa,Y 
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doORA(value);
                 break;
             case 0x01:
                 // ($aa,X) 
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doORA(value);
                 break;
             case 0x11:
                 // ($aa),Y 
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doORA(value);
                 break;
 
@@ -805,7 +805,7 @@ public class NesCpu implements CentralProcessingUnit
                 PHA  -  Push Accumulator on Stack
              */
             case 0x48:
-            	Platform.getCpuMemory().pushStack(this.getAccumulator());
+            	cpuMemory.pushStack(this.getAccumulator());
                 break;
             
             /**
@@ -819,7 +819,7 @@ public class NesCpu implements CentralProcessingUnit
                 PLA  -  Pull Accumulator from Stack
              */
             case 0x68:
-            	this.setAccumulator(Platform.getCpuMemory().popStack());
+            	this.setAccumulator(cpuMemory.popStack());
             	this.checkNegativeBit(this.getAccumulator());
             	this.checkZero(this.getAccumulator());
                 break;
@@ -841,31 +841,31 @@ public class NesCpu implements CentralProcessingUnit
                 break;
             case 0x26:
                 // $aa     
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x36:
                 // $aa,X
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x2E:
                 // $aaaa   
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
             case 0x3E:
                 // $aaaa,X 
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROL(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
 
             /**
@@ -879,31 +879,31 @@ public class NesCpu implements CentralProcessingUnit
                 break;
             case 0x66:
                 // $aa     
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x76:
                 // $aa,X   
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getZeroPageIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x6E:
                 // $aaaa   
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
                 break;
             case 0x7E:
                 // $aaaa,X 
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	value = Platform.getCpuMemory().getMemoryFromHexAddress(address);
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	value = cpuMemory.getMemoryFromHexAddress(address);
             	value = this.doROR(value);
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, value);
+            	cpuMemory.setMemoryFromHexAddress(address, value);
             	break;
 
             /**
@@ -914,12 +914,12 @@ public class NesCpu implements CentralProcessingUnit
             	this.pullStatus();
             	
             	// program counter
-            	int lowByte = Platform.getCpuMemory().popStack();
-            	int highByte = Platform.getCpuMemory().popStack();	
+            	int lowByte = cpuMemory.popStack();
+            	int highByte = cpuMemory.popStack();	
             	address = BitUtils.unsplitAddress(highByte, lowByte);
             	
             	// transfer control to address
-            	Platform.getCpuMemory().setProgramCounter(address);
+            	cpuMemory.setProgramCounter(address);
                 break;
 
             /**
@@ -927,12 +927,12 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x60:
             	// get address to transfer control to
-            	lowByte = Platform.getCpuMemory().popStack();
-            	highByte = Platform.getCpuMemory().popStack();
+            	lowByte = cpuMemory.popStack();
+            	highByte = cpuMemory.popStack();
             	address = BitUtils.unsplitAddress(highByte, lowByte);
             	
             	// transfer control to address
-            	Platform.getCpuMemory().setProgramCounter(address + 1);
+            	cpuMemory.setProgramCounter(address + 1);
                 break;
 
             /**
@@ -940,42 +940,42 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0xE9:
                 // #aa
-            	value = Platform.getCpuMemory().getImmediateValue();
+            	value = addressing.getImmediateValue();
             	this.doSBC(value);
                 break;
             case 0xE5:
                 // $aa
-            	value = Platform.getCpuMemory().getZeroPageValue();
+            	value = addressing.getZeroPageValue();
             	this.doSBC(value);
                 break;
             case 0xF5:
                 // $aa,X   
-            	value = Platform.getCpuMemory().getZeroPageIndexedXValue();
+            	value = addressing.getZeroPageIndexedXValue();
             	this.doSBC(value);
                 break;
             case 0xED:
                 // $aaaa   
-            	value = Platform.getCpuMemory().getAbsoluteValue();
+            	value = addressing.getAbsoluteValue();
             	this.doSBC(value);
                 break;
             case 0xFD:
                 // $aaaa,X 
-            	value = Platform.getCpuMemory().getAbsoluteIndexedXValue();
+            	value = addressing.getAbsoluteIndexedXValue();
             	this.doSBC(value);
                 break;
             case 0xF9:
                 // $aaaa,Y 
-            	value = Platform.getCpuMemory().getAbsoluteIndexedYValue();
+            	value = addressing.getAbsoluteIndexedYValue();
             	this.doSBC(value);
                 break;
             case 0xE1:
                 // ($aa,X) 
-            	value = Platform.getCpuMemory().getIndexedIndirectXValue();
+            	value = addressing.getIndexedIndirectXValue();
             	this.doSBC(value);
                 break;
             case 0xF1:
                 // ($aa),Y 
-            	value = Platform.getCpuMemory().getIndirectIndexedYValue();
+            	value = addressing.getIndirectIndexedYValue();
             	this.doSBC(value);
                 break;
 
@@ -1006,38 +1006,38 @@ public class NesCpu implements CentralProcessingUnit
                 
             case 0x85:
                 // $aa     
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getZeroPageAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x95:
                 // $aa,X  
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getZeroPageIndexedXAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x8D:
                 // $aaaa   
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getAbsoluteAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x9D:
                 // $aaaa,X 
-            	address = Platform.getCpuMemory().getAbsoluteIndexedXAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getAbsoluteIndexedXAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x99:
                 // $aaaa,Y 
-            	address = Platform.getCpuMemory().getAbsoluteIndexedYAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getAbsoluteIndexedYAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x81:
                 // ($aa,X) 
-            	address = Platform.getCpuMemory().getIndexedIndirectXAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getIndexedIndirectXAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
             case 0x91:
                 // ($aa),Y 
-            	address = Platform.getCpuMemory().getIndirectIndexedYAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getAccumulator());
+            	address = addressing.getIndirectIndexedYAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getAccumulator());
                 break;
 
             /**
@@ -1045,18 +1045,18 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x86:
                 // $aa   
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getX());
+            	address = addressing.getZeroPageAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getX());
                 break;
             case 0x96:
                 // $aa,Y 
-            	address = Platform.getCpuMemory().getZeroPageIndexedYAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getX());
+            	address = addressing.getZeroPageIndexedYAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getX());
             	break;
             case 0x8E:
                 // $aaaa 
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getX());
+            	address = addressing.getAbsoluteAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getX());
                 break;
 
             /**
@@ -1064,18 +1064,18 @@ public class NesCpu implements CentralProcessingUnit
              */
             case 0x84:
                 // $aa   
-            	address = Platform.getCpuMemory().getZeroPageAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getY());
+            	address = addressing.getZeroPageAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getY());
                 break;
             case 0x94:
                 // $aa,X 
-            	address = Platform.getCpuMemory().getZeroPageIndexedXAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getY());
+            	address = addressing.getZeroPageIndexedXAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getY());
                 break;
             case 0x8C:
                 // $aaaa 
-            	address = Platform.getCpuMemory().getAbsoluteAddress();
-            	Platform.getCpuMemory().setMemoryFromHexAddress(address, this.getY());
+            	address = addressing.getAbsoluteAddress();
+            	cpuMemory.setMemoryFromHexAddress(address, this.getY());
                 break;
 
             /**
@@ -1104,7 +1104,7 @@ public class NesCpu implements CentralProcessingUnit
                 TSX  -  Transfer Stack to X
              */
             case 0xBA:
-            	this.setX(Platform.getCpuMemory().getStackPointer());
+            	this.setX(cpuMemory.getStackPointer());
             	
             	// check flags
             	this.checkZero(this.getX());
@@ -1126,7 +1126,7 @@ public class NesCpu implements CentralProcessingUnit
                 TXS  -  Transfer X to Stack pointer
              */
             case 0x9A:
-            	Platform.getCpuMemory().setStackPointer(this.getX());
+            	cpuMemory.setStackPointer(this.getX());
                 break;
 
             /**
@@ -1144,9 +1144,7 @@ public class NesCpu implements CentralProcessingUnit
              * default -- only encountered for unemulated instructions.
              */
             default:
-            	logger.error("ENCOUNTERED UNEMULATED INSTRUCTION: " + Integer.toHexString(instruction.getOpCode()));
-            	break;
-            
+            	throw new IllegalStateException("ENCOUNTERED UNEMULATED INSTRUCTION: " + Integer.toHexString(instruction.getOpCode()));
         }
         
         return instruction.getCycles();
@@ -1221,7 +1219,7 @@ public class NesCpu implements CentralProcessingUnit
     
     private void doBranch(int address)
     {
-    	Platform.getCpuMemory().setProgramCounter(address);
+    	cpuMemory.setProgramCounter(address);
     }
     
     private void doCompare(int value, int register)
@@ -1427,12 +1425,12 @@ public class NesCpu implements CentralProcessingUnit
     public void pushStatus(boolean brk)
     {
     	int status = this.getStatus(brk);
-    	Platform.getCpuMemory().pushStack(status);
+    	cpuMemory.pushStack(status);
     }
     
     public void pullStatus()
     {
-    	int status = Platform.getCpuMemory().popStack();
+    	int status = cpuMemory.popStack();
     	this.getFlags().setNegative(BitUtils.isBitSet(status, 7));
     	this.getFlags().setOverflow(BitUtils.isBitSet(status, 6));
     	this.getFlags().setDecimalMode(BitUtils.isBitSet(status, 3));
@@ -1460,7 +1458,8 @@ public class NesCpu implements CentralProcessingUnit
     {
     	return "X: " + this.getX() + "\n" +
     		"Y: " + this.getY() + "\n" +
-    		"A: " + this.getAccumulator() + "\n";
+    		"A: " + this.getAccumulator() + "\n" +
+    	    "program counter: 0x" + Integer.toHexString(cpuMemory.getProgramCounter());
     }
 
     /**
@@ -1519,5 +1518,26 @@ public class NesCpu implements CentralProcessingUnit
 	public void setFlags(Flags flags)
 	{
 		this.flags = (NesFlags)flags;
-	}    
+	}
+
+	public NesCpuMemory getCpuMemory()
+    {
+    	return cpuMemory;
+    }
+
+	public void setCpuMemory(NesCpuMemory cpuMemory)
+    {
+    	this.cpuMemory = cpuMemory;
+    }
+
+	public NesCpuAddressingModes getAddressing()
+    {
+    	return addressing;
+    }
+
+	public void setAddressing(NesCpuAddressingModes addressing)
+    {
+    	this.addressing = addressing;
+    }    
 }
+

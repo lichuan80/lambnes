@@ -1,6 +1,7 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpu;
 import com.lambelly.lambnes.util.BitUtils;
 
 import org.apache.log4j.*;
@@ -8,11 +9,11 @@ import org.apache.log4j.*;
 public class PPUScrollRegister
 {
 	public static final int REGISTER_ADDRESS = 0x2005;
-	private static PPUScrollRegister register = new PPUScrollRegister();
 	private static final int CYCLES_PER_EXECUTION = 0;
 	private Integer addressLowByte = null;
 	private Integer addressHighByte = null;
 	private Integer rawControlByte = null;
+	private NesPpu ppu;
 	private Logger logger = Logger.getLogger(PPUScrollRegister.class);
 	
 	private PPUScrollRegister()
@@ -24,8 +25,8 @@ public class PPUScrollRegister
 	{
 		if (this.getRawControlByte() != null)
 		{
-			int flipflop = Platform.getPpu().getRegisterAddressFlipFlopLatch();
-			int loopyT = Platform.getPpu().getLoopyT();
+			int flipflop = this.getPpu().getRegisterAddressFlipFlopLatch();
+			int loopyT = this.getPpu().getLoopyT();
 			int setLoopyT = 0;
 			
 			if (flipflop == 0)
@@ -34,7 +35,7 @@ public class PPUScrollRegister
 			}
 			else
 			{
-				setLoopyT = (Platform.getPpu().getLoopyT() & 0x8C1F) | 
+				setLoopyT = (this.getPpu().getLoopyT() & 0x8C1F) | 
 					(((this.getRawControlByte() & 7) << 12) | 
 					((this.getRawControlByte() & 0xF8) << 2));
 			}
@@ -45,18 +46,18 @@ public class PPUScrollRegister
 						"flipflop is " + flipflop + "\n" + 
 						"loopyT is: " + loopyT + "\n" +
 						"setting loopyT to: " + setLoopyT + "\n" +
-						"at scanline " + Platform.getPpu().getScanlineCount() + " screencount: " + Platform.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
+						"at scanline " + this.getPpu().getScanlineCount() + " screencount: " + this.getPpu().getScreenCount() + " cpu cycle: " + Platform.getCycleCount());
 			}
 			
 			if (flipflop == 0)
 			{				
-				Platform.getPpu().setLoopyX(this.getRawControlByte() & 7);
-				Platform.getPpu().setLoopyT(setLoopyT);
+				this.getPpu().setLoopyX(this.getRawControlByte() & 7);
+				this.getPpu().setLoopyT(setLoopyT);
 				this.setRawControlByte(null);
 			}
 			else
 			{
-				Platform.getPpu().setLoopyT(setLoopyT);
+				this.getPpu().setLoopyT(setLoopyT);
 				this.clear();
 			}
 		}
@@ -117,9 +118,14 @@ public class PPUScrollRegister
 	{
 		this.rawControlByte = rawControlByte;
 	}
-	
-	public static PPUScrollRegister getRegister()
-	{
-		return register;
-	}
+
+	public NesPpu getPpu()
+    {
+    	return ppu;
+    }
+
+	public void setPpu(NesPpu ppu)
+    {
+    	this.ppu = ppu;
+    }
 }

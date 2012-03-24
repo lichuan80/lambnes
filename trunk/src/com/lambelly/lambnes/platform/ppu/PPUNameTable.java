@@ -7,6 +7,7 @@ public class PPUNameTable
 	private int[] nameTable = new int[960]; // 0x2000 - 0x23BF
 	private int[] attributeTable = new int [64]; // 0x23C0 - 23FF
 	private static final int BASE_ADDRESS_MASK = 0x3FF; // max array index. masks to find array index from address provided.
+	private NesTileCache tileCache = new NesTileCache();
 	private Logger logger = Logger.getLogger(PPUNameTable.class);
 	
 	public PPUNameTable()
@@ -16,10 +17,7 @@ public class PPUNameTable
 	
 	public void setMemoryFromHexAddress(int address, int value)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("setting value " + value + " to address: 0x" + Integer.toHexString(address));
-		}
+		// logger.debug("setting value " + value + " to address: 0x" + Integer.toHexString(address));
 		int index = address & PPUNameTable.BASE_ADDRESS_MASK;
 		
 		if (index >= 0 && index < 960)
@@ -50,14 +48,12 @@ public class PPUNameTable
 			int nameTableRow = index >> 5; // column is essentially the first 5 bits of the number -- throw out for row
 			int nameTableCol = index & 31; // column is essentially the first 5 bits of the number -- exclude for column
 			
+			// instantiate tile with correct MSB
 			colorMSB = this.getColorMSB(nameTableRow, nameTableCol);
+			BackgroundTile bTile = this.getTileCache().getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB);
 			
-			BackgroundTile bTile = new BackgroundTile(NesTileCache.getBackgroundTile(this.getMemoryFromHexAddress(address),colorMSB));
+			//logger.info("using tile: " + bTile.getTileNumber() + " with MSB: " + bTile.getAttributes().getColorHighBit() + " for NameTableRow: " + nameTableRow + " and NameTableColumn: " + nameTableCol + " and address: " + address);
 			
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("using background tile MSBs: " + colorMSB + " for tile " + bTile.getTileNumber() + " at address " + address + " and nameTableRow " + nameTableRow  + " and nameTableCol " + nameTableCol);
-			}
 			return (bTile);
 		}
 		else
@@ -125,4 +121,14 @@ public class PPUNameTable
 	{
 		this.attributeTable = attributeTable;
 	}
+
+	public NesTileCache getTileCache()
+    {
+    	return tileCache;
+    }
+
+	public void setTileCache(NesTileCache tileCache)
+    {
+    	this.tileCache = tileCache;
+    }
 }

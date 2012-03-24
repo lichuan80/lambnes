@@ -1,12 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.lambelly.lambnes.cartridge;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.apache.log4j.*;
 import org.apache.commons.lang.ArrayUtils;
+
+import com.lambelly.lambnes.LambNes;
+import com.lambelly.lambnes.platform.cpu.NesCpuMemory;
 
 /**
  *
@@ -15,29 +17,90 @@ import org.apache.commons.lang.ArrayUtils;
 public class Ines implements Cartridge
 {
     private RomLoader romLoader = null;
-    private int[] programInstructions = null;
+    private static int[] programInstructions = null;
     private int[] patternTiles = null;
     private Header header = null;
+    private String cartridgePath = null;
     private Logger logger = Logger.getLogger(Ines.class);
+    
+    private Ines()
+    {    	
 
-    public Ines(int[] rawRomData)
+    }
+    
+    public Ines(RomLoader romLoader)
     {
-        this.parseRom(rawRomData);
+    	this.init(romLoader.getRomData());
+    }
+    
+    public Ines(String cartridgePath)
+    {
+    	this.setCartridgePath(cartridgePath);
+    }
+    
+    public void locateCartidge() throws IOException
+    {
+        // load default cartridge
+		CartridgeLocator c = null;
+		if (this.getCartridgePath() != null)
+		{
+			// absolute path provided by command line
+			c = new CartridgeLocator(this.getCartridgePath());
+		}
+		else
+		{
+			// path provided from rom chosen from default location 
+			c = new CartridgeLocator();
+		}
+		
+		File romFile = c.locateCartridge();
+		
+		if (romFile != null)
+		{
+			this.setCartridgePath(romFile.getAbsolutePath());
+		}
+		
+		if (this.getCartridgePath() != null)
+		{
+			try
+			{
+				// initiate cartridge and propagate in system
+				RomLoader rl = new RomLoader(this.getCartridgePath());
+				this.init(rl.getRomData());
+			}
+			catch(Exception e)
+			{
+				throw new IOException("unable to open cartridge: " + e.getMessage());
+			}
+		}   
     }
 
     /**
-     * parses ines data
+     * init
+     * 
+     * loads data from file, 
+     *
+     * parses the data into the header, program instructions, and pattern tiles
+     */
+    public void init() throws IOException
+    {
+    	this.locateCartidge();
+    }
+    
+    
+    /**
+     * init
      *
      * parses the data into the header, program instructions, and pattern tiles
      *
      * @param rawRomData
      */
-    private void parseRom(int[] rawRomData)
+    public void init(int[] rawRomData)
     {
         // first 16 bytes is the header
-        this.setHeader(new Header (ArrayUtils.subarray(rawRomData, 0, 16)));
-
-        // determine other lengths
+        header = (new Header (ArrayUtils.subarray(rawRomData, 0, 16)));
+    	
+    	// determine other lengths
         int programLength = this.determineProgramInstructionLength(this.getHeader().getProgramInstructionByte());        
         int patternTileLength = this.determinePatternTileInstructionLength(this.getHeader().getPatternTileByte());
 
@@ -91,7 +154,15 @@ public class Ines implements Cartridge
     {
         return (Integer.parseInt(Integer.toString(b),16) * 8192);
     }
-
+    
+    public int[] getPage(int pageIndex)
+    {
+    	int[] page = null;
+    	System.arraycopy(this.getProgramInstructions(), 0, page, NesCpuMemory.PRG_ROM_BASE, 16384);
+    	
+    	return page;
+    }
+    
     /**
      * @return the romLoader
      */
@@ -147,12 +218,22 @@ public class Ines implements Cartridge
     {
         return header;
     }
-
+    
     /**
-     * @param header the header to set
+     * set the header
      */
     public void setHeader(Header header)
     {
         this.header = header;
+    }
+
+	public String getCartridgePath()
+    {
+    	return cartridgePath;
+    }
+
+	public void setCartridgePath(String cartridgePath)
+    {
+    	this.cartridgePath = cartridgePath;
     }
 }

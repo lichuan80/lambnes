@@ -1,17 +1,19 @@
 package com.lambelly.lambnes.platform.ppu.registers;
 
 import com.lambelly.lambnes.platform.Platform;
+import com.lambelly.lambnes.platform.ppu.NesPpuMemory;
+
 import org.apache.log4j.*;
 
 public class PPUSprRamIORegister
 {
 	public static final int REGISTER_ADDRESS = 0x2004;
 	private static final int CYCLES_PER_EXECUTION = 0;
-	private static PPUSprRamIORegister register = new PPUSprRamIORegister();
-	//private Integer ioAddress = null;
 	private Integer rawControlByte = null;
 	private int sramBuffer = 0;
 	private Logger logger = Logger.getLogger(PPUSprRamIORegister.class);
+	private NesPpuMemory ppuMemory;
+	private PPUSprRamAddressRegister ppuSprRamAddressRegister;
 	
 	private PPUSprRamIORegister()
 	{
@@ -20,23 +22,24 @@ public class PPUSprRamIORegister
 	
 	public int cycle()
 	{	
-		if (Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() != null)
+		if (this.getPpuSprRamAddressRegister().getRawControlByte() != null)
 		{
-			this.setSramBuffer(Platform.getPpuMemory().getSprRamFromHexAddress(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte()));
+			this.setSramBuffer(this.getPpuMemory().getSprRamFromHexAddress(this.getPpuSprRamAddressRegister().getRawControlByte()));
 		}
 		
 		if (this.getRawControlByte() != null)
 		{
-			if (Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() != null)
+			
+			if (this.getPpuSprRamAddressRegister().getRawControlByte() != null)
 			{			
 				// write control byte to ioAddress
 				//if(logger.isDebugEnabled())
 				{
 					logger.info("0x2004 raw control byte: " + this.getRawControlByte());
-					logger.info("0x2004 IO address: " + Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte());
-					logger.info("0x2004 writing " + this.getRawControlByte() + " to ioAddress: " + Integer.toHexString(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte()));
+					logger.info("0x2004 IO address: " + this.getPpuSprRamAddressRegister().getRawControlByte());
+					logger.info("0x2004 writing " + this.getRawControlByte() + " to ioAddress: " + Integer.toHexString(this.getPpuSprRamAddressRegister().getRawControlByte()));
 				}
-				Platform.getPpuMemory().setSprRamFromHexAddress(Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte(), this.getRawControlByte());
+				this.getPpuMemory().setSprRamFromHexAddress(this.getPpuSprRamAddressRegister().getRawControlByte(), this.getRawControlByte());
 				this.incrementIoAddress();
 			}
 			
@@ -47,7 +50,7 @@ public class PPUSprRamIORegister
 	
 	public void incrementIoAddress()
 	{
-		Platform.getPpu().getPpuSprRamAddressRegister().setRegisterValue((Platform.getPpu().getPpuSprRamAddressRegister().getRawControlByte() + 1) & 0xFF);
+		this.getPpuSprRamAddressRegister().setRegisterValue((this.getPpuSprRamAddressRegister().getRawControlByte() + 1) & 0xFF);
 	}
 	
 	public void setRegisterValue(int value)
@@ -66,23 +69,6 @@ public class PPUSprRamIORegister
 		this.setRawControlByte(null);
 	}
 
-	/*
-	private Integer getIoAddress()
-	{
-		return ioAddress;
-	}
-
-	protected void setIoAddress(Integer ioAddress)
-	{
-		this.ioAddress = ioAddress;
-	}
-	
-	private void incrementIoAddress()
-	{
-		this.setIoAddress((this.getIoAddress() + 1) & 0xFF);
-	}
-	*/
-
 	private Integer getRawControlByte()
 	{
 		return rawControlByte;
@@ -91,11 +77,6 @@ public class PPUSprRamIORegister
 	private void setRawControlByte(Integer rawControlByte)
 	{
 		this.rawControlByte = rawControlByte;
-	}
-	
-	public static PPUSprRamIORegister getRegister()
-	{
-		return register;
 	}
 
 	public int getSramBuffer()
@@ -107,4 +88,25 @@ public class PPUSprRamIORegister
 	{
 		this.sramBuffer = sramBuffer;
 	}
+
+	public NesPpuMemory getPpuMemory()
+    {
+    	return ppuMemory;
+    }
+
+	public void setPpuMemory(NesPpuMemory ppuMemory)
+    {
+    	this.ppuMemory = ppuMemory;
+    }
+
+	public PPUSprRamAddressRegister getPpuSprRamAddressRegister()
+    {
+    	return ppuSprRamAddressRegister;
+    }
+
+	public void setPpuSprRamAddressRegister(
+            PPUSprRamAddressRegister ppuSprRamAddressRegister)
+    {
+    	this.ppuSprRamAddressRegister = ppuSprRamAddressRegister;
+    }
 }

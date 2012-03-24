@@ -3,8 +3,10 @@ package com.lambelly.lambnes.platform.ppu;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.*;
 
+import com.lambelly.lambnes.LambNes;
+import com.lambelly.lambnes.cartridge.Ines;
 import com.lambelly.lambnes.platform.Platform;
-import com.lambelly.lambnes.util.NumberConversionUtils;
+
 public class NesPpuMemory
 {
 	private Logger logger = Logger.getLogger(NesPpuMemory.class);
@@ -17,9 +19,10 @@ public class NesPpuMemory
 	private PPUNameTable nameTable3 = null;      // 0x2C00
 	private int[] imagePalette = new int[16];    // 0x3F00
 	private int[] spritePalette = new int[16];   // 0x3F10
+	private Ines cartridge;
 	
 	// SPR-RAM
-	private int[] sprRam = new int [256];     
+	private SpriteAttribute[] sprRam = new SpriteAttribute[64];     
 	private SpriteTile[] spriteBuffer = new SpriteTile[NesPpu.SPRITE_COUNT];
 	
 	public static final int BACKGROUND_PALETTE_ADDRESS = 0x3F00;
@@ -27,37 +30,36 @@ public class NesPpuMemory
 
 	public NesPpuMemory()
 	{
-		
+		// initialize spr-ram
+		for (int i = 0; i < sprRam.length; i++)
+		{
+			this.sprRam[i] = new SpriteAttribute();
+		}
 	}
 	
 	public void establishMirroring()
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("setting up name tables");
-		}
+		// logger.debug("setting up name tables");
 		PPUNameTable nameTableA = new PPUNameTable();
 		PPUNameTable nameTableB = new PPUNameTable();
 		
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("applying mirroring: " + (Platform.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
-		}
+		// logger.debug("applying mirroring: " + (this.getCartridge().getHeader().isHorizontalMirroring()?"HORIZONTAL":"VERTICAL"));
 		// set up name tables -- establishes how mirroring is being done. 
-		if (Platform.getCartridge().getHeader().isHorizontalMirroring())
+		if (this.getCartridge().getHeader().isHorizontalMirroring())
 		{
 			this.setNameTable0(nameTableA);
 			this.setNameTable1(nameTableA);
 			this.setNameTable2(nameTableB);
 			this.setNameTable3(nameTableB);
 		} 
-		else if (Platform.getCartridge().getHeader().isVerticalMirroring())
+		else if (this.getCartridge().getHeader().isVerticalMirroring())
 		{
 			this.setNameTable0(nameTableA);
 			this.setNameTable1(nameTableB);
 			this.setNameTable2(nameTableA);
 			this.setNameTable3(nameTableB);			
 		}
+
 	}
 
 	public NesPpuMemory(int[] patternTiles)
@@ -78,7 +80,7 @@ public class NesPpuMemory
 		}		
 		else
 		{
-			logger.warn("chr rom length small!");
+			//logger.warn("chr rom length small!");
 		}
 	}
 	
@@ -128,10 +130,7 @@ public class NesPpuMemory
 	
 	public int getMemoryFromHexAddress(int address) throws IllegalStateException
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug("getting memory from address: 0x" + Integer.toHexString(address));
-		}
+		// logger.debug("getting memory from address: 0x" + Integer.toHexString(address));
 		
 		if (address >= 0x0000 && address <= 0xFFF)
 		{
@@ -229,17 +228,22 @@ public class NesPpuMemory
 			// first half of low byte determines which palette, 2nd half determines index
 			int palette = (lowbyte & 0xF0) / 0xF;
 			int index = lowbyte & 0x0F;
+			int value = 0;
 			
 			if (palette % 2 == 0)
 			{
 				// even, so image palette
-				return this.getImagePalette()[index];				
+				value = this.getImagePalette()[index];				
 			}
 			else
 			{
 				// odd, so sprite palette
-				return this.getSpritePalette()[index];
+				value = this.getSpritePalette()[index];
 			}
+			
+			//logger.info("getting palette address: " + address + " with value: " + value + " determined palette: " + palette + " index: " + index);
+			
+			return value;
 		}   
 		else if (address >= 0x4000 && address <= 0x7FFF)
 		{
@@ -257,10 +261,7 @@ public class NesPpuMemory
 	
 	public void setMemoryFromHexAddress(int address, int value) throws IllegalStateException
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.info("setting value " + value + " to ppu address: 0x" + Integer.toHexString(address));
-		}
+		// logger.debug("setting value " + value + " to ppu address: 0x" + Integer.toHexString(address));
 		
 		if (address >= 0x0000 && address <= 0xFFF)
 		{
@@ -316,12 +317,14 @@ public class NesPpuMemory
 		else if (address >= 0x3F00 && address <= 0x3FFF)
 		{
 			//logger.info("setting address: " + Integer.toHexString(address) + " to value: " + value);
-			// don't much care about high byte.
+			// don't much care about most significant byte.
 			int lsb = address & 0x00FF;
 			
 			// first half of low byte determines which palette, 2nd half determines index
 			int palette = ((lsb & 0xF0) / 0xF) % 2;
 			int index = lsb & 0x0F;
+			
+			//logger.info("setting palette address: " + address + " with value: " + value + " determined palette: " + palette + " index: " + index);
 			
 			if (palette == 0)
 			{
@@ -340,11 +343,17 @@ public class NesPpuMemory
 				// flop palette affected by palette bit for mirroring
 				if (palette == 0)
 				{
-					this.setSpritePaletteValue(index,value);
+					this.setSpritePaletteValue(0x0,value);
+					this.setSpritePaletteValue(0x4,value);
+					this.setSpritePaletteValue(0x8,value);
+					this.setSpritePaletteValue(0xC,value);
 				}
 				else
 				{
-					this.setImagePaletteValue(index, value);
+					this.setImagePaletteValue(0x0, value);
+					this.setImagePaletteValue(0x4, value);
+					this.setImagePaletteValue(0x8, value);
+					this.setImagePaletteValue(0xC, value);
 				}
 				
 			}
@@ -363,16 +372,6 @@ public class NesPpuMemory
 		}
 	}
 	
-	public SpriteAttribute getSpriteAttribute(int spriteAttributeIndex)
-	{
-		int rawBit1 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4);
-		int rawBit2 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 1);
-		int rawBit3 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 2);
-		int rawBit4 = this.getSprRamFromHexAddress(spriteAttributeIndex * 4 + 3);
-		
-		return new SpriteAttribute(rawBit1, rawBit2, rawBit3, rawBit4);
-	}
-
 	public int[] getPatternTable0()
 	{
 		return patternTable0;
@@ -393,24 +392,82 @@ public class NesPpuMemory
 		this.patternTable1 = patternTable1;
 	}
 
-	public int[] getSprRam()
+	public SpriteAttribute[] getSprRam()
 	{
 		return sprRam;
 	}
 	
+	public SpriteAttribute getSprRam(int index)
+	{
+		return sprRam[index];
+	}
+	
+	public SpriteAttribute getSprRamForSpriteNumber(int spriteNumber)
+	{
+		int x = 0;
+		SpriteAttribute s = new SpriteAttribute();
+		
+		while (spriteNumber != s.getTileIndex() && x < 64)
+		{
+			s = this.getSprRam(x);
+			x++;
+		}
+		
+		if (s.getTileIndex() == spriteNumber)
+		{
+			//logger.info("found attribute with tile index " + s.getTileIndex() + " for sprite " + spriteNumber);
+			return s;
+		}
+		else
+		{
+			return new SpriteAttribute();
+		}
+			
+	}
+	
 	public int getSprRamFromHexAddress(int address)
 	{
-		return this.sprRam[address];
+		int sprRamIndex = address / 4;
+		int sprAttributeIndex = address % 4;
+		
+		switch (sprAttributeIndex)
+		{
+			case 0:
+				return this.sprRam[sprRamIndex].getyCoordinate();
+			case 1:
+				return this.sprRam[sprRamIndex].getTileIndex();
+			case 2:
+				return this.sprRam[sprRamIndex].getColorHighBit();
+			case 3:
+				return this.sprRam[sprRamIndex].getxCoordinate();
+			default:
+				return 0;
+		}
 	}	
 
-	public void setSprRam(int[] sprRam)
+	public void setSprRam(SpriteAttribute[] sprRam)
 	{
 		this.sprRam = sprRam;
 	}
 	
 	public void setSprRamFromHexAddress(int address, int value)
 	{
-		this.sprRam[address] = value;
+		int sprRamIndex = address / 4;
+		int sprAttributeIndex = address % 4;
+		
+		//logger.info("received address: " + address + " value: " + value + " setting to sprRamIndex : " + sprRamIndex + " sprAttributeIndex: " + sprAttributeIndex);
+		
+		switch (sprAttributeIndex)
+		{
+			case 0:
+				this.sprRam[sprRamIndex].setyCoordinate(value);
+			case 1:
+				this.sprRam[sprRamIndex].setTileIndex(value);
+			case 2:
+				this.sprRam[sprRamIndex].parseSprRam3(value);
+			case 3:
+				this.sprRam[sprRamIndex].setxCoordinate(value);
+		}
 	}	
 	 
 	public int[] getImagePalette()
@@ -425,6 +482,7 @@ public class NesPpuMemory
 	
 	public void setImagePaletteValue(int index, int value)
 	{
+		//logger.info("setting image palette index: " + index + " with value: " + value);
 		this.getImagePalette()[index] = value;
 	}
 
@@ -520,4 +578,14 @@ public class NesPpuMemory
 	{
 		this.spriteBuffer = new SpriteTile[NesPpu.SPRITE_COUNT];
 	}
+
+	public Ines getCartridge()
+    {
+    	return cartridge;
+    }
+
+	public void setCartridge(Ines cartridge)
+    {
+    	this.cartridge = cartridge;
+    }
 }

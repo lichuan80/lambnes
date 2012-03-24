@@ -5,7 +5,6 @@ public class ControlRegister2
 	private Integer rawControlByte = null;
 	private int strobeValue = 0;
 	public static final int REGISTER_ADDRESS = 0x4017;
-	private static ControlRegister2 register = new ControlRegister2();
 	
 	private ControlRegister2()
 	{
@@ -33,17 +32,6 @@ public class ControlRegister2
 	public int getRegisterValue()
 	{
 		return this.getStrobeValue();
-	}
-
-
-	public static ControlRegister2 getRegister()
-	{
-		return register;
-	}
-
-	public static void setRegister(ControlRegister2 register)
-	{
-		ControlRegister2.register = register;
 	}
 
 	private Integer getRawControlByte()
